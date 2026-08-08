@@ -45,11 +45,11 @@ export async function verifyOtp(formData: FormData) {
     .eq('society_id', SOCIETY_ID)
     .eq('apartment_id', apartmentId)
     .eq('otp_value', otp.trim())
-    .in('status', ['active', 'approved', 'pending'])
+    .in('status', ['active', 'pending'])
     .limit(1);
 
   if (error || !visitors || visitors.length === 0) {
-    return { error: 'Invalid OTP or Flat Number' };
+    return { error: 'Invalid OTP or this pass has already been used.' };
   }
 
   // Check if pass has expired based on valid_until

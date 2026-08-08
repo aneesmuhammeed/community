@@ -13,11 +13,15 @@ type ScanResult = {
   unit_number: string;
 };
 
+type ScanAction = 'checkin' | 'checkout';
+
 export default function ScannerPage() {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+  const [scanAction, setScanAction] = useState<ScanAction | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
+  const [isCheckedOut, setIsCheckedOut] = useState(false);
 
   const handleScan = async (decodedText: string) => {
     if (isProcessing || scanResult || errorMsg) return;
@@ -30,6 +34,7 @@ export default function ScannerPage() {
         setErrorMsg(res.error);
       } else if (res.success && res.visitor) {
         setScanResult(res.visitor);
+        setScanAction(res.action as ScanAction);
       }
     } catch (err) {
       setErrorMsg('An unexpected error occurred while verifying the code.');
@@ -38,23 +43,36 @@ export default function ScannerPage() {
     }
   };
 
-  const handleApprove = async () => {
-    if (!scanResult) return;
+  const handleAction = async () => {
+    if (!scanResult || !scanAction) return;
     setIsProcessing(true);
     
-    const res = await approveScannedEntry(scanResult.id);
-    if (res.error) {
-      setErrorMsg(res.error);
+    if (scanAction === 'checkin') {
+      const res = await approveScannedEntry(scanResult.id);
+      if (res.error) {
+        setErrorMsg(res.error);
+      } else {
+        setIsApproved(true);
+      }
     } else {
-      setIsApproved(true);
+      const { checkoutScannedEntry } = await import('./actions');
+      const res = await checkoutScannedEntry(scanResult.id);
+      if (res.error) {
+        setErrorMsg(res.error);
+      } else {
+        setIsCheckedOut(true);
+      }
     }
+    
     setIsProcessing(false);
   };
 
   const handleReset = () => {
     setScanResult(null);
+    setScanAction(null);
     setErrorMsg(null);
     setIsApproved(false);
+    setIsCheckedOut(false);
     setIsProcessing(false);
   };
 
@@ -89,10 +107,10 @@ export default function ScannerPage() {
           </div>
         )}
 
-        {scanResult && !isApproved && !isProcessing && (
+        {scanResult && !isApproved && !isCheckedOut && !isProcessing && (
           <div className={styles.resultCard}>
             <div className={styles.successIcon}>✓</div>
-            <h2>Valid Pass Found</h2>
+            <h2>{scanAction === 'checkin' ? 'Valid Pass Found' : 'Guest Checkout'}</h2>
             <div className={styles.detailsList}>
               <div className={styles.detailRow}>
                 <span>Guest Name:</span>
@@ -109,7 +127,13 @@ export default function ScannerPage() {
             </div>
             
             <div className={styles.actionGroup}>
-              <button onClick={handleApprove} className={styles.approveBtn}>Approve Entry</button>
+              <button 
+                onClick={handleAction} 
+                className={styles.approveBtn}
+                style={{ backgroundColor: scanAction === 'checkout' ? '#f59e0b' : undefined }}
+              >
+                {scanAction === 'checkin' ? 'Approve Entry' : 'Check Out Guest'}
+              </button>
               <button onClick={handleReset} className={styles.denyBtn}>Cancel / Rescan</button>
             </div>
           </div>
@@ -120,6 +144,15 @@ export default function ScannerPage() {
             <div className={styles.successIcon}>✓</div>
             <h2>Entry Approved</h2>
             <p>The guest has been checked in successfully.</p>
+            <button onClick={handleReset} className={styles.primaryBtn}>Scan Next Guest</button>
+          </div>
+        )}
+
+        {isCheckedOut && (
+          <div className={styles.resultCard}>
+            <div className={styles.successIcon}>✓</div>
+            <h2>Guest Checked Out</h2>
+            <p>The guest has been checked out successfully.</p>
             <button onClick={handleReset} className={styles.primaryBtn}>Scan Next Guest</button>
           </div>
         )}

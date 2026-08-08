@@ -36,8 +36,8 @@ export async function verifyScannedCode(code: string) {
   if (visitor.status === 'cancelled') {
     return { error: 'This pass has been cancelled by the resident.' };
   }
-  if (visitor.status === 'expired' || visitor.status === 'entered') {
-    return { error: `This pass has already been ${visitor.status}.` };
+  if (visitor.status === 'expired') {
+    return { error: 'This pass has already expired or been used.' };
   }
   
   // Check validity windows
@@ -52,8 +52,11 @@ export async function verifyScannedCode(code: string) {
     return { error: 'This pass has expired.' };
   }
 
+  const actionType = (visitor.status === 'approved' || visitor.status === 'entered') ? 'checkout' : 'checkin';
+
   return {
     success: true,
+    action: actionType,
     visitor: {
       id: visitor.id,
       guest_name: visitor.guest_name,
@@ -72,6 +75,27 @@ export async function approveScannedEntry(id: string) {
     .update({ 
       status: 'approved', 
       arrived_at: new Date().toISOString() 
+    })
+    .eq('id', id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath('/dashboard');
+  revalidatePath('/visitors');
+  
+  return { success: true };
+}
+
+export async function checkoutScannedEntry(id: string) {
+  if (!id) return { error: 'Invalid ID' };
+
+  const { error } = await supabase
+    .from('visitors')
+    .update({ 
+      status: 'expired', 
+      left_at: new Date().toISOString() 
     })
     .eq('id', id);
 
