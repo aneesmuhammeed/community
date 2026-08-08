@@ -352,7 +352,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'One-Time Password',
+                          'One-Time Password (Flat ${currentUser.apartment})',
                           style: theme.textTheme.labelMedium?.copyWith(
                             color: theme.colorScheme.onSecondary,
                             fontWeight: FontWeight.w500,

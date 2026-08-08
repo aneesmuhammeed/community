@@ -401,7 +401,7 @@ class GuestInviteCard extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('One-Time Password', style: theme.textTheme.titleSmall?.copyWith(color: const Color(0xFF1E40AF))), // blue-800
+                          Text('One-Time Password (Flat $unitNumber)', style: theme.textTheme.titleSmall?.copyWith(color: const Color(0xFF1E40AF))), // blue-800
                           if (validUntil.isNotEmpty)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

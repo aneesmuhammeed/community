@@ -15,7 +15,7 @@ export default async function VisitorsPage({
 }: {
   searchParams: Promise<{ status?: string }>
 }) {
-  const SOCIETY_ID = '11111111-1111-1111-1111-111111111111';
+  const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
   const params = await searchParams;
   const filterStatus = params.status || 'all';
 
@@ -23,7 +23,8 @@ export default async function VisitorsPage({
     .from('visitors')
     .select('*')
     .eq('society_id', SOCIETY_ID)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(100);
 
   if (filterStatus !== 'all') {
     if (filterStatus === 'entered') {
@@ -105,7 +106,7 @@ export default async function VisitorsPage({
                 <div className={vStyles.visitorInfo}>
                   <div className={vStyles.visitorName}>{v.guest_name}</div>
                   <div className={vStyles.visitorMeta}>
-                    <span className={vStyles.visitorMetaItem}><MapPin size={13} /> {v.unit_number} ({v.resident_name})</span>
+                    <span className={vStyles.visitorMetaItem}><MapPin size={13} /> Flat: {v.unit_number} ({v.resident_name})</span>
                     <span className={vStyles.visitorMetaItem}><UserCheck size={13} /> {v.purpose}</span>
                   </div>
                   <div className={vStyles.visitorTime}>

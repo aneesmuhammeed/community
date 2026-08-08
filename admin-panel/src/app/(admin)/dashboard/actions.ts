@@ -6,8 +6,12 @@ import { revalidatePath } from 'next/cache';
 export async function approveVisitor(formData: FormData) {
   const id = formData.get('id') as string;
   if (!id) return;
-  await supabase.from('visitors').update({ status: 'approved' }).eq('id', id);
+  await supabase.from('visitors').update({ 
+    status: 'approved',
+    arrived_at: new Date().toISOString()
+  }).eq('id', id);
   revalidatePath('/dashboard');
+  revalidatePath('/visitors');
 }
 
 export async function denyVisitor(formData: FormData) {

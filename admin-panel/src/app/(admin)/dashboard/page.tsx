@@ -131,7 +131,7 @@ export default async function DashboardPage() {
             {recentComplaints?.map((c, i) => (
               <div key={i} className={styles.listItem}>
                 <div className={styles.itemContent}>
-                  <div className={styles.itemMeta}>{c.id?.substring(0, 8)} · {c.apartments?.unit_number}</div>
+                  <div className={styles.itemMeta}>{c.id?.substring(0, 8)} · Flat: {c.apartments?.unit_number}</div>
                   <div className={styles.itemTitle}>{c.title}</div>
                   <div className={styles.itemTime}>{new Date(c.created_at).toLocaleDateString()}</div>
                 </div>
@@ -155,7 +155,7 @@ export default async function DashboardPage() {
                 <div className={styles.avatarPlaceholder}></div>
                 <div className={styles.itemContent}>
                   <div className={styles.itemTitle}>{v.guest_name}</div>
-                  <div className={styles.itemMeta}>{v.resident_name} - {v.unit_number} - {v.purpose}</div>
+                  <div className={styles.itemMeta}>{v.resident_name} · Flat: {v.unit_number} · {v.purpose}</div>
                   <div className={styles.itemTime}>{new Date(v.created_at).toLocaleTimeString()}</div>
                 </div>
                 {v.status === 'active' && (
