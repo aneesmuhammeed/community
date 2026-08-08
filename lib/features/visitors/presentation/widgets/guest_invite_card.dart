@@ -242,8 +242,9 @@ class GuestInviteCard extends StatelessWidget {
           color: theme.colorScheme.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
           children: [
             Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 24),
@@ -304,6 +305,8 @@ class GuestInviteCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
           ],
+        ),
+      ),
         ),
       ),
     );
