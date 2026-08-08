@@ -12,7 +12,7 @@ import SidebarNav from '@/components/SidebarNav';
 export const revalidate = 0;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const SOCIETY_ID = '11111111-1111-1111-1111-111111111111';
+  const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
   
   const [
     { count: unresolvedComplaints },

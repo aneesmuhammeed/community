@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import React, { useState } from 'react';
+import { Scanner } from '@yudiel/react-qr-scanner';
 import styles from './scanner.module.css';
 import { verifyScannedCode, approveScannedEntry } from './actions';
 
@@ -19,57 +19,24 @@ export default function ScannerPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
 
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
-
-  useEffect(() => {
-    // Initialize Scanner only when no result is currently being processed
-    if (scanResult || errorMsg) return;
-
-    if (!scannerRef.current) {
-      const scanner = new Html5QrcodeScanner(
-        'reader',
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        /* verbose= */ false
-      );
-      scannerRef.current = scanner;
-
-      scanner.render(
-        async (decodedText) => {
-          // Stop scanning on success
-          if (scannerRef.current) {
-            scannerRef.current.clear();
-            scannerRef.current = null;
-          }
-          setIsProcessing(true);
-          setErrorMsg(null);
-          
-          try {
-            const res = await verifyScannedCode(decodedText);
-            if (res.error) {
-              setErrorMsg(res.error);
-            } else if (res.success && res.visitor) {
-              setScanResult(res.visitor);
-            }
-          } catch (err) {
-            setErrorMsg('An unexpected error occurred while verifying the code.');
-          } finally {
-            setIsProcessing(false);
-          }
-        },
-        (errorMessage) => {
-          // ignore background scan errors
-        }
-      );
-    }
-
-    return () => {
-      // Cleanup for strict mode
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(() => {});
-        scannerRef.current = null;
+  const handleScan = async (decodedText: string) => {
+    if (isProcessing || scanResult || errorMsg) return;
+    setIsProcessing(true);
+    setErrorMsg(null);
+    
+    try {
+      const res = await verifyScannedCode(decodedText);
+      if (res.error) {
+        setErrorMsg(res.error);
+      } else if (res.success && res.visitor) {
+        setScanResult(res.visitor);
       }
-    };
-  }, [scanResult, errorMsg]);
+    } catch (err) {
+      setErrorMsg('An unexpected error occurred while verifying the code.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleApprove = async () => {
     if (!scanResult) return;
@@ -105,7 +72,12 @@ export default function ScannerPage() {
         {isProcessing && <div className={styles.loading}>Processing...</div>}
 
         {!scanResult && !errorMsg && !isProcessing && (
-          <div id="reader" className={styles.reader}></div>
+          <div className={styles.readerContainer}>
+            <Scanner 
+              onScan={(result) => handleScan(result[0].rawValue)}
+              allowMultiple={true} 
+            />
+          </div>
         )}
 
         {errorMsg && !isProcessing && (

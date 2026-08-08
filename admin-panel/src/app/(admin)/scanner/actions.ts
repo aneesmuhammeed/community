@@ -3,7 +3,7 @@
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 
-const SOCIETY_ID = '11111111-1111-1111-1111-111111111111';
+const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
 
 export async function verifyScannedCode(code: string) {
   if (!code) return { error: 'No code provided.' };

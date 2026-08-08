@@ -19,7 +19,7 @@ export async function denyVisitor(formData: FormData) {
 }
 
 export async function verifyOtp(formData: FormData) {
-  const SOCIETY_ID = '11111111-1111-1111-1111-111111111111';
+  const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
   const otp = formData.get('otp') as string;
   const flat = formData.get('flat') as string;
   if (!otp || !flat) return { error: 'Flat Number and OTP are required' };
