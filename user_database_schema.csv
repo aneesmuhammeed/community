@@ -1,0 +1,302 @@
+table_name,column_name,data_type,is_nullable
+announcements,id,uuid,NO
+announcements,society_id,uuid,NO
+announcements,created_by,uuid,YES
+announcements,title,text,NO
+announcements,body,text,NO
+announcements,tag,USER-DEFINED,NO
+announcements,icon,text,YES
+announcements,is_pinned,boolean,NO
+announcements,is_published,boolean,NO
+announcements,publish_at,timestamp with time zone,NO
+announcements,expires_at,timestamp with time zone,YES
+announcements,created_at,timestamp with time zone,NO
+announcements,updated_at,timestamp with time zone,NO
+apartments,id,uuid,NO
+apartments,society_id,uuid,NO
+apartments,block_id,uuid,NO
+apartments,unit_number,text,NO
+apartments,floor,smallint,YES
+apartments,area_sqft,numeric,YES
+apartments,is_occupied,boolean,NO
+apartments,created_at,timestamp with time zone,NO
+apartments,updated_at,timestamp with time zone,NO
+billing_cycles,id,uuid,NO
+billing_cycles,apartment_id,uuid,NO
+billing_cycles,society_id,uuid,NO
+billing_cycles,billing_month,text,NO
+billing_cycles,billing_year,smallint,NO
+billing_cycles,billing_period,daterange,YES
+billing_cycles,base_amount,numeric,NO
+billing_cycles,electricity,numeric,NO
+billing_cycles,water,numeric,NO
+billing_cycles,housekeeping,numeric,NO
+billing_cycles,security,numeric,NO
+billing_cycles,repairs,numeric,NO
+billing_cycles,miscellaneous,numeric,NO
+billing_cycles,total_amount,numeric,NO
+billing_cycles,due_date,date,NO
+billing_cycles,status,USER-DEFINED,NO
+billing_cycles,paid_at,timestamp with time zone,YES
+billing_cycles,paid_amount,numeric,YES
+billing_cycles,late_fee,numeric,NO
+billing_cycles,discount,numeric,NO
+billing_cycles,created_at,timestamp with time zone,NO
+billing_cycles,updated_at,timestamp with time zone,NO
+blocks,id,uuid,NO
+blocks,society_id,uuid,NO
+blocks,name,text,NO
+blocks,created_at,timestamp with time zone,NO
+bookings,id,uuid,NO
+bookings,resident_id,uuid,NO
+bookings,facility_id,uuid,NO
+bookings,society_id,uuid,NO
+bookings,slot_id,uuid,YES
+bookings,booking_date,date,NO
+bookings,start_time,time without time zone,NO
+bookings,end_time,time without time zone,NO
+bookings,duration_hrs,numeric,YES
+bookings,status,USER-DEFINED,NO
+bookings,booking_fee,numeric,NO
+bookings,paid_at,timestamp with time zone,YES
+bookings,cancelled_at,timestamp with time zone,YES
+bookings,cancel_reason,text,YES
+bookings,notes,text,YES
+bookings,created_at,timestamp with time zone,NO
+bookings,updated_at,timestamp with time zone,NO
+community_announcements,id,uuid,NO
+community_announcements,title,text,NO
+community_announcements,body,text,NO
+community_announcements,time,text,NO
+community_announcements,tag,text,NO
+community_announcements,tag_variant,text,NO
+community_announcements,icon,text,NO
+community_announcements,created_at,timestamp with time zone,NO
+community_billing_history,id,uuid,NO
+community_billing_history,title,text,NO
+community_billing_history,amount,double precision,NO
+community_billing_history,date,text,NO
+community_billing_history,status,text,NO
+community_billing_history,created_at,timestamp with time zone,NO
+community_complaints,id,uuid,NO
+community_complaints,title,text,NO
+community_complaints,category,text,NO
+community_complaints,date,text,NO
+community_complaints,status,text,NO
+community_complaints,ticket_id,text,NO
+community_complaints,created_at,timestamp with time zone,NO
+community_expenses,id,uuid,NO
+community_expenses,title,text,NO
+community_expenses,percentage,integer,NO
+community_expenses,color_hex,text,NO
+community_expenses,created_at,timestamp with time zone,NO
+community_facility_bookings,id,uuid,NO
+community_facility_bookings,title,text,NO
+community_facility_bookings,facility,text,NO
+community_facility_bookings,date,text,NO
+community_facility_bookings,time,text,NO
+community_facility_bookings,status,text,NO
+community_facility_bookings,created_at,timestamp with time zone,NO
+community_guest_invites,id,uuid,NO
+community_guest_invites,name,text,NO
+community_guest_invites,relation,text,NO
+community_guest_invites,date,text,NO
+community_guest_invites,method,text,NO
+community_guest_invites,code,text,NO
+community_guest_invites,status,text,NO
+community_guest_invites,gender,text,NO
+community_guest_invites,heritage,text,NO
+community_guest_invites,avatar_index,integer,NO
+community_guest_invites,created_at,timestamp with time zone,NO
+community_outstanding_dues,id,uuid,NO
+community_outstanding_dues,title,text,NO
+community_outstanding_dues,amount,double precision,NO
+community_outstanding_dues,due_date,text,NO
+community_outstanding_dues,is_overdue,boolean,NO
+community_outstanding_dues,created_at,timestamp with time zone,NO
+community_visitors,id,uuid,NO
+community_visitors,name,text,NO
+community_visitors,time,text,NO
+community_visitors,purpose,text,NO
+community_visitors,status,text,NO
+community_visitors,gender,text,NO
+community_visitors,heritage,text,NO
+community_visitors,avatar_index,integer,NO
+community_visitors,created_at,timestamp with time zone,NO
+complaint_images,id,uuid,NO
+complaint_images,complaint_id,uuid,NO
+complaint_images,storage_path,text,NO
+complaint_images,uploaded_by,uuid,YES
+complaint_images,uploaded_at,timestamp with time zone,NO
+complaints,id,uuid,NO
+complaints,resident_id,uuid,NO
+complaints,apartment_id,uuid,NO
+complaints,society_id,uuid,NO
+complaints,title,text,NO
+complaints,description,text,NO
+complaints,category,USER-DEFINED,NO
+complaints,priority,USER-DEFINED,NO
+complaints,location_label,text,YES
+complaints,status,USER-DEFINED,NO
+complaints,assigned_to,uuid,YES
+complaints,resolved_at,timestamp with time zone,YES
+complaints,resolution_note,text,YES
+complaints,created_at,timestamp with time zone,NO
+complaints,updated_at,timestamp with time zone,NO
+facilities,id,uuid,NO
+facilities,society_id,uuid,NO
+facilities,name,text,NO
+facilities,description,text,YES
+facilities,icon,text,YES
+facilities,capacity,smallint,NO
+facilities,operating_hours,text,NO
+facilities,booking_fee,numeric,NO
+facilities,advance_days,smallint,NO
+facilities,slot_duration,smallint,NO
+facilities,status,USER-DEFINED,NO
+facilities,is_active,boolean,NO
+facilities,rules,text,YES
+facilities,created_at,timestamp with time zone,NO
+facilities,updated_at,timestamp with time zone,NO
+facility_time_slots,id,uuid,NO
+facility_time_slots,facility_id,uuid,NO
+facility_time_slots,slot_date,date,NO
+facility_time_slots,start_time,time without time zone,NO
+facility_time_slots,end_time,time without time zone,NO
+facility_time_slots,is_available,boolean,NO
+facility_time_slots,booked_by,uuid,YES
+facility_time_slots,created_at,timestamp with time zone,NO
+family_members,id,uuid,NO
+family_members,resident_id,uuid,NO
+family_members,full_name,text,NO
+family_members,relation,text,NO
+family_members,date_of_birth,date,YES
+family_members,phone,text,YES
+family_members,id_proof_url,text,YES
+family_members,created_at,timestamp with time zone,NO
+notifications,id,uuid,NO
+notifications,user_id,uuid,NO
+notifications,society_id,uuid,YES
+notifications,title,text,NO
+notifications,body,text,NO
+notifications,icon,text,YES
+notifications,action_type,text,YES
+notifications,action_ref_id,uuid,YES
+notifications,is_read,boolean,NO
+notifications,read_at,timestamp with time zone,YES
+notifications,created_at,timestamp with time zone,NO
+profiles,id,uuid,NO
+profiles,full_name,text,NO
+profiles,phone,text,YES
+profiles,avatar_url,text,YES
+profiles,gender,text,YES
+profiles,date_of_birth,date,YES
+profiles,created_at,timestamp with time zone,NO
+profiles,updated_at,timestamp with time zone,NO
+resident_profiles,id,uuid,NO
+resident_profiles,name,text,NO
+resident_profiles,society_name,text,NO
+resident_profiles,block,text,NO
+resident_profiles,apartment,text,NO
+resident_profiles,phone,text,NO
+resident_profiles,email,text,NO
+resident_profiles,role,text,NO
+resident_profiles,resident_type,text,NO
+resident_profiles,gender,text,NO
+resident_profiles,age_group,text,NO
+resident_profiles,heritage,text,NO
+resident_profiles,avatar_index,integer,NO
+resident_profiles,created_at,timestamp with time zone,NO
+residents,id,uuid,NO
+residents,user_id,uuid,NO
+residents,apartment_id,uuid,NO
+residents,society_id,uuid,NO
+residents,role,USER-DEFINED,NO
+residents,ownership,USER-DEFINED,NO
+residents,move_in_date,date,YES
+residents,move_out_date,date,YES
+residents,is_active,boolean,NO
+residents,created_at,timestamp with time zone,NO
+residents,updated_at,timestamp with time zone,NO
+societies,id,uuid,NO
+societies,name,text,NO
+societies,address,text,YES
+societies,city,text,YES
+societies,state,text,YES
+societies,pincode,character varying,YES
+societies,logo_url,text,YES
+societies,created_at,timestamp with time zone,NO
+societies,updated_at,timestamp with time zone,NO
+transactions,id,uuid,NO
+transactions,billing_cycle_id,uuid,YES
+transactions,booking_id,uuid,YES
+transactions,resident_id,uuid,NO
+transactions,society_id,uuid,NO
+transactions,amount,numeric,NO
+transactions,method,USER-DEFINED,NO
+transactions,method_label,text,YES
+transactions,reference_no,text,NO
+transactions,gateway_txn_id,text,YES
+transactions,status,USER-DEFINED,NO
+transactions,initiated_at,timestamp with time zone,NO
+transactions,completed_at,timestamp with time zone,YES
+transactions,failed_reason,text,YES
+transactions,created_at,timestamp with time zone,NO
+v_outstanding_dues,id,uuid,YES
+v_outstanding_dues,apartment_id,uuid,YES
+v_outstanding_dues,society_id,uuid,YES
+v_outstanding_dues,billing_month,text,YES
+v_outstanding_dues,total_amount,numeric,YES
+v_outstanding_dues,due_date,date,YES
+v_outstanding_dues,status,USER-DEFINED,YES
+v_outstanding_dues,unit_number,text,YES
+v_outstanding_dues,block_name,text,YES
+v_outstanding_dues,amount_due,numeric,YES
+v_resident_details,resident_id,uuid,YES
+v_resident_details,user_id,uuid,YES
+v_resident_details,full_name,text,YES
+v_resident_details,phone,text,YES
+v_resident_details,avatar_url,text,YES
+v_resident_details,gender,text,YES
+v_resident_details,role,USER-DEFINED,YES
+v_resident_details,ownership,USER-DEFINED,YES
+v_resident_details,is_active,boolean,YES
+v_resident_details,apartment_id,uuid,YES
+v_resident_details,unit_number,text,YES
+v_resident_details,floor,smallint,YES
+v_resident_details,block_id,uuid,YES
+v_resident_details,block_name,text,YES
+v_resident_details,society_id,uuid,YES
+v_resident_details,society_name,text,YES
+v_resident_details,city,text,YES
+vehicles,id,uuid,NO
+vehicles,resident_id,uuid,NO
+vehicles,vehicle_type,USER-DEFINED,NO
+vehicles,make,text,YES
+vehicles,model,text,YES
+vehicles,color,text,YES
+vehicles,registration_no,text,NO
+vehicles,is_active,boolean,NO
+vehicles,created_at,timestamp with time zone,NO
+visitors,id,uuid,NO
+visitors,resident_id,uuid,NO
+visitors,apartment_id,uuid,NO
+visitors,society_id,uuid,NO
+visitors,guest_name,text,NO
+visitors,guest_phone,text,YES
+visitors,relation,USER-DEFINED,NO
+visitors,relation_label,text,YES
+visitors,purpose,text,YES
+visitors,invite_method,USER-DEFINED,NO
+visitors,invite_code,text,NO
+visitors,otp_value,character varying,YES
+visitors,qr_payload,text,YES
+visitors,valid_from,timestamp with time zone,NO
+visitors,valid_until,timestamp with time zone,NO
+visitors,valid_hours,smallint,NO
+visitors,status,USER-DEFINED,NO
+visitors,arrived_at,timestamp with time zone,YES
+visitors,left_at,timestamp with time zone,YES
+visitors,notes,text,YES
+visitors,created_at,timestamp with time zone,NO
+visitors,updated_at,timestamp with time zone,NO

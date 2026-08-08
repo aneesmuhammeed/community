@@ -1,0 +1,98 @@
+'use server'
+
+import { supabase } from '@/lib/supabase';
+import { revalidatePath } from 'next/cache';
+
+export async function approveVisitor(formData: FormData) {
+  const id = formData.get('id') as string;
+  if (!id) return;
+  await supabase.from('visitors').update({ status: 'approved' }).eq('id', id);
+  revalidatePath('/dashboard');
+}
+
+export async function denyVisitor(formData: FormData) {
+  const id = formData.get('id') as string;
+  if (!id) return;
+  await supabase.from('visitors').update({ status: 'denied' }).eq('id', id);
+  revalidatePath('/dashboard');
+  revalidatePath('/visitors');
+}
+
+export async function verifyOtp(formData: FormData) {
+  const SOCIETY_ID = '11111111-1111-1111-1111-111111111111';
+  const otp = formData.get('otp') as string;
+  const flat = formData.get('flat') as string;
+  if (!otp || !flat) return { error: 'Flat Number and OTP are required' };
+  
+  // 1. Resolve flat number to apartment_id via view (bypasses RLS on apartments table)
+  const { data: aptData, error: aptError } = await supabase
+    .from('v_resident_details')
+    .select('apartment_id')
+    .eq('society_id', SOCIETY_ID)
+    .ilike('unit_number', flat.trim()) // case-insensitive match (e.g., a-405 matches A-405)
+    .limit(1);
+
+  if (aptError || !aptData || aptData.length === 0) {
+    return { error: 'Invalid Flat Number' };
+  }
+
+  const apartmentId = aptData[0].apartment_id;
+
+  // 2. Find active visitor with this apartment_id and OTP
+  const { data: visitors, error } = await supabase
+    .from('visitors')
+    .select('id, created_at')
+    .eq('society_id', SOCIETY_ID)
+    .eq('apartment_id', apartmentId)
+    .eq('otp_value', otp.trim())
+    .in('status', ['active', 'approved', 'pending'])
+    .limit(1);
+
+  if (error || !visitors || visitors.length === 0) {
+    return { error: 'Invalid OTP or Flat Number' };
+  }
+
+  // Server-side spoofing prevention: check if created_at is older than 24 hours
+  const createdAt = new Date(visitors[0].created_at).getTime();
+  const nowTime = new Date().getTime();
+  const hoursSinceCreation = (nowTime - createdAt) / (1000 * 60 * 60);
+
+  if (hoursSinceCreation > 24) {
+    await supabase.from('visitors').update({ status: 'expired' }).eq('id', visitors[0].id);
+    return { error: 'This pass has expired (> 24 hours).' };
+  }
+
+  // Use 'approved' instead of 'entered' to avoid ENUM constraint errors, but stamp arrived_at
+  const { error: updateError } = await supabase
+    .from('visitors')
+    .update({ 
+      status: 'approved', 
+      arrived_at: new Date().toISOString()
+    })
+    .eq('id', visitors[0].id);
+
+  if (updateError) {
+    return { error: `Database Error: ${updateError.message}` };
+  }
+
+  revalidatePath('/dashboard');
+  revalidatePath('/visitors');
+  
+  return { success: true };
+}
+
+export async function checkoutVisitor(formData: FormData) {
+  const id = formData.get('id') as string;
+  if (!id) return;
+  
+  await supabase
+    .from('visitors')
+    .update({ 
+      status: 'expired', // or 'left' if you have it, but we can just use expired/used. Let's use 'expired' for now as per schema logic.
+      left_at: new Date().toISOString()
+    })
+    .eq('id', id);
+    
+  revalidatePath('/dashboard');
+  revalidatePath('/visitors');
+}
