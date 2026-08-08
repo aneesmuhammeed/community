@@ -29,7 +29,7 @@ class UserAvatar extends StatelessWidget {
       ),
       child: ClipOval(
         child: Image.network(
-          'https://i.pravatar.cc/150?u=resident_${gender}_$index',
+          'https://api.dicebear.com/9.x/avataaars/png?seed=resident_${gender}_$index',
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
             return Icon(

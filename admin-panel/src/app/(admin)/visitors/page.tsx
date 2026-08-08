@@ -3,6 +3,8 @@ import { approveVisitor, denyVisitor, checkoutVisitor } from '../dashboard/actio
 import styles from '../dashboard/dashboard.module.css';
 import OtpForm from './OtpForm';
 import SubmitButton from './SubmitButton';
+import { UserCheck, ShieldCheck, DoorOpen, Users, MapPin, Clock, CalendarDays } from 'lucide-react';
+import Link from 'next/link';
 
 export const revalidate = 0;
 
@@ -51,15 +53,23 @@ export default async function VisitorsPage({
     <div className={styles.container}>
       <div className={styles.header}>
         <div>
-          <h1>Visitor Control</h1>
-          <p>Manage and track all guest passes</p>
+          <h1 className={styles.title}>Visitor Control</h1>
+          <p className={styles.subtitle}>Manage and track all guest passes</p>
         </div>
         
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <a href="?status=all" className={filterStatus === 'all' ? styles.btnAction : styles.btnSecondary} style={filterStatus !== 'all' ? { background: '#f1f5f9', color: '#475569', border: 'none', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500' } : { textDecoration: 'none' }}>All</a>
-          <a href="?status=active" className={filterStatus === 'active' ? styles.btnAction : styles.btnSecondary} style={filterStatus !== 'active' ? { background: '#f1f5f9', color: '#475569', border: 'none', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500' } : { textDecoration: 'none' }}>Pending</a>
-          <a href="?status=approved" className={filterStatus === 'approved' ? styles.btnAction : styles.btnSecondary} style={filterStatus !== 'approved' ? { background: '#f1f5f9', color: '#475569', border: 'none', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500' } : { textDecoration: 'none' }}>Approved</a>
-          <a href="?status=entered" className={filterStatus === 'entered' ? styles.btnAction : styles.btnSecondary} style={filterStatus !== 'entered' ? { background: '#f1f5f9', color: '#475569', border: 'none', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500' } : { textDecoration: 'none' }}>Inside</a>
+        <div style={{ display: 'flex', gap: '8px', padding: '4px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+          <Link href="?status=all" className={filterStatus === 'all' ? styles.btnAction : styles.btnSecondary} style={{ padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Users size={16} /> All
+          </Link>
+          <Link href="?status=active" className={filterStatus === 'active' ? styles.btnAction : styles.btnSecondary} style={{ padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <ShieldCheck size={16} /> Pending
+          </Link>
+          <Link href="?status=approved" className={filterStatus === 'approved' ? styles.btnAction : styles.btnSecondary} style={{ padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <UserCheck size={16} /> Approved
+          </Link>
+          <Link href="?status=entered" className={filterStatus === 'entered' ? styles.btnAction : styles.btnSecondary} style={{ padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <DoorOpen size={16} /> Inside
+          </Link>
         </div>
       </div>
 
@@ -67,40 +77,47 @@ export default async function VisitorsPage({
 
       <div className={styles.listCard}>
         <div className={styles.listHeader}>
-          <h3>Visitor Passes ({visitors.length})</h3>
+          <h3>Visitor Passes <span style={{ color: '#64748b', fontWeight: 'normal', fontSize: '14px' }}>({visitors.length})</span></h3>
         </div>
 
         <div className={styles.list}>
           {visitors.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px 24px', color: '#94a3b8' }}>
-              <div style={{ marginBottom: '16px' }}>
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
+            <div style={{ textAlign: 'center', padding: '64px 24px', color: '#94a3b8' }}>
+              <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
+                <div style={{ padding: '16px', background: '#f1f5f9', borderRadius: '16px' }}>
+                  <Users size={32} color="#94A3B8" />
+                </div>
               </div>
               <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}>No Visitors Found</h3>
               <p style={{ fontSize: '14px' }}>There are no visitors matching the current filter.</p>
             </div>
           ) : (
-            visitors.map((v, i) => (
-              <div key={i} className={styles.listItem}>
-                <div className={styles.avatarPlaceholder}></div>
-                <div className={styles.itemContent}>
-                  <div className={styles.itemTitle}>{v.guest_name}</div>
-                  <div className={styles.itemMeta}>{v.resident_name} - {v.unit_number} - {v.purpose}</div>
-                  <div className={styles.itemTime}>{new Date(v.created_at).toLocaleString()}</div>
+            visitors.map((v, i) => {
+              const formattedDate = new Date(v.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+              
+              return (
+              <div key={i} className={styles.listItem} style={{ padding: '20px 0' }}>
+                <div className={styles.avatarPlaceholder} style={{ width: '48px', height: '48px', fontSize: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', color: '#475569', fontWeight: 'bold' }}>
+                  {v.guest_name.charAt(0).toUpperCase()}
+                </div>
+                <div className={styles.itemContent} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div className={styles.itemTitle} style={{ fontSize: '15px' }}>{v.guest_name}</div>
+                  <div className={styles.itemMeta} style={{ display: 'flex', gap: '16px', color: '#64748b' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {v.unit_number} ({v.resident_name})</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><UserCheck size={14} /> {v.purpose}</span>
+                  </div>
+                  <div className={styles.itemTime} style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px', color: '#94a3b8' }}>
+                    <CalendarDays size={13} /> {formattedDate}
+                  </div>
                 </div>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div className={`${styles.statusBadge} ${styles[v.status.replace('_', '').toLowerCase()] || styles.inProgress}`}>
-                    {v.status}
+                  <div className={`${styles.statusBadge} ${styles[v.status.replace('_', '').toLowerCase()] || styles.inProgress}`} style={{ padding: '6px 12px', fontSize: '12px' }}>
+                    {v.status.charAt(0).toUpperCase() + v.status.slice(1)}
                   </div>
                   
                   {v.status === 'active' && (
-                    <div className={styles.actions}>
+                    <div className={styles.actions} style={{ display: 'flex', gap: '8px' }}>
                       <form action={approveVisitor} style={{ display: 'inline' }}>
                         <input type="hidden" name="id" value={v.id} />
                         <SubmitButton label="Approve" loadingLabel="Wait..." variant="primary" />
@@ -122,7 +139,8 @@ export default async function VisitorsPage({
                   )}
                 </div>
               </div>
-            ))
+              )
+            })
           )}
         </div>
       </div>

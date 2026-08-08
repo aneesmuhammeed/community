@@ -13,7 +13,7 @@ export async function approveVisitor(formData: FormData) {
 export async function denyVisitor(formData: FormData) {
   const id = formData.get('id') as string;
   if (!id) return;
-  await supabase.from('visitors').update({ status: 'denied' }).eq('id', id);
+  await supabase.from('visitors').update({ status: 'cancelled' }).eq('id', id);
   revalidatePath('/dashboard');
   revalidatePath('/visitors');
 }
@@ -38,10 +38,10 @@ export async function verifyOtp(formData: FormData) {
 
   const apartmentId = aptData[0].apartment_id;
 
-  // 2. Find active visitor with this apartment_id and OTP
+  // Find active visitor with this apartment_id and OTP
   const { data: visitors, error } = await supabase
     .from('visitors')
-    .select('id, created_at')
+    .select('id, valid_until')
     .eq('society_id', SOCIETY_ID)
     .eq('apartment_id', apartmentId)
     .eq('otp_value', otp.trim())
@@ -52,14 +52,13 @@ export async function verifyOtp(formData: FormData) {
     return { error: 'Invalid OTP or Flat Number' };
   }
 
-  // Server-side spoofing prevention: check if created_at is older than 24 hours
-  const createdAt = new Date(visitors[0].created_at).getTime();
+  // Check if pass has expired based on valid_until
+  const validUntil = new Date(visitors[0].valid_until).getTime();
   const nowTime = new Date().getTime();
-  const hoursSinceCreation = (nowTime - createdAt) / (1000 * 60 * 60);
 
-  if (hoursSinceCreation > 24) {
+  if (nowTime > validUntil) {
     await supabase.from('visitors').update({ status: 'expired' }).eq('id', visitors[0].id);
-    return { error: 'This pass has expired (> 24 hours).' };
+    return { error: 'This pass has expired.' };
   }
 
   // Use 'approved' instead of 'entered' to avoid ENUM constraint errors, but stamp arrived_at

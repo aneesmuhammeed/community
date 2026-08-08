@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 
 import { supabase } from '@/lib/supabase';
+import SidebarNav from '@/components/SidebarNav';
 
 export const revalidate = 0;
 
@@ -44,48 +45,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
         </div>
 
-        <nav className={styles.nav}>
-          <Link href="/dashboard" className={`${styles.navItem} ${styles.active}`}>
-            <LayoutDashboard size={20} />
-            <span>Dashboard</span>
-          </Link>
-          <Link href="/residents" className={styles.navItem}>
-            <Users size={20} />
-            <span>Residents Management</span>
-          </Link>
-          <Link href="/visitors" className={styles.navItem}>
-            <UserCheck size={20} />
-            <span>Visitor Control</span>
-          </Link>
-          <Link href="/facilities" className={styles.navItem}>
-            <Calendar size={20} />
-            <span>Facility Bookings</span>
-          </Link>
-          <Link href="/complaints" className={styles.navItem}>
-            <MessageSquare size={20} />
-            <span>Complaints & Tickets</span>
-          </Link>
-          <Link href="/maintenance" className={styles.navItem}>
-            <Wrench size={20} />
-            <span>Maintenance & Billing</span>
-          </Link>
-          <Link href="/announcements" className={styles.navItem}>
-            <Bell size={20} />
-            <span>Announcements</span>
-          </Link>
-          <Link href="/feed" className={styles.navItem}>
-            <Radio size={20} />
-            <span>Community Feed</span>
-          </Link>
-          <Link href="/reports" className={styles.navItem}>
-            <BarChart3 size={20} />
-            <span>Reports & Analytics</span>
-          </Link>
-          <Link href="/settings" className={styles.navItem}>
-            <Settings size={20} />
-            <span>Settings</span>
-          </Link>
-        </nav>
+        <SidebarNav />
         
         <div className={styles.sidebarFooter}>
           <span>v1.0.0 · CommunityHub</span>

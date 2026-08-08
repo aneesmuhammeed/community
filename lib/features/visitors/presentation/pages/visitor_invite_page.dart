@@ -26,6 +26,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
   bool _isGenerating = false;
   String? _generatedQrCode;
   String? _generatedOtp;
+  bool _showAllInvites = false;
 
   @override
   void initState() {
@@ -62,8 +63,8 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
         'invite_method': 'qr',
         'invite_code': inviteCode,
         'otp_value': otp,
-        'valid_from': DateTime.now().toIso8601String(),
-        'valid_until': DateTime.now().add(const Duration(hours: 6)).toIso8601String(),
+        'valid_from': DateTime.now().toUtc().toIso8601String(),
+        'valid_until': DateTime.now().add(const Duration(hours: 6)).toUtc().toIso8601String(),
         'valid_hours': 6,
         'status': 'active',
       });
@@ -92,7 +93,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
     try {
       await Supabase.instance.client
           .from('visitors')
-          .update({'status': 'denied'})
+          .update({'status': 'cancelled'})
           .eq('id', id);
       _fetchAndSetInvites();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invite revoked successfully.')));
@@ -261,7 +262,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
           // Share Actions
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -455,11 +456,18 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Text(
-                    'See all',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w500,
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _showAllInvites = !_showAllInvites;
+                      });
+                    },
+                    child: Text(
+                      _showAllInvites ? 'Show less' : 'See all',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
@@ -502,10 +510,12 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
                 }
 
                 final invites = snapshot.data!;
+                final displayedInvites = _showAllInvites ? invites : invites.take(5).toList();
+                
                 return SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      final invite = invites[index];
+                      final invite = displayedInvites[index];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: GuestInviteCard(
@@ -519,11 +529,14 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
                           gender: invite.gender,
                           heritage: invite.heritage,
                           index: invite.avatarIndex,
+                          validUntil: invite.validUntil,
+                          otpValue: invite.otpValue,
+                          unitNumber: currentUser.apartment,
                           onRevoke: invite.status == 'active' ? () => _revokeInvite(invite.id) : null,
                         ),
                       );
                     },
-                    childCount: invites.length,
+                    childCount: displayedInvites.length,
                   ),
                 );
               },
