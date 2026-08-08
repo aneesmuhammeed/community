@@ -245,73 +245,177 @@ class GuestInviteCard extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Visit Summary', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(color: statusBgColor, borderRadius: BorderRadius.circular(100)),
-                  child: Text(statusLabel, style: theme.textTheme.labelMedium?.copyWith(color: statusTextColor, fontWeight: FontWeight.bold)),
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 32),
+              // QR Code Box
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B), // dark background like in screenshot
+                  borderRadius: BorderRadius.circular(24),
                 ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey[200]!)),
-              child: Column(
-                children: [
-                  QrImageView(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: QrImageView(
                     data: code,
                     version: QrVersions.auto,
-                    size: 150.0,
+                    size: 180.0,
                     padding: EdgeInsets.zero,
                   ),
-                  const SizedBox(height: 16),
-                  Text(code, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, letterSpacing: 2)),
-                  if (otpValue.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text('OTP: $otpValue', style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
-                  ]
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            _buildSummaryRow(theme, 'Guest Name', name, 'user'),
-            const SizedBox(height: 16),
-            _buildSummaryRow(theme, 'Relation', relation, 'users'),
-            const SizedBox(height: 16),
-            _buildSummaryRow(theme, 'Valid For', _formatDate(date), 'calendar'),
-            if (unitNumber.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              _buildSummaryRow(theme, 'Flat No', unitNumber, 'home'),
-            ],
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: FilledButton.icon(
-                onPressed: () => Navigator.pop(context), // Mock share
-                icon: const CustomIcon(icon: 'share-2', size: 18, color: Colors.white),
-                label: const Text('Share Invite'),
-                style: FilledButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
+              const SizedBox(height: 24),
+              Text(name.isNotEmpty ? name : 'Guest', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+              const SizedBox(height: 4),
+              Text('Invited to ${unitNumber.isNotEmpty ? unitNumber : relation}', style: theme.textTheme.bodyMedium?.copyWith(color: const Color(0xFF64748B))),
+              const SizedBox(height: 16),
+              
+              // Pass ID Pill
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0E7FF), // blue-100
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CustomIcon(icon: 'hash', size: 16, color: Color(0xFF3B82F6)),
+                    const SizedBox(width: 8),
+                    Text(code, style: theme.textTheme.titleMedium?.copyWith(color: const Color(0xFF3B82F6), fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Expires info
+              if (validUntil.isNotEmpty)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const CustomIcon(icon: 'clock', size: 16, color: Color(0xFF64748B)),
+                    const SizedBox(width: 8),
+                    Text(_getPendingTime(validUntil), style: theme.textTheme.bodyMedium?.copyWith(color: const Color(0xFF64748B))),
+                  ],
+                ),
+              
+              const SizedBox(height: 32),
+              
+              // Share section
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Share invite via', style: theme.textTheme.bodyMedium?.copyWith(color: const Color(0xFF64748B))),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () {},
+                      icon: const CustomIcon(icon: 'share-2', size: 18, color: Colors.white),
+                      label: const Text('Share'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB), // blue-600
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () {},
+                      icon: const CustomIcon(icon: 'message-circle', size: 18, color: Color(0xFF2563EB)),
+                      label: const Text('WhatsApp', style: TextStyle(color: Color(0xFF2563EB))),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFFDBEAFE), // blue-100
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9), // slate-100
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      onPressed: () {},
+                      icon: const CustomIcon(icon: 'copy', size: 20, color: Color(0xFF475569)),
+                      padding: const EdgeInsets.all(16),
+                    ),
+                  ),
+                ],
+              ),
+              
+              // OTP Section
+              if (otpValue.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDBEAFE), // blue-100
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('One-Time Password', style: theme.textTheme.titleSmall?.copyWith(color: const Color(0xFF1E40AF))), // blue-800
+                          if (validUntil.isNotEmpty)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFBFDBFE), // blue-200
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Row(
+                                children: [
+                                  const CustomIcon(icon: 'clock', size: 12, color: Color(0xFF1E40AF)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _getPendingTime(validUntil).replaceAll('Expires in ', '').replaceAll('Expires ', ''), 
+                                    style: theme.textTheme.labelSmall?.copyWith(color: const Color(0xFF1E40AF))
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            otpValue.split('').join('   '),
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              color: const Color(0xFF2563EB), // blue-600
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );
   }
-
   Widget _buildSummaryRow(ThemeData theme, String label, String value, String icon) {
     return Row(
       children: [

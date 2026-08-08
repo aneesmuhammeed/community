@@ -173,3 +173,26 @@
 .primaryBtn:hover {
   background: #2563eb;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
+  .container {
+    padding: 16px;
+  }
+  .scannerWrapper {
+    padding: 16px;
+    min-height: 300px;
+  }
+  .title {
+    font-size: 24px;
+  }
+  .actionGroup {
+    flex-direction: column;
+  }
+  .approveBtn, .denyBtn {
+    width: 100%;
+  }
+  .resultCard {
+    padding: 10px;
+  }
+}
