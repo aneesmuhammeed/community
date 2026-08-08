@@ -43,6 +43,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     final response = await Supabase.instance.client
         .from('announcements')
         .select()
+        .eq('society_id', currentUser.societyId)
         .eq('is_published', true)
         .order('created_at', ascending: false);
     return (response as List).map((data) => AnnouncementModel.fromJson(data)).toList();
@@ -131,7 +132,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 TextButton(
-                  onPressed: () => widget.onNavigate?.call(2),
+                  onPressed: () => widget.onNavigate?.call(1),
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,

@@ -1,8 +1,10 @@
-export default function AnnouncementsPage() {
-  return (
-    <div style={{ padding: '24px' }}>
-      <h1>Announcements</h1>
-      <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>This section is currently under construction.</p>
-    </div>
-  );
+import { getAnnouncements } from './actions';
+import AnnouncementsClient from './AnnouncementsClient';
+
+export const dynamic = 'force-dynamic';
+
+export default async function AnnouncementsPage() {
+  const announcements = await getAnnouncements();
+
+  return <AnnouncementsClient initialData={announcements} />;
 }

@@ -116,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
                 if (_errorMessage != null)
                   Container(
                     padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.bottom(16),
+                    margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFEE2E2),
                       borderRadius: BorderRadius.circular(8),

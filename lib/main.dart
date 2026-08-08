@@ -29,28 +29,9 @@ Future<void> main() async {
     ),
   );
 
-  final supabase = Supabase.instance.client;
-  Widget initialScreen = const LoginPage();
-
-  if (supabase.auth.currentSession != null) {
-    try {
-      final res = await supabase
-          .from('v_resident_details')
-          .select()
-          .eq('resident_id', supabase.auth.currentUser!.id)
-          .maybeSingle();
-
-      if (res != null) {
-        currentUser = UserModel.fromJson(res);
-        initialScreen = const MainLayoutPage();
-      } else {
-        await supabase.auth.signOut();
-      }
-    } catch (e) {
-      debugPrint('Error fetching user profile: $e');
-      await supabase.auth.signOut();
-    }
-  }
+  // Bypass login for testing
+  currentUser = testUser;
+  Widget initialScreen = const MainLayoutPage();
 
   runApp(CommunityHubApp(initialScreen: initialScreen));
 }

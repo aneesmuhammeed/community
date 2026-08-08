@@ -4,6 +4,9 @@ import '../../../../core/widgets/user_avatar.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/constants/app_spacing.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
 class GuestInviteCard extends StatelessWidget {
   final String id;
@@ -74,6 +77,34 @@ class GuestInviteCard extends StatelessWidget {
     } catch (_) {
       return '';
     }
+  }
+
+  void _shareInvite() {
+    final message = 'Hi $name! Here is your CommunityHub visitor pass code: $code\n${otpValue.isNotEmpty ? 'Your OTP is: $otpValue\n' : ''}Please show this at the gate.';
+    Share.share(message);
+  }
+
+  Future<void> _shareWhatsApp(BuildContext context) async {
+    final message = 'Hi $name! Here is your CommunityHub visitor pass code: $code\n${otpValue.isNotEmpty ? 'Your OTP is: $otpValue\n' : ''}Please show this at the gate.';
+    final url = Uri.parse('whatsapp://send?text=${Uri.encodeComponent(message)}');
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url);
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('WhatsApp is not installed')));
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not launch WhatsApp')));
+      }
+    }
+  }
+
+  void _copyCode(BuildContext context) {
+    Clipboard.setData(ClipboardData(text: code));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pass code copied to clipboard')));
   }
 
   @override
@@ -317,7 +348,7 @@ class GuestInviteCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: () {},
+                      onPressed: _shareInvite,
                       icon: const CustomIcon(icon: 'share-2', size: 18, color: Colors.white),
                       label: const Text('Share'),
                       style: FilledButton.styleFrom(
@@ -330,7 +361,7 @@ class GuestInviteCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: () {},
+                      onPressed: () => _shareWhatsApp(context),
                       icon: const CustomIcon(icon: 'message-circle', size: 18, color: Color(0xFF2563EB)),
                       label: const Text('WhatsApp', style: TextStyle(color: Color(0xFF2563EB))),
                       style: FilledButton.styleFrom(
@@ -348,7 +379,7 @@ class GuestInviteCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
-                      onPressed: () {},
+                      onPressed: () => _copyCode(context),
                       icon: const CustomIcon(icon: 'copy', size: 20, color: Color(0xFF475569)),
                       padding: const EdgeInsets.all(16),
                     ),
