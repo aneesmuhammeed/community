@@ -4,10 +4,10 @@ import '../../../../core/constants/app_spacing.dart';
 import '../widgets/home_header.dart';
 import '../widgets/community_info_banner.dart';
 import '../widgets/quick_action_button.dart';
-import '../widgets/visitor_alert_card.dart';
+import '../../../visitors/presentation/widgets/guest_invite_card.dart';
 import '../widgets/announcement_card.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../../core/models/visitor_model.dart';
+import '../../../../core/models/guest_invite_model.dart';
 import '../../../../core/models/announcement_model.dart';
 
 class HomeDashboardPage extends StatefulWidget {
@@ -20,7 +20,7 @@ class HomeDashboardPage extends StatefulWidget {
 }
 
 class _HomeDashboardPageState extends State<HomeDashboardPage> {
-  late Future<List<VisitorModel>> _visitorsFuture;
+  late Future<List<GuestInviteModel>> _visitorsFuture;
   late Future<List<AnnouncementModel>> _announcementsFuture;
 
   @override
@@ -30,18 +30,20 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     _announcementsFuture = _fetchAnnouncements();
   }
 
-  Future<List<VisitorModel>> _fetchVisitors() async {
+  Future<List<GuestInviteModel>> _fetchVisitors() async {
     final response = await Supabase.instance.client
         .from('visitors')
         .select()
+        .eq('resident_id', currentUser.residentId)
         .order('created_at', ascending: false);
-    return (response as List).map((data) => VisitorModel.fromJson(data)).toList();
+    return (response as List).map((data) => GuestInviteModel.fromJson(data)).toList();
   }
 
   Future<List<AnnouncementModel>> _fetchAnnouncements() async {
     final response = await Supabase.instance.client
         .from('announcements')
         .select()
+        .eq('society_id', currentUser.societyId)
         .eq('is_published', true)
         .order('created_at', ascending: false);
     return (response as List).map((data) => AnnouncementModel.fromJson(data)).toList();
@@ -126,11 +128,11 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Visitors Today',
+                  'Recent Invites',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () => widget.onNavigate?.call(1),
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
                     minimumSize: Size.zero,
@@ -153,7 +155,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pagePadding),
-          sliver: FutureBuilder<List<VisitorModel>>(
+          sliver: FutureBuilder<List<GuestInviteModel>>(
             future: _visitorsFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -161,22 +163,31 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
               } else if (snapshot.hasError) {
                 return SliverToBoxAdapter(child: Text('Error loading visitors: ${snapshot.error}'));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const SliverToBoxAdapter(child: Text('No visitors today.'));
+                return const SliverToBoxAdapter(child: Text('No recent invites.'));
               }
 
-              final visitors = snapshot.data!;
+              final visitors = snapshot.data!.take(5).toList();
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final visitor = visitors[index];
-                    return VisitorCard(
-                      name: visitor.name,
-                      time: visitor.time,
-                      purpose: visitor.purpose,
-                      status: visitor.status,
-                      gender: visitor.gender,
-                      heritage: visitor.heritage,
-                      index: visitor.avatarIndex,
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: GuestInviteCard(
+                        id: visitor.id,
+                        name: visitor.name,
+                        relation: visitor.relation,
+                        date: visitor.date,
+                        method: visitor.method,
+                        code: visitor.code,
+                        status: visitor.status,
+                        gender: visitor.gender,
+                        heritage: visitor.heritage,
+                        index: visitor.avatarIndex,
+                        validUntil: visitor.validUntil,
+                        otpValue: visitor.otpValue,
+                        unitNumber: currentUser.apartment,
+                      ),
                     );
                   },
                   childCount: visitors.length,

@@ -20,16 +20,18 @@ export default async function DashboardPage() {
     { count: visitorsCount },
     { data: billingData },
     { data: recentComplaints },
-    { data: todayVisitors },
-    { data: bookingsData }
+    { data: todayVisitorsRaw },
+    { data: bookingsData },
+    { data: residentDetails }
   ] = await Promise.all([
     supabase.from('residents').select('*', { count: 'exact', head: true }).eq('society_id', SOCIETY_ID),
     supabase.from('complaints').select('*', { count: 'exact', head: true }).eq('society_id', SOCIETY_ID).neq('status', 'resolved'),
     supabase.from('visitors').select('*', { count: 'exact', head: true }).eq('society_id', SOCIETY_ID).eq('status', 'active'), // simplified for today
     supabase.from('billing_cycles').select('billing_month, total_amount, status').eq('society_id', SOCIETY_ID),
     supabase.from('complaints').select('*, apartments(unit_number)').eq('society_id', SOCIETY_ID).order('created_at', { ascending: false }).limit(5),
-    supabase.from('visitors').select('*, residents(profiles(full_name)), apartments(unit_number)').eq('society_id', SOCIETY_ID).order('created_at', { ascending: false }).limit(5),
-    supabase.from('bookings').select('facilities(name)').eq('society_id', SOCIETY_ID)
+    supabase.from('visitors').select('*').eq('society_id', SOCIETY_ID).eq('status', 'active').order('created_at', { ascending: false }).limit(5),
+    supabase.from('bookings').select('facilities(name)').eq('society_id', SOCIETY_ID),
+    supabase.from('v_resident_details').select('resident_id, full_name, unit_number').eq('society_id', SOCIETY_ID)
   ]);
 
   const pendingDues = billingData?.filter(b => b.status === 'pending') || [];
@@ -52,6 +54,19 @@ export default async function DashboardPage() {
     facilityMap[name] = (facilityMap[name] || 0) + 1;
   });
   const facilityChartData = Object.entries(facilityMap).map(([name, value]) => ({ name, value }));
+
+  const detailsMap: Record<string, any> = {};
+  if (residentDetails) {
+    residentDetails.forEach(d => {
+      detailsMap[d.resident_id] = d;
+    });
+  }
+
+  const todayVisitors = todayVisitorsRaw?.map(v => ({
+    ...v,
+    resident_name: detailsMap[v.resident_id]?.full_name || 'Unknown',
+    unit_number: detailsMap[v.resident_id]?.unit_number || 'Unknown'
+  })) || [];
 
   return (
     <div className={styles.container}>
@@ -116,7 +131,7 @@ export default async function DashboardPage() {
             {recentComplaints?.map((c, i) => (
               <div key={i} className={styles.listItem}>
                 <div className={styles.itemContent}>
-                  <div className={styles.itemMeta}>{c.id?.substring(0, 8)} · {c.apartments?.unit_number}</div>
+                  <div className={styles.itemMeta}>{c.id?.substring(0, 8)} · Flat: {c.apartments?.unit_number}</div>
                   <div className={styles.itemTitle}>{c.title}</div>
                   <div className={styles.itemTime}>{new Date(c.created_at).toLocaleDateString()}</div>
                 </div>
@@ -130,7 +145,7 @@ export default async function DashboardPage() {
           <div className={styles.listHeader}>
             <h3>Today&apos;s Visitor Approvals</h3>
             <div>
-              <span className={styles.pendingBadge}>{todayVisitors?.length || 0} pending</span>
+              <span className={styles.pendingBadge}>{visitorsCount || 0} pending</span>
               <Link href="/visitors" className={styles.viewAll} style={{ marginLeft: '12px' }}>View all</Link>
             </div>
           </div>
@@ -140,19 +155,21 @@ export default async function DashboardPage() {
                 <div className={styles.avatarPlaceholder}></div>
                 <div className={styles.itemContent}>
                   <div className={styles.itemTitle}>{v.guest_name}</div>
-                  <div className={styles.itemMeta}>{v.residents?.profiles?.full_name} - {v.apartments?.unit_number} - {v.purpose}</div>
+                  <div className={styles.itemMeta}>{v.resident_name} · Flat: {v.unit_number} · {v.purpose}</div>
                   <div className={styles.itemTime}>{new Date(v.created_at).toLocaleTimeString()}</div>
                 </div>
-                <div className={styles.actions}>
-                  <form action={approveVisitor} style={{ display: 'inline' }}>
-                    <input type="hidden" name="id" value={v.id} />
-                    <button type="submit" className={styles.btnApprove}>✓ Approve</button>
-                  </form>
-                  <form action={denyVisitor} style={{ display: 'inline' }}>
-                    <input type="hidden" name="id" value={v.id} />
-                    <button type="submit" className={styles.btnDeny}>✕ Deny</button>
-                  </form>
-                </div>
+                {v.status === 'active' && (
+                  <div className={styles.actions}>
+                    <form action={approveVisitor} style={{ display: 'inline' }}>
+                      <input type="hidden" name="id" value={v.id} />
+                      <button type="submit" className={styles.btnApprove}>✓ Approve</button>
+                    </form>
+                    <form action={denyVisitor} style={{ display: 'inline' }}>
+                      <input type="hidden" name="id" value={v.id} />
+                      <button type="submit" className={styles.btnDeny}>✕ Deny</button>
+                    </form>
+                  </div>
+                )}
               </div>
             ))}
           </div>

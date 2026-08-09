@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { verifyOtp } from '../dashboard/actions';
-import styles from '../dashboard/dashboard.module.css';
+import vStyles from './visitors.module.css';
 
 export default function OtpForm() {
   const [flat, setFlat] = useState('');
@@ -33,14 +33,16 @@ export default function OtpForm() {
     setLoading(false);
   };
 
+  const isDisabled = loading || otp.length !== 6 || !flat.trim();
+
   return (
-    <div style={{ background: 'white', padding: '24px', borderRadius: '16px', border: '1px solid #E8EDF3', marginBottom: '24px' }}>
-      <h3 style={{ marginBottom: '8px' }}>Verify Visitor OTP</h3>
-      <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '16px' }} id="otp-form-desc">
-        Enter the resident's flat number and the 6-digit code provided by the guest.
+    <div className={vStyles.otpCard}>
+      <h3>Verify Visitor OTP</h3>
+      <p className={vStyles.otpDesc} id="otp-form-desc">
+        Enter the resident&apos;s flat number and the 6-digit code provided by the guest.
       </p>
       
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+      <form onSubmit={handleSubmit} className={vStyles.otpForm}>
         <input 
           type="text" 
           placeholder="Flat No. (e.g. 402)" 
@@ -49,14 +51,7 @@ export default function OtpForm() {
           aria-label="Flat Number"
           aria-describedby="otp-form-desc"
           autoFocus
-          style={{
-            padding: '12px 16px',
-            borderRadius: '8px',
-            border: '1px solid #E8EDF3',
-            fontSize: '16px',
-            outline: 'none',
-            width: '180px'
-          }}
+          className={`${vStyles.otpInput} ${vStyles.otpInputFlat}`}
           disabled={loading}
         />
         <input 
@@ -66,23 +61,14 @@ export default function OtpForm() {
           onChange={e => setOtp(e.target.value)}
           maxLength={6}
           aria-label="6-digit OTP Code"
-          style={{
-            padding: '12px 16px',
-            borderRadius: '8px',
-            border: '1px solid #E8EDF3',
-            fontSize: '16px',
-            outline: 'none',
-            letterSpacing: '2px',
-            width: '150px'
-          }}
+          className={`${vStyles.otpInput} ${vStyles.otpInputCode}`}
           disabled={loading}
         />
         <button 
           type="submit" 
-          className={styles.btnAction}
-          disabled={loading || otp.length !== 6 || !flat.trim()}
-          aria-disabled={loading || otp.length !== 6 || !flat.trim()}
-          style={{ padding: '12px 24px', outline: 'none', border: 'none', borderRadius: '8px', cursor: 'pointer', background: loading || otp.length !== 6 || !flat.trim() ? '#94a3b8' : '#3b82f6', color: 'white', fontWeight: 600, transition: 'background 0.2s' }}
+          disabled={isDisabled}
+          aria-disabled={isDisabled}
+          className={`${vStyles.otpSubmitBtn} ${isDisabled ? vStyles.otpSubmitDisabled : vStyles.otpSubmitEnabled}`}
         >
           {loading ? 'Verifying...' : 'Verify Entry'}
         </button>
@@ -92,15 +78,7 @@ export default function OtpForm() {
         <div 
           role="alert"
           aria-live="assertive"
-          style={{ 
-            marginTop: '16px', 
-            padding: '12px', 
-            borderRadius: '8px', 
-            fontSize: '14px',
-            background: message.type === 'error' ? '#FEE2E2' : '#D1FAE5',
-            color: message.type === 'error' ? '#EF4444' : '#10B981',
-            fontWeight: 500
-          }}
+          className={`${vStyles.otpAlert} ${message.type === 'error' ? vStyles.otpAlertError : vStyles.otpAlertSuccess}`}
         >
           {message.text}
         </div>

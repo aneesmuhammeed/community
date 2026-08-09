@@ -9,6 +9,8 @@ class GuestInviteModel {
   final String gender;
   final String heritage;
   final int avatarIndex;
+  final String validUntil;
+  final String otpValue;
 
   GuestInviteModel({
     required this.id,
@@ -21,6 +23,8 @@ class GuestInviteModel {
     required this.gender,
     required this.heritage,
     required this.avatarIndex,
+    required this.validUntil,
+    required this.otpValue,
   });
 
   factory GuestInviteModel.fromJson(Map<String, dynamic> json) {
@@ -35,6 +39,8 @@ class GuestInviteModel {
       gender: 'male',
       heritage: 'South Asian',
       avatarIndex: 1,
+      validUntil: json['valid_until'] as String? ?? '',
+      otpValue: json['otp_value'] as String? ?? '',
     );
   }
 }

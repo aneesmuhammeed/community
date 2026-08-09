@@ -1,8 +1,12 @@
 import { supabase } from '@/lib/supabase';
 import { approveVisitor, denyVisitor, checkoutVisitor } from '../dashboard/actions';
 import styles from '../dashboard/dashboard.module.css';
+import vStyles from './visitors.module.css';
 import OtpForm from './OtpForm';
 import SubmitButton from './SubmitButton';
+import CopyOtpButton from './CopyOtpButton';
+import { UserCheck, ShieldCheck, DoorOpen, Users, MapPin, CalendarDays, KeyRound } from 'lucide-react';
+import Link from 'next/link';
 
 export const revalidate = 0;
 
@@ -11,7 +15,7 @@ export default async function VisitorsPage({
 }: {
   searchParams: Promise<{ status?: string }>
 }) {
-  const SOCIETY_ID = '11111111-1111-1111-1111-111111111111';
+  const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
   const params = await searchParams;
   const filterStatus = params.status || 'all';
 
@@ -19,7 +23,8 @@ export default async function VisitorsPage({
     .from('visitors')
     .select('*')
     .eq('society_id', SOCIETY_ID)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(100);
 
   if (filterStatus !== 'all') {
     if (filterStatus === 'entered') {
@@ -51,15 +56,23 @@ export default async function VisitorsPage({
     <div className={styles.container}>
       <div className={styles.header}>
         <div>
-          <h1>Visitor Control</h1>
-          <p>Manage and track all guest passes</p>
+          <h1 className={styles.title}>Visitor Control</h1>
+          <p className={styles.subtitle}>Manage and track all guest passes</p>
         </div>
         
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <a href="?status=all" className={filterStatus === 'all' ? styles.btnAction : styles.btnSecondary} style={filterStatus !== 'all' ? { background: '#f1f5f9', color: '#475569', border: 'none', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500' } : { textDecoration: 'none' }}>All</a>
-          <a href="?status=active" className={filterStatus === 'active' ? styles.btnAction : styles.btnSecondary} style={filterStatus !== 'active' ? { background: '#f1f5f9', color: '#475569', border: 'none', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500' } : { textDecoration: 'none' }}>Pending</a>
-          <a href="?status=approved" className={filterStatus === 'approved' ? styles.btnAction : styles.btnSecondary} style={filterStatus !== 'approved' ? { background: '#f1f5f9', color: '#475569', border: 'none', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500' } : { textDecoration: 'none' }}>Approved</a>
-          <a href="?status=entered" className={filterStatus === 'entered' ? styles.btnAction : styles.btnSecondary} style={filterStatus !== 'entered' ? { background: '#f1f5f9', color: '#475569', border: 'none', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500' } : { textDecoration: 'none' }}>Inside</a>
+        <div className={vStyles.filterBar}>
+          <Link href="?status=all" className={`${vStyles.filterTab} ${filterStatus === 'all' ? vStyles.filterTabActive : ''}`}>
+            <Users size={15} /> All
+          </Link>
+          <Link href="?status=active" className={`${vStyles.filterTab} ${filterStatus === 'active' ? vStyles.filterTabActive : ''}`}>
+            <ShieldCheck size={15} /> Pending
+          </Link>
+          <Link href="?status=approved" className={`${vStyles.filterTab} ${filterStatus === 'approved' ? vStyles.filterTabActive : ''}`}>
+            <UserCheck size={15} /> Approved
+          </Link>
+          <Link href="?status=entered" className={`${vStyles.filterTab} ${filterStatus === 'entered' ? vStyles.filterTabActive : ''}`}>
+            <DoorOpen size={15} /> Inside
+          </Link>
         </div>
       </div>
 
@@ -67,40 +80,53 @@ export default async function VisitorsPage({
 
       <div className={styles.listCard}>
         <div className={styles.listHeader}>
-          <h3>Visitor Passes ({visitors.length})</h3>
+          <h3>Visitor Passes <span style={{ color: 'var(--muted)', fontWeight: 'normal', fontSize: '0.8125rem' }}>({visitors.length})</span></h3>
         </div>
 
         <div className={styles.list}>
           {visitors.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px 24px', color: '#94a3b8' }}>
-              <div style={{ marginBottom: '16px' }}>
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
+            <div className={vStyles.emptyState}>
+              <div className={vStyles.emptyIcon}>
+                <div className={vStyles.emptyIconWrapper}>
+                  <Users size={28} color="#94A3B8" />
+                </div>
               </div>
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}>No Visitors Found</h3>
-              <p style={{ fontSize: '14px' }}>There are no visitors matching the current filter.</p>
+              <h3 className={vStyles.emptyTitle}>No Visitors Found</h3>
+              <p className={vStyles.emptyText}>There are no visitors matching the current filter.</p>
             </div>
           ) : (
-            visitors.map((v, i) => (
-              <div key={i} className={styles.listItem}>
-                <div className={styles.avatarPlaceholder}></div>
-                <div className={styles.itemContent}>
-                  <div className={styles.itemTitle}>{v.guest_name}</div>
-                  <div className={styles.itemMeta}>{v.resident_name} - {v.unit_number} - {v.purpose}</div>
-                  <div className={styles.itemTime}>{new Date(v.created_at).toLocaleString()}</div>
+            visitors.map((v, i) => {
+              const formattedDate = new Date(v.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+              
+              return (
+              <div key={i} className={vStyles.visitorItem}>
+                <div className={vStyles.visitorAvatar}>
+                  {v.guest_name.charAt(0).toUpperCase()}
+                </div>
+                <div className={vStyles.visitorInfo}>
+                  <div className={vStyles.visitorName}>{v.guest_name}</div>
+                  <div className={vStyles.visitorMeta}>
+                    <span className={vStyles.visitorMetaItem}><MapPin size={13} /> Flat: {v.unit_number} ({v.resident_name})</span>
+                    <span className={vStyles.visitorMetaItem}><UserCheck size={13} /> {v.purpose}</span>
+                  </div>
+                  <div className={vStyles.visitorTime}>
+                    <CalendarDays size={12} /> {formattedDate}
+                  </div>
+                  {v.otp_value && (
+                    <div className={vStyles.visitorMetaItem}>
+                      <KeyRound size={12} color="#94a3b8" />
+                      <CopyOtpButton otp={v.otp_value} guestName={v.guest_name} flat={v.unit_number} />
+                    </div>
+                  )}
                 </div>
                 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div className={`${styles.statusBadge} ${styles[v.status.replace('_', '').toLowerCase()] || styles.inProgress}`}>
-                    {v.status}
+                <div className={vStyles.visitorActions}>
+                  <div className={`${styles.statusBadge} ${styles[v.status.replace('_', '').toLowerCase()] || styles.inprogress}`}>
+                    {v.status.charAt(0).toUpperCase() + v.status.slice(1)}
                   </div>
                   
                   {v.status === 'active' && (
-                    <div className={styles.actions}>
+                    <div className={vStyles.visitorActionButtons}>
                       <form action={approveVisitor} style={{ display: 'inline' }}>
                         <input type="hidden" name="id" value={v.id} />
                         <SubmitButton label="Approve" loadingLabel="Wait..." variant="primary" />
@@ -113,7 +139,7 @@ export default async function VisitorsPage({
                   )}
                   
                   {v.arrived_at !== null && v.left_at === null && (
-                    <div className={styles.actions}>
+                    <div className={vStyles.visitorActionButtons}>
                       <form action={checkoutVisitor} style={{ display: 'inline' }}>
                         <input type="hidden" name="id" value={v.id} />
                         <SubmitButton label="Checkout" loadingLabel="Wait..." variant="secondary" />
@@ -122,7 +148,8 @@ export default async function VisitorsPage({
                   )}
                 </div>
               </div>
-            ))
+              )
+            })
           )}
         </div>
       </div>

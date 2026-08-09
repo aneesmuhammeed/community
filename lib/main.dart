@@ -4,13 +4,15 @@ import 'core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/models/user_model.dart';
 import 'features/layout/presentation/pages/main_layout_page.dart';
+import 'features/auth/presentation/pages/login_page.dart';
+import 'core/config/env.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
-    url: 'https://cqotnvittlldtyekpgam.supabase.co',
-    anonKey: 'sb_publishable_8c1pSPTJIbo_bYlGlHmpOA_7LoARw1C',
+    url: Env.supabaseUrl,
+    anonKey: Env.supabaseAnonKey,
   );
   
   // Set preferred orientations
@@ -27,24 +29,16 @@ Future<void> main() async {
     ),
   );
 
-  try {
-    final supabase = Supabase.instance.client;
-    final res = await supabase.from('v_resident_details').select().limit(1).maybeSingle();
-    if (res != null) {
-      currentUser = UserModel.fromJson(res);
-    } else {
-      currentUser = testUser; // Fallback
-    }
-  } catch (e) {
-    debugPrint('Error fetching user: $e');
-    currentUser = testUser; // Fallback
-  }
+  // Bypass login for testing
+  currentUser = testUser;
+  Widget initialScreen = const MainLayoutPage();
 
-  runApp(const CommunityHubApp());
+  runApp(CommunityHubApp(initialScreen: initialScreen));
 }
 
 class CommunityHubApp extends StatelessWidget {
-  const CommunityHubApp({Key? key}) : super(key: key);
+  final Widget initialScreen;
+  const CommunityHubApp({Key? key, required this.initialScreen}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +48,7 @@ class CommunityHubApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
-      home: const MainLayoutPage(),
+      home: initialScreen,
     );
   }
 }
