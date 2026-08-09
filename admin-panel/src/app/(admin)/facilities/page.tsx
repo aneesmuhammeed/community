@@ -122,7 +122,7 @@ export default async function FacilitiesPage() {
                     </div>
                   </div>
                   <div className={styles.bookingTime}>
-                    {new Date(booking.booking_date).toLocaleDateString()} ({booking.start_time.substring(0,5)} - {booking.end_time.substring(0,5)})
+                    {new Date(booking.booking_date).toLocaleDateString()} ({(booking.start_time || '').substring(0,5)} - {(booking.end_time || '').substring(0,5)})
                   </div>
                 </div>
               </div>
