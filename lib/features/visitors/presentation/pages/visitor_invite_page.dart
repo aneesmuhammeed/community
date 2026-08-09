@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:async';
 
 class VisitorInvitePage extends StatefulWidget {
   const VisitorInvitePage({Key? key}) : super(key: key);
@@ -27,6 +28,9 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
   String? _generatedQrCode;
   String? _generatedOtp;
   bool _showAllInvites = false;
+  String? _generatedValidUntil;
+  Timer? _countdownTimer;
+  String _timeRemaining = '';
 
   @override
   void initState() {
@@ -37,6 +41,30 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
   void _fetchAndSetInvites() {
     setState(() {
       _invitesFuture = _fetchInvites();
+    });
+  }
+
+  void _startCountdown() {
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_generatedValidUntil == null) {
+        timer.cancel();
+        return;
+      }
+      final validUntil = DateTime.parse(_generatedValidUntil!).toLocal();
+      final now = DateTime.now();
+      final diff = validUntil.difference(now);
+      if (diff.isNegative) {
+        timer.cancel();
+        if (mounted) setState(() => _timeRemaining = 'Expired');
+      } else {
+        final hours = diff.inHours;
+        final minutes = (diff.inMinutes % 60).toString().padLeft(2, '0');
+        final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
+        if (mounted) setState(() {
+          _timeRemaining = hours > 0 ? '$hours:$minutes:$seconds left' : '$minutes:$seconds left';
+        });
+      }
     });
   }
 
@@ -73,10 +101,12 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
       setState(() {
         _generatedQrCode = inviteCode;
         _generatedOtp = otp;
+        _generatedValidUntil = DateTime.now().add(const Duration(hours: 6)).toUtc().toIso8601String();
         _isGenerating = false;
         _nameController.clear();
         _purposeController.clear();
       });
+      _startCountdown();
       _fetchAndSetInvites();
     } catch (e) {
       print('=== SUPABASE INSERT ERROR ===');
@@ -130,6 +160,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
 
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     _nameController.dispose();
     _purposeController.dispose();
     super.dispose();
@@ -383,7 +414,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
                               CustomIcon(icon: 'clock', size: 12, color: theme.colorScheme.primary),
                               const SizedBox(width: 6),
                               Text(
-                                '5:42 left',
+                                _timeRemaining.isNotEmpty ? _timeRemaining : '6:00:00 left',
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: theme.colorScheme.primary,
                                   fontWeight: FontWeight.w500,
@@ -430,6 +461,8 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
                     setState(() {
                       _generatedQrCode = null;
                       _generatedOtp = null;
+                      _generatedValidUntil = null;
+                      _countdownTimer?.cancel();
                     });
                   },
                   style: FilledButton.styleFrom(

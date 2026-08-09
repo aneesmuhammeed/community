@@ -57,6 +57,7 @@ class FacilityCard extends StatelessWidget {
     }
 
     final isAvailable = status == 'available';
+    final isBooked = status == 'booked';
 
     return GestureDetector(
       onTap: isAvailable ? onTap : null,
