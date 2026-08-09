@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/theme/app_theme.dart';
+import 'package:community_hub/features/maintenance/presentation/pages/payment_page.dart';
 
 class PaymentMethods extends StatelessWidget {
-  const PaymentMethods({Key? key}) : super(key: key);
+  final int amount;
+  final String billingMonth;
+
+  const PaymentMethods({
+    Key? key,
+    this.amount = 3500,
+    this.billingMonth = 'December 2024',
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -11,10 +19,10 @@ class PaymentMethods extends StatelessWidget {
     final ext = theme.extension<AppThemeExtension>()!;
 
     final methods = [
-      {'icon': 'smartphone', 'label': 'UPI', 'color': theme.colorScheme.secondary, 'iconColor': theme.colorScheme.primary},
-      {'icon': 'credit-card', 'label': 'Credit/Debit Card', 'color': ext.accentSoft, 'iconColor': const Color(0xFF10B981)},
-      {'icon': 'building-2', 'label': 'Net Banking', 'color': ext.warningSoft, 'iconColor': ext.warningForeground},
-      {'icon': 'wallet', 'label': 'Digital Wallets', 'color': ext.aiSoft, 'iconColor': ext.ai},
+      {'icon': 'smartphone', 'label': 'UPI', 'methodType': 'upi', 'color': theme.colorScheme.secondary, 'iconColor': theme.colorScheme.primary},
+      {'icon': 'credit-card', 'label': 'Credit/Debit Card', 'methodType': 'card', 'color': ext.accentSoft, 'iconColor': const Color(0xFF10B981)},
+      {'icon': 'building-2', 'label': 'Net Banking', 'methodType': 'netbanking', 'color': ext.warningSoft, 'iconColor': ext.warningForeground},
+      {'icon': 'wallet', 'label': 'Digital Wallets', 'methodType': 'wallet', 'color': ext.aiSoft, 'iconColor': ext.ai},
     ];
 
     return Column(
@@ -22,14 +30,26 @@ class PaymentMethods extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
           child: InkWell(
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PaymentPage(
+                    paymentMethod: m['methodType'] as String,
+                    methodLabel: m['label'] as String,
+                    amount: amount,
+                    billingMonth: billingMonth,
+                  ),
+                ),
+              );
+            },
             borderRadius: BorderRadius.circular(8),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 color: m['color'] as Color,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFE8EDF3)), // border
+                border: Border.all(color: const Color(0xFFE8EDF3)),
               ),
               child: Row(
                 children: [

@@ -203,29 +203,9 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pagePadding),
           sliver: SliverToBoxAdapter(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Announcements',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: Text(
-                    'View all',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
+            child: Text(
+              'Announcements',
+              style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
         ),

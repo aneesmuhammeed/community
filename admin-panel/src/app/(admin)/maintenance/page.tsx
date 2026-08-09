@@ -1,8 +1,10 @@
-export default function MaintenancePage() {
-  return (
-    <div style={{ padding: '24px' }}>
-      <h1>Maintenance & Billing</h1>
-      <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>This section is currently under construction.</p>
-    </div>
-  );
+import { getBillingCycles } from './actions';
+import MaintenanceClient from './MaintenanceClient';
+
+export const dynamic = 'force-dynamic';
+
+export default async function MaintenancePage() {
+  const billingCycles = await getBillingCycles();
+
+  return <MaintenanceClient initialData={billingCycles} />;
 }
