@@ -5,6 +5,8 @@ class BookingModel {
   final String time;
   final String status;
   final String icon;
+  final String rawDate;
+  final String rawStartTime;
 
   BookingModel({
     required this.id,
@@ -13,6 +15,8 @@ class BookingModel {
     required this.time,
     required this.status,
     required this.icon,
+    required this.rawDate,
+    required this.rawStartTime,
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
@@ -41,6 +45,8 @@ class BookingModel {
       time: '$start - $end',
       status: json['status']?.toString() ?? 'pending',
       icon: facilityData['icon'] as String? ?? 'building',
+      rawDate: json['booking_date']?.toString() ?? '',
+      rawStartTime: json['start_time']?.toString() ?? '',
     );
   }
 }

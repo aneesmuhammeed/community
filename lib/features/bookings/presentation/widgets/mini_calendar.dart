@@ -203,9 +203,9 @@ class _MiniCalendarState extends State<MiniCalendar> {
             children: [
               _buildLegendItem('Selected', theme.colorScheme.primary),
               const SizedBox(width: 16),
-              _buildLegendItem('Booked', theme.colorScheme.error),
-              const SizedBox(width: 16),
               _buildLegendItem('Available', const Color(0xFF22C55E)), // green-500
+              const SizedBox(width: 16),
+              _buildLegendItem('Past', const Color(0xFF94A3B8)), // slate-400
             ],
           ),
         ],

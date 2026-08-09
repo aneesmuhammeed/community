@@ -25,7 +25,7 @@ class AnnouncementModel {
       tag: json['tag'] as String,
       icon: json['icon'] as String? ?? 'info',
       isPinned: json['is_pinned'] as bool? ?? false,
-      publishAt: json['publish_at'] as String,
+      publishAt: (json['publish_at'] ?? json['created_at']) as String,
     );
   }
 }

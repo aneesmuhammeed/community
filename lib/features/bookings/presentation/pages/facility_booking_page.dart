@@ -78,72 +78,96 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
     setState(() {
       _isLoadingSlots = true;
       _selectedTimeIndex = -1;
-      _dynamicSlots = []; // Clear old slots immediately
+      _dynamicSlots = [];
     });
 
     try {
-      final facilities = await _facilitiesFuture;
-      final facility = facilities.firstWhere((f) => f['id'] == _selectedFacilityId);
-      
-      final operatingHours = facility['operating_hours'] as String? ?? '06:00-22:00';
-      final slotDuration = facility['slot_duration'] as int? ?? 1;
-
-      final parts = operatingHours.split('-');
-      String startStr = parts.length == 2 ? parts[0].trim() : '06:00';
-      String endStr = parts.length == 2 ? parts[1].trim() : '22:00';
-      
-      final startTimeParts = startStr.split(':');
-      final endTimeParts = endStr.split(':');
-      
-      int startHour = int.parse(startTimeParts[0]);
-      int startMin = startTimeParts.length > 1 ? int.parse(startTimeParts[1]) : 0;
-      int endHour = int.parse(endTimeParts[0]);
-      if (endHour <= startHour && endHour != 0) {
-        endHour += 24; // Handle overnight hours (e.g., 20:00 - 02:00)
-      } else if (endHour == 0) {
-        endHour = 24; // Handle exact midnight
-      }
-      
       final selectedDateStr = _selectedDate.toIso8601String().split('T')[0];
-      final response = await Supabase.instance.client
+
+      // 1. Determine day type (WEEKDAY, WEEKEND, HOLIDAY)
+      String dayType = 'WEEKDAY';
+      final holidayResponse = await Supabase.instance.client
+          .from('holidays')
+          .select('id')
+          .eq('society_id', currentUser.societyId)
+          .eq('date', selectedDateStr)
+          .maybeSingle();
+          
+      if (holidayResponse != null) {
+        dayType = 'HOLIDAY';
+      } else if (_selectedDate.weekday == DateTime.saturday || _selectedDate.weekday == DateTime.sunday) {
+        dayType = 'WEEKEND';
+      }
+
+      // 2. Fetch schedules for this day type
+      final scheduleResponse = await Supabase.instance.client
+          .from('facility_schedules')
+          .select('start_time, end_time')
+          .eq('facility_id', _selectedFacilityId!)
+          .eq('day_type', dayType)
+          .order('start_time');
+          
+      final schedules = List<Map<String, dynamic>>.from(scheduleResponse);
+
+      // 3. Fetch existing bookings
+      final bookingResponse = await Supabase.instance.client
           .from('bookings')
-          .select('start_time, status')
+          .select('start_time, end_time, status')
           .eq('facility_id', _selectedFacilityId!)
           .eq('booking_date', selectedDateStr)
           .neq('status', 'cancelled');
           
-      final existingBookings = List<Map<String, dynamic>>.from(response);
-      final bookedStartTimes = existingBookings.map((b) => b['start_time'].toString().substring(0, 5)).toSet();
+      final existingBookings = List<Map<String, dynamic>>.from(bookingResponse);
+      
+      // 4. Fetch slot blocks/overrides
+      final blocksResponse = await Supabase.instance.client
+          .from('facility_slot_blocks')
+          .select('start_time, end_time')
+          .eq('facility_id', _selectedFacilityId!)
+          .eq('date', selectedDateStr);
+          
+      final slotBlocks = List<Map<String, dynamic>>.from(blocksResponse);
 
       List<Map<String, dynamic>> generatedSlots = [];
       
-      int currentHour = startHour;
-      while (currentHour + slotDuration <= endHour) {
-        final slotStart = '${currentHour.toString().padLeft(2, '0')}:${startMin.toString().padLeft(2, '0')}';
-        final nextHour = currentHour + slotDuration;
-        final slotEnd = '${nextHour.toString().padLeft(2, '0')}:${startMin.toString().padLeft(2, '0')}';
+      final now = DateTime.now();
+      final isToday = _selectedDate.year == now.year && _selectedDate.month == now.month && _selectedDate.day == now.day;
+
+      for (var schedule in schedules) {
+        final startStr = schedule['start_time'].toString().substring(0, 5);
+        final endStr = schedule['end_time'].toString().substring(0, 5);
         
-        final displayStart = _formatAmPm(currentHour, startMin);
-        final displayEnd = _formatAmPm(nextHour, startMin);
+        final startParts = startStr.split(':');
+        final endParts = endStr.split(':');
         
-        bool isAvailable = !bookedStartTimes.contains(slotStart);
-        
-        // Prevent booking past times if the selected date is today
-        final now = DateTime.now();
-        if (isAvailable && _selectedDate.year == now.year && _selectedDate.month == now.month && _selectedDate.day == now.day) {
-          if (currentHour < now.hour || (currentHour == now.hour && startMin <= now.minute)) {
-            isAvailable = false;
+        int startH = int.parse(startParts[0]);
+        int startM = int.parse(startParts[1]);
+        int endH = int.parse(endParts[0]);
+        int endM = int.parse(endParts[1]);
+
+        // Check if passed for today
+        if (isToday) {
+          if (startH < now.hour || (startH == now.hour && startM <= now.minute)) {
+            continue; // Skip past slots
           }
         }
-        
+
+        // Check if blocked by admin
+        bool isBlocked = slotBlocks.any((b) => b['start_time'].toString().startsWith(startStr));
+        if (isBlocked) continue; // Don't even show blocked slots
+
+        // Check if booked by user
+        bool isBooked = existingBookings.any((b) => b['start_time'].toString().startsWith(startStr));
+
+        final displayStart = _formatAmPm(startH, startM);
+        final displayEnd = _formatAmPm(endH, endM);
+
         generatedSlots.add({
           'time': '$displayStart – $displayEnd',
-          'start': '$slotStart:00',
-          'end': '$slotEnd:00',
-          'available': isAvailable,
+          'start': '$startStr:00',
+          'end': '$endStr:00',
+          'available': !isBooked,
         });
-        
-        currentHour = nextHour;
       }
       
       if (mounted) {
@@ -153,6 +177,7 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
         });
       }
     } catch (e) {
+      print('Error loading slots: $e');
       if (mounted) {
         setState(() => _isLoadingSlots = false);
       }
@@ -169,6 +194,25 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
   Future<void> _submitBooking() async {
     if (_selectedFacilityId == null || _selectedTimeIndex == -1) return;
 
+    // Guard: index out of bounds (slots may have changed)
+    if (_selectedTimeIndex >= _dynamicSlots.length) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Selected slot is no longer available. Please pick again.')));
+        setState(() => _selectedTimeIndex = -1);
+      }
+      return;
+    }
+
+    // Guard: prevent booking past dates if user left the page open overnight
+    final now = DateTime.now();
+    final todayDate = DateTime(now.year, now.month, now.day);
+    if (_selectedDate.isBefore(todayDate)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot book a past date. Please select a future date.')));
+      }
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     try {
@@ -179,7 +223,6 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
       final selectedFacility = facilityList.firstWhere((f) => f['id'] == _selectedFacilityId);
       final bookingFee = (selectedFacility['booking_fee'] as num?)?.toDouble() ?? 0.0;
       
-      // Note: hardcoding resident_id and society_id to match dummy data
       await Supabase.instance.client.from('bookings').insert({
         'id': const Uuid().v4(),
         'resident_id': currentUser.residentId,
@@ -188,7 +231,7 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
         'booking_date': _selectedDate.toIso8601String().split('T')[0],
         'start_time': slot['start'],
         'end_time': slot['end'],
-        'status': 'pending', // Admins must approve this
+        'status': 'pending',
         'booking_fee': bookingFee,
       });
 
@@ -197,17 +240,18 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
         setState(() {
           _selectedFacilityId = null;
           _selectedTimeIndex = -1;
+          _dynamicSlots = [];
         });
-        _fetchData(); // Refresh list
+        _fetchData();
       }
     } on PostgrestException catch (e) {
       if (mounted) {
-        if (e.code == '23505' || e.message.contains('unique_active_booking')) {
+        if (e.code == '23505' || e.message.contains('unique_active_booking') || e.message.contains('no_overlapping_bookings')) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sorry, this slot was just booked by someone else!')));
         } else {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Database Error: ${e.message}')));
         }
-        _fetchData(); // Refresh slots to show it's taken
+        _loadSlotsForSelectedDate();
       }
     } catch (e) {
       if (mounted) {
@@ -593,15 +637,49 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
                 return SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
+                      final booking = bookings[index];
+                      
+                      // Only compute canCancel for active bookings
+                      bool canCancel = false;
+                      if (booking.status != 'cancelled') {
+                        canCancel = true;
+                        try {
+                          if (booking.rawDate.isNotEmpty && booking.rawStartTime.isNotEmpty) {
+                            final dateParts = booking.rawDate.split('-');
+                            final timeParts = booking.rawStartTime.split(':');
+                            if (dateParts.length >= 3 && timeParts.length >= 2) {
+                              final bookingDateTime = DateTime(
+                                int.parse(dateParts[0]),
+                                int.parse(dateParts[1]),
+                                int.parse(dateParts[2]),
+                                int.parse(timeParts[0]),
+                                int.parse(timeParts[1]),
+                              );
+                              final difference = bookingDateTime.difference(DateTime.now());
+                              canCancel = difference.inHours >= 24;
+                            }
+                          }
+                        } catch (_) {
+                          canCancel = true; // Default to allowing cancel if parsing fails
+                        }
+                      }
+
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: MyBookingCard(
-                          facility: bookings[index].facility,
-                          date: bookings[index].date,
-                          time: bookings[index].time,
-                          status: bookings[index].status,
-                          icon: bookings[index].icon,
-                          onCancel: () => _cancelBooking(bookings[index].id),
+                          facility: booking.facility,
+                          date: booking.date,
+                          time: booking.time,
+                          status: booking.status,
+                          icon: booking.icon,
+                          canCancel: canCancel,
+                          onCancel: () {
+                            if (!canCancel) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bookings cannot be cancelled within 24 hours of the start time.')));
+                              return;
+                            }
+                            _cancelBooking(booking.id);
+                          },
                         ),
                       );
                     },

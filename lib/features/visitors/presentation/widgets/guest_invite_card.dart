@@ -296,6 +296,7 @@ class GuestInviteCard extends StatelessWidget {
                   child: QrImageView(
                     data: code,
                     version: QrVersions.auto,
+                    errorCorrectionLevel: QrErrorCorrectLevel.H,
                     size: 180.0,
                     padding: EdgeInsets.zero,
                   ),

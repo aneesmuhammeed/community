@@ -51,7 +51,6 @@ bookings,id,uuid,NO
 bookings,resident_id,uuid,NO
 bookings,facility_id,uuid,NO
 bookings,society_id,uuid,NO
-bookings,slot_id,uuid,YES
 bookings,booking_date,date,NO
 bookings,start_time,time without time zone,NO
 bookings,end_time,time without time zone,NO
@@ -64,65 +63,7 @@ bookings,cancel_reason,text,YES
 bookings,notes,text,YES
 bookings,created_at,timestamp with time zone,NO
 bookings,updated_at,timestamp with time zone,NO
-community_announcements,id,uuid,NO
-community_announcements,title,text,NO
-community_announcements,body,text,NO
-community_announcements,time,text,NO
-community_announcements,tag,text,NO
-community_announcements,tag_variant,text,NO
-community_announcements,icon,text,NO
-community_announcements,created_at,timestamp with time zone,NO
-community_billing_history,id,uuid,NO
-community_billing_history,title,text,NO
-community_billing_history,amount,double precision,NO
-community_billing_history,date,text,NO
-community_billing_history,status,text,NO
-community_billing_history,created_at,timestamp with time zone,NO
-community_complaints,id,uuid,NO
-community_complaints,title,text,NO
-community_complaints,category,text,NO
-community_complaints,date,text,NO
-community_complaints,status,text,NO
-community_complaints,ticket_id,text,NO
-community_complaints,created_at,timestamp with time zone,NO
-community_expenses,id,uuid,NO
-community_expenses,title,text,NO
-community_expenses,percentage,integer,NO
-community_expenses,color_hex,text,NO
-community_expenses,created_at,timestamp with time zone,NO
-community_facility_bookings,id,uuid,NO
-community_facility_bookings,title,text,NO
-community_facility_bookings,facility,text,NO
-community_facility_bookings,date,text,NO
-community_facility_bookings,time,text,NO
-community_facility_bookings,status,text,NO
-community_facility_bookings,created_at,timestamp with time zone,NO
-community_guest_invites,id,uuid,NO
-community_guest_invites,name,text,NO
-community_guest_invites,relation,text,NO
-community_guest_invites,date,text,NO
-community_guest_invites,method,text,NO
-community_guest_invites,code,text,NO
-community_guest_invites,status,text,NO
-community_guest_invites,gender,text,NO
-community_guest_invites,heritage,text,NO
-community_guest_invites,avatar_index,integer,NO
-community_guest_invites,created_at,timestamp with time zone,NO
-community_outstanding_dues,id,uuid,NO
-community_outstanding_dues,title,text,NO
-community_outstanding_dues,amount,double precision,NO
-community_outstanding_dues,due_date,text,NO
-community_outstanding_dues,is_overdue,boolean,NO
-community_outstanding_dues,created_at,timestamp with time zone,NO
-community_visitors,id,uuid,NO
-community_visitors,name,text,NO
-community_visitors,time,text,NO
-community_visitors,purpose,text,NO
-community_visitors,status,text,NO
-community_visitors,gender,text,NO
-community_visitors,heritage,text,NO
-community_visitors,avatar_index,integer,NO
-community_visitors,created_at,timestamp with time zone,NO
+
 complaint_images,id,uuid,NO
 complaint_images,complaint_id,uuid,NO
 complaint_images,storage_path,text,NO
@@ -158,14 +99,25 @@ facilities,is_active,boolean,NO
 facilities,rules,text,YES
 facilities,created_at,timestamp with time zone,NO
 facilities,updated_at,timestamp with time zone,NO
-facility_time_slots,id,uuid,NO
-facility_time_slots,facility_id,uuid,NO
-facility_time_slots,slot_date,date,NO
-facility_time_slots,start_time,time without time zone,NO
-facility_time_slots,end_time,time without time zone,NO
-facility_time_slots,is_available,boolean,NO
-facility_time_slots,booked_by,uuid,YES
-facility_time_slots,created_at,timestamp with time zone,NO
+facility_schedules,id,uuid,NO
+facility_schedules,facility_id,uuid,NO
+facility_schedules,day_type,character varying,NO
+facility_schedules,start_time,time without time zone,NO
+facility_schedules,end_time,time without time zone,NO
+facility_schedules,is_active,boolean,YES
+facility_schedules,created_at,timestamp with time zone,YES
+facility_slot_blocks,id,uuid,NO
+facility_slot_blocks,facility_id,uuid,NO
+facility_slot_blocks,date,date,NO
+facility_slot_blocks,start_time,time without time zone,NO
+facility_slot_blocks,end_time,time without time zone,NO
+facility_slot_blocks,reason,text,YES
+facility_slot_blocks,created_at,timestamp with time zone,YES
+holidays,id,uuid,NO
+holidays,society_id,uuid,NO
+holidays,date,date,NO
+holidays,name,text,NO
+holidays,created_at,timestamp with time zone,YES
 family_members,id,uuid,NO
 family_members,resident_id,uuid,NO
 family_members,full_name,text,NO

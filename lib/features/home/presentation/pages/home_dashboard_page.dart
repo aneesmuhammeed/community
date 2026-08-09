@@ -45,6 +45,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         .select()
         .eq('society_id', currentUser.societyId)
         .eq('is_published', true)
+        .order('is_pinned', ascending: false)
         .order('created_at', ascending: false);
     return (response as List).map((data) => AnnouncementModel.fromJson(data)).toList();
   }

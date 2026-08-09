@@ -50,6 +50,7 @@ class QRCodeDisplay extends StatelessWidget {
                     child: QrImageView(
                       data: code,
                       version: QrVersions.auto,
+                      errorCorrectionLevel: QrErrorCorrectLevel.H,
                       size: 152.0,
                       padding: EdgeInsets.zero,
                     ),

@@ -5,6 +5,8 @@ import { approveBooking, denyBooking } from './actions';
 
 import EditFacilityModal from './EditFacilityModal';
 import CreateFacilityModal from './CreateFacilityModal';
+import ManageHolidaysModal from './ManageHolidaysModal';
+import ManageSchedulesModal from './ManageSchedulesModal';
 
 export const revalidate = 0;
 
@@ -54,7 +56,10 @@ export default async function FacilitiesPage() {
             <h1 className={styles.title}>Facility Management</h1>
             <p className={styles.subtitle}>Manage amenities and approve resident booking requests</p>
           </div>
-          <CreateFacilityModal societyId={SOCIETY_ID} />
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <ManageHolidaysModal societyId={SOCIETY_ID} />
+            <CreateFacilityModal societyId={SOCIETY_ID} />
+          </div>
         </div>
       </div>
 
@@ -82,6 +87,7 @@ export default async function FacilitiesPage() {
                 <Users size={14} /> Capacity: {facility.capacity} pax
               </div>
               <EditFacilityModal facility={facility} />
+              <ManageSchedulesModal facility={facility} />
             </div>
             
             <div className={styles.facilityPrice}>
