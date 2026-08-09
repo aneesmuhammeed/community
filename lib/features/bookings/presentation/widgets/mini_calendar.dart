@@ -1,26 +1,60 @@
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/custom_icon.dart';
 
-class MiniCalendar extends StatelessWidget {
-  const MiniCalendar({Key? key}) : super(key: key);
+class MiniCalendar extends StatefulWidget {
+  final DateTime selectedDate;
+  final ValueChanged<DateTime> onDateSelected;
+
+  const MiniCalendar({
+    Key? key,
+    required this.selectedDate,
+    required this.onDateSelected,
+  }) : super(key: key);
+
+  @override
+  State<MiniCalendar> createState() => _MiniCalendarState();
+}
+
+class _MiniCalendarState extends State<MiniCalendar> {
+  late DateTime _currentMonth;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentMonth = DateTime(widget.selectedDate.year, widget.selectedDate.month);
+  }
+
+  void _prevMonth() {
+    setState(() {
+      _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1);
+    });
+  }
+
+  void _nextMonth() {
+    setState(() {
+      _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1);
+    });
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month - 1];
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-    // December 2024 states: 1-10 past, 14 selected, some booked, rest avail
-    const dateStates = {
-      1: 'past', 2: 'past', 3: 'past', 4: 'past', 5: 'past',
-      6: 'past', 7: 'past', 8: 'past', 9: 'past', 10: 'past',
-      11: 'avail', 12: 'booked', 13: 'avail', 14: 'selected', 15: 'avail',
-      16: 'booked', 17: 'avail', 18: 'avail', 19: 'booked', 20: 'avail',
-      21: 'avail', 22: 'avail', 23: 'booked', 24: 'avail', 25: 'booked',
-      26: 'avail', 27: 'avail', 28: 'booked', 29: 'avail', 30: 'avail',
-      31: 'avail',
-    };
+    
+    final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
+    final firstWeekday = DateTime(_currentMonth.year, _currentMonth.month, 1).weekday;
+    final emptyCells = firstWeekday == 7 ? 0 : firstWeekday; // Dart weekday: 1=Mon, 7=Sun
 
-    final cells = List.generate(31, (index) => index + 1);
+    final today = DateTime.now();
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -42,30 +76,36 @@ class MiniCalendar extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9), // muted
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Center(
-                  child: CustomIcon(icon: 'chevron-left', size: 16, color: Color(0xFF64748B)),
+              GestureDetector(
+                onTap: _prevMonth,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9), // muted
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Center(
+                    child: CustomIcon(icon: 'chevron-left', size: 16, color: Color(0xFF64748B)),
+                  ),
                 ),
               ),
               Text(
-                'December 2024',
+                '${_getMonthName(_currentMonth.month)} ${_currentMonth.year}',
                 style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9), // muted
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Center(
-                  child: CustomIcon(icon: 'chevron-right', size: 16, color: Color(0xFF64748B)),
+              GestureDetector(
+                onTap: _nextMonth,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9), // muted
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Center(
+                    child: CustomIcon(icon: 'chevron-right', size: 16, color: Color(0xFF64748B)),
+                  ),
                 ),
               ),
             ],
@@ -95,10 +135,23 @@ class MiniCalendar extends StatelessWidget {
               crossAxisCount: 7,
               childAspectRatio: 1,
             ),
-            itemCount: cells.length,
+            itemCount: emptyCells + daysInMonth,
             itemBuilder: (context, i) {
-              final day = cells[i];
-              final state = dateStates[day] ?? 'avail';
+              if (i < emptyCells) return const SizedBox();
+              
+              final day = i - emptyCells + 1;
+              final cellDate = DateTime(_currentMonth.year, _currentMonth.month, day);
+              
+              final isSelected = cellDate.year == widget.selectedDate.year &&
+                                 cellDate.month == widget.selectedDate.month &&
+                                 cellDate.day == widget.selectedDate.day;
+              
+              final isPast = cellDate.isBefore(DateTime(today.year, today.month, today.day));
+
+              // We default future non-selected dates to 'available' since full-month slot computation is very heavy.
+              String state = 'avail';
+              if (isPast) state = 'past';
+              if (isSelected) state = 'selected';
 
               Color bgColor = Colors.transparent;
               Color textColor = theme.colorScheme.onSurface;
@@ -109,29 +162,31 @@ class MiniCalendar extends StatelessWidget {
               } else if (state == 'avail') {
                 bgColor = const Color(0xFFF0FDF4); // green-50
                 textColor = const Color(0xFF15803D); // green-700
-              } else if (state == 'booked') {
-                bgColor = const Color(0xFFFEE2E2); // dangerSoft
-                textColor = theme.colorScheme.error;
               } else if (state == 'selected') {
                 bgColor = theme.colorScheme.primary;
                 textColor = theme.colorScheme.onPrimary;
                 weight = FontWeight.bold;
               }
 
-              return Center(
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      day.toString(),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: textColor,
-                        fontWeight: weight,
+              return GestureDetector(
+                onTap: isPast ? null : () {
+                  widget.onDateSelected(cellDate);
+                },
+                child: Center(
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        day.toString(),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: textColor,
+                          fontWeight: weight,
+                        ),
                       ),
                     ),
                   ),

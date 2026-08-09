@@ -52,7 +52,8 @@ INSERT INTO public.announcements (society_id, title, body, tag, icon, is_pinned,
 -- 3. Visitors (Past / Upcoming)
 INSERT INTO public.visitors (resident_id, apartment_id, society_id, guest_name, relation, purpose, invite_method, invite_code, valid_from, valid_until, valid_hours, status, arrived_at) VALUES
 (resident_id, apartment_id, society_id, 'Riya Sharma', 'friend', 'Food Delivery', 'qr', 'VIS-4829', now(), now() + INTERVAL '2 hours', 2, 'active', now()),
-(resident_id, apartment_id, society_id, 'James Pinto', 'family', 'Friend', 'qr', 'VIS-9104', now() - INTERVAL '1 day', now(), 2, 'expired', now() - INTERVAL '1 day');
+(resident_id, apartment_id, society_id, 'James Pinto', 'family', 'Friend', 'qr', 'VIS-9104', now() - INTERVAL '1 day', now(), 2, 'expired', now() - INTERVAL '1 day')
+ON CONFLICT DO NOTHING;
 
 -- 4. Facilities & Bookings
 INSERT INTO public.facilities (id, society_id, name, capacity, operating_hours, booking_fee, advance_days, slot_duration, status, is_active) VALUES
@@ -62,17 +63,20 @@ ON CONFLICT DO NOTHING;
 
 INSERT INTO public.bookings (resident_id, facility_id, society_id, booking_date, start_time, end_time, status, booking_fee) VALUES
 (resident_id, facility_id_1, society_id, CURRENT_DATE + 2, '18:00:00', '19:00:00', 'confirmed', 50.0),
-(resident_id, facility_id_2, society_id, CURRENT_DATE + 15, '16:00:00', '21:00:00', 'pending', 1500.0);
+(resident_id, facility_id_2, society_id, CURRENT_DATE + 15, '16:00:00', '21:00:00', 'pending', 1500.0)
+ON CONFLICT DO NOTHING;
 
 -- 5. Billing Cycles (Maintenance)
 INSERT INTO public.billing_cycles (apartment_id, society_id, billing_month, billing_year, base_amount, electricity, water, housekeeping, security, repairs, miscellaneous, total_amount, due_date, status, late_fee, discount) VALUES
 (apartment_id, society_id, 'November', 2024, 2500, 500, 200, 100, 100, 100, 0, 3500.0, CURRENT_DATE + 10, 'pending', 0, 0),
 (apartment_id, society_id, 'October', 2024, 2500, 500, 200, 100, 100, 100, 0, 3500.0, CURRENT_DATE - 20, 'paid', 0, 0),
-(apartment_id, society_id, 'September', 2024, 2500, 500, 200, 100, 100, 100, 0, 3500.0, CURRENT_DATE - 50, 'paid', 0, 0);
+(apartment_id, society_id, 'September', 2024, 2500, 500, 200, 100, 100, 100, 0, 3500.0, CURRENT_DATE - 50, 'paid', 0, 0)
+ON CONFLICT DO NOTHING;
 
 -- 6. Complaints
 INSERT INTO public.complaints (resident_id, apartment_id, society_id, title, description, category, priority, status) VALUES
 (resident_id, apartment_id, society_id, 'Leaking tap in kitchen', 'Tap is leaking heavily', 'plumbing', 'high', 'in_progress'),
-(resident_id, apartment_id, society_id, 'Corridor light flickering', 'Light near A-405 is flickering', 'electrical', 'low', 'resolved');
+(resident_id, apartment_id, society_id, 'Corridor light flickering', 'Light near A-405 is flickering', 'electrical', 'low', 'resolved')
+ON CONFLICT DO NOTHING;
 
 END $$;

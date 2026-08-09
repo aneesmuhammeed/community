@@ -9,6 +9,7 @@ class MyBookingCard extends StatelessWidget {
   final String status;
   final String icon;
   final bool canCancel;
+  final VoidCallback? onCancel;
 
   const MyBookingCard({
     Key? key,
@@ -18,6 +19,7 @@ class MyBookingCard extends StatelessWidget {
     required this.status,
     required this.icon,
     this.canCancel = true,
+    this.onCancel,
   }) : super(key: key);
 
   @override
@@ -156,7 +158,7 @@ class MyBookingCard extends StatelessWidget {
                 if (canCancel && status != 'cancelled') ...[
                   const SizedBox(height: 10),
                   InkWell(
-                    onTap: () {},
+                    onTap: onCancel,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

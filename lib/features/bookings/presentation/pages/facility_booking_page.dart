@@ -25,15 +25,11 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
   String? _selectedFacilityId;
   int _selectedTimeIndex = -1;
   bool _isSubmitting = false;
+  DateTime _selectedDate = DateTime.now();
+  String _selectedCategory = 'All';
 
-  final List<Map<String, dynamic>> _slots = [
-    {'time': '8:00 AM – 10:00 AM', 'start': '08:00:00', 'end': '10:00:00'},
-    {'time': '10:00 AM – 12:00 PM', 'start': '10:00:00', 'end': '12:00:00'},
-    {'time': '12:00 PM – 2:00 PM', 'start': '12:00:00', 'end': '14:00:00'},
-    {'time': '2:00 PM – 4:00 PM', 'start': '14:00:00', 'end': '16:00:00'},
-    {'time': '4:00 PM – 6:00 PM', 'start': '16:00:00', 'end': '18:00:00'},
-    {'time': '6:00 PM – 9:00 PM', 'start': '18:00:00', 'end': '21:00:00'},
-  ];
+  List<Map<String, dynamic>> _dynamicSlots = [];
+  bool _isLoadingSlots = false;
 
   @override
   void initState() {
@@ -62,8 +58,112 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
         .from('facilities')
         .select()
         .eq('society_id', currentUser.societyId)
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .eq('status', 'available');
     return List<Map<String, dynamic>>.from(response);
+  }
+
+  Future<void> _onFacilitySelected(String id) async {
+    setState(() {
+      _selectedFacilityId = id;
+      _selectedTimeIndex = -1;
+      _isLoadingSlots = true;
+    });
+    await _loadSlotsForSelectedDate();
+  }
+
+  Future<void> _loadSlotsForSelectedDate() async {
+    if (_selectedFacilityId == null) return;
+    
+    setState(() {
+      _isLoadingSlots = true;
+      _selectedTimeIndex = -1;
+      _dynamicSlots = []; // Clear old slots immediately
+    });
+
+    try {
+      final facilities = await _facilitiesFuture;
+      final facility = facilities.firstWhere((f) => f['id'] == _selectedFacilityId);
+      
+      final operatingHours = facility['operating_hours'] as String? ?? '06:00-22:00';
+      final slotDuration = facility['slot_duration'] as int? ?? 1;
+
+      final parts = operatingHours.split('-');
+      String startStr = parts.length == 2 ? parts[0].trim() : '06:00';
+      String endStr = parts.length == 2 ? parts[1].trim() : '22:00';
+      
+      final startTimeParts = startStr.split(':');
+      final endTimeParts = endStr.split(':');
+      
+      int startHour = int.parse(startTimeParts[0]);
+      int startMin = startTimeParts.length > 1 ? int.parse(startTimeParts[1]) : 0;
+      int endHour = int.parse(endTimeParts[0]);
+      if (endHour <= startHour && endHour != 0) {
+        endHour += 24; // Handle overnight hours (e.g., 20:00 - 02:00)
+      } else if (endHour == 0) {
+        endHour = 24; // Handle exact midnight
+      }
+      
+      final selectedDateStr = _selectedDate.toIso8601String().split('T')[0];
+      final response = await Supabase.instance.client
+          .from('bookings')
+          .select('start_time, status')
+          .eq('facility_id', _selectedFacilityId!)
+          .eq('booking_date', selectedDateStr)
+          .neq('status', 'cancelled');
+          
+      final existingBookings = List<Map<String, dynamic>>.from(response);
+      final bookedStartTimes = existingBookings.map((b) => b['start_time'].toString().substring(0, 5)).toSet();
+
+      List<Map<String, dynamic>> generatedSlots = [];
+      
+      int currentHour = startHour;
+      while (currentHour + slotDuration <= endHour) {
+        final slotStart = '${currentHour.toString().padLeft(2, '0')}:${startMin.toString().padLeft(2, '0')}';
+        final nextHour = currentHour + slotDuration;
+        final slotEnd = '${nextHour.toString().padLeft(2, '0')}:${startMin.toString().padLeft(2, '0')}';
+        
+        final displayStart = _formatAmPm(currentHour, startMin);
+        final displayEnd = _formatAmPm(nextHour, startMin);
+        
+        bool isAvailable = !bookedStartTimes.contains(slotStart);
+        
+        // Prevent booking past times if the selected date is today
+        final now = DateTime.now();
+        if (isAvailable && _selectedDate.year == now.year && _selectedDate.month == now.month && _selectedDate.day == now.day) {
+          if (currentHour < now.hour || (currentHour == now.hour && startMin <= now.minute)) {
+            isAvailable = false;
+          }
+        }
+        
+        generatedSlots.add({
+          'time': '$displayStart – $displayEnd',
+          'start': '$slotStart:00',
+          'end': '$slotEnd:00',
+          'available': isAvailable,
+        });
+        
+        currentHour = nextHour;
+      }
+      
+      if (mounted) {
+        setState(() {
+          _dynamicSlots = generatedSlots;
+          _isLoadingSlots = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingSlots = false);
+      }
+    }
+  }
+
+  String _formatAmPm(int hour, int min) {
+    final ampm = hour >= 12 ? 'PM' : 'AM';
+    int h = hour % 12;
+    if (h == 0) h = 12;
+    return '$h:${min.toString().padLeft(2, '0')} $ampm';
   }
 
   Future<void> _submitBooking() async {
@@ -72,18 +172,24 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
     setState(() => _isSubmitting = true);
 
     try {
-      final slot = _slots[_selectedTimeIndex];
+      final slot = _dynamicSlots[_selectedTimeIndex];
+      
+      // Find selected facility to get booking fee
+      final facilityList = await _facilitiesFuture;
+      final selectedFacility = facilityList.firstWhere((f) => f['id'] == _selectedFacilityId);
+      final bookingFee = (selectedFacility['booking_fee'] as num?)?.toDouble() ?? 0.0;
+      
       // Note: hardcoding resident_id and society_id to match dummy data
       await Supabase.instance.client.from('bookings').insert({
         'id': const Uuid().v4(),
         'resident_id': currentUser.residentId,
         'facility_id': _selectedFacilityId,
         'society_id': currentUser.societyId,
-        'booking_date': DateTime.now().toIso8601String().split('T')[0], // today
+        'booking_date': _selectedDate.toIso8601String().split('T')[0],
         'start_time': slot['start'],
         'end_time': slot['end'],
-        'status': 'confirmed',
-        'booking_fee': 0.0, // Should be fetched from facility, but just 0 for dummy
+        'status': 'pending', // Admins must approve this
+        'booking_fee': bookingFee,
       });
 
       if (mounted) {
@@ -94,6 +200,15 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
         });
         _fetchData(); // Refresh list
       }
+    } on PostgrestException catch (e) {
+      if (mounted) {
+        if (e.code == '23505' || e.message.contains('unique_active_booking')) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sorry, this slot was just booked by someone else!')));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Database Error: ${e.message}')));
+        }
+        _fetchData(); // Refresh slots to show it's taken
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
@@ -101,6 +216,25 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  Future<void> _cancelBooking(String bookingId) async {
+    try {
+      await Supabase.instance.client
+          .from('bookings')
+          .update({'status': 'cancelled'})
+          .eq('id', bookingId)
+          .eq('resident_id', currentUser.residentId);
+          
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking cancelled successfully')));
+        _fetchData(); // Refresh list
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error cancelling booking: $e')));
       }
     }
   }
@@ -201,20 +335,25 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
                   separatorBuilder: (context, index) => const SizedBox(width: 8),
                   itemBuilder: (context, index) {
                     final chip = facilityChips[index];
-                    final isSelected = index == 0;
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected ? theme.colorScheme.primary : const Color(0xFFE8EDF3),
+                    final isSelected = chip == _selectedCategory;
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedCategory = chip;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected ? theme.colorScheme.primary : const Color(0xFFE8EDF3),
+                          ),
                         ),
-                      ),
-                      child: Center(
                         child: Text(
                           chip,
-                          style: theme.textTheme.labelSmall?.copyWith(
+                          style: theme.textTheme.labelMedium?.copyWith(
                             color: isSelected ? theme.colorScheme.onPrimary : const Color(0xFF64748B),
                             fontWeight: FontWeight.w500,
                           ),
@@ -240,11 +379,20 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const MiniCalendar(), // Mockup calendar for now
+                  MiniCalendar(
+                    selectedDate: _selectedDate,
+                    onDateSelected: (date) {
+                      setState(() {
+                        _selectedDate = date;
+                      });
+                      _loadSlotsForSelectedDate();
+                    },
+                  ),
                 ],
               ),
             ),
           ),
+
           // Available Facilities
           SliverToBoxAdapter(
             child: Padding(
@@ -283,6 +431,17 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
                       }
 
                       final facilities = snapshot.data!;
+                      final filteredFacilities = facilities.where((f) => _selectedCategory == 'All' || f['name'] == _selectedCategory).toList();
+
+                      if (filteredFacilities.isEmpty) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Text('No facilities found for this category.'),
+                          ),
+                        );
+                      }
+
                       return GridView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
@@ -292,22 +451,19 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
                           mainAxisSpacing: 12,
                           childAspectRatio: 0.73,
                         ),
-                        itemCount: facilities.length,
+                        itemCount: filteredFacilities.length,
                         itemBuilder: (context, index) {
-                          final facility = facilities[index];
+                          final facility = filteredFacilities[index];
                           final id = facility['id'] as String;
                           return FacilityCard(
                             name: facility['name'] as String,
                             status: facility['status'] as String,
-                            capacity: facility['capacity'] as int,
-                            hours: facility['operating_hours'] as String,
+                            capacity: facility['capacity'] as int? ?? 0,
+                            hours: facility['operating_hours']?.toString() ?? '',
+                            bookingFee: (facility['booking_fee'] as num?)?.toDouble() ?? 0.0,
                             icon: 'building', // Dummy icon since db lacks it
                             isSelected: _selectedFacilityId == id,
-                            onTap: () {
-                              setState(() {
-                                _selectedFacilityId = id;
-                              });
-                            },
+                            onTap: () => _onFacilitySelected(id),
                           );
                         },
                       );
@@ -333,24 +489,35 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      Text(
-                        'Today', // Dummy
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  TimeSlotGrid(
-                    selectedIndex: _selectedTimeIndex,
-                    onSlotSelected: (index) {
-                      setState(() {
-                        _selectedTimeIndex = index;
-                      });
-                    },
-                  ),
+                  if (_selectedFacilityId == null)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text('Please select a facility first'),
+                      ),
+                    )
+                  else if (_isLoadingSlots)
+                    const Center(child: CircularProgressIndicator())
+                  else if (_dynamicSlots.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text('No slots available today'),
+                      ),
+                    )
+                  else
+                    TimeSlotGrid(
+                      slots: _dynamicSlots,
+                      selectedIndex: _selectedTimeIndex,
+                      onSlotSelected: (index) {
+                        setState(() {
+                          _selectedTimeIndex = index;
+                        });
+                      },
+                    ),
                 ],
               ),
             ),
@@ -434,6 +601,7 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
                           time: bookings[index].time,
                           status: bookings[index].status,
                           icon: bookings[index].icon,
+                          onCancel: () => _cancelBooking(bookings[index].id),
                         ),
                       );
                     },

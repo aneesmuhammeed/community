@@ -8,6 +8,7 @@ class FacilityCard extends StatelessWidget {
   final int capacity;
   final String hours;
   final String icon;
+  final double bookingFee;
   final bool isSelected;
   final VoidCallback? onTap;
 
@@ -18,6 +19,7 @@ class FacilityCard extends StatelessWidget {
     required this.capacity,
     required this.hours,
     required this.icon,
+    this.bookingFee = 0.0,
     this.isSelected = false,
     this.onTap,
   }) : super(key: key);
@@ -54,10 +56,10 @@ class FacilityCard extends StatelessWidget {
         break;
     }
 
-    final isBooked = status == 'booked';
+    final isAvailable = status == 'available';
 
     return GestureDetector(
-      onTap: isBooked ? null : onTap,
+      onTap: isAvailable ? onTap : null,
       child: Container(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
@@ -170,6 +172,22 @@ class FacilityCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (bookingFee > 0) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const CustomIcon(icon: 'indian-rupee', size: 12, color: Color(0xFF64748B)),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$bookingFee',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: const Color(0xFF64748B),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
