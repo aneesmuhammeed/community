@@ -49,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
         final res = await Supabase.instance.client
             .from('v_resident_details')
             .select()
-            .eq('resident_id', response.user!.id)
+            .eq('user_id', response.user!.id)
             .maybeSingle();
 
         if (res != null) {

@@ -1,41 +1,192 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/widgets/user_avatar.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/models/user_model.dart';
+import 'family_members_page.dart';
 
-class ProfilePage extends StatelessWidget {
+import 'vehicles_page.dart';
+import 'edit_profile_page.dart';
+import '../../../complaints/presentation/pages/my_complaints_page.dart';
+import 'notifications_settings_page.dart';
+import 'privacy_security_page.dart';
+
+class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  bool _isLoading = true;
+  int _familyCount = 0;
+  int _vehiclesCount = 0;
+  int _openComplaints = 0;
+  int _inProgressComplaints = 0;
+  String _nextBookingInfo = 'No upcoming bookings';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfileStats();
+  }
+
+  Future<void> _fetchProfileStats() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final residentId = currentUser.residentId;
+
+      // 1. Fetch family members count
+      final familyRes = await supabase
+          .from('family_members')
+          .select('id')
+          .eq('resident_id', residentId);
+      final fCount = (familyRes as List).length;
+
+      // 1.5 Fetch vehicles count
+      final vehiclesRes = await supabase
+          .from('vehicles')
+          .select('id')
+          .eq('resident_id', residentId)
+          .eq('is_active', true);
+      final vCount = (vehiclesRes as List).length;
+
+      // 2. Fetch complaints stats
+      final complaintsRes = await supabase
+          .from('complaints')
+          .select('status')
+          .eq('resident_id', residentId);
+      
+      int openC = 0;
+      int inProgC = 0;
+      for (var c in (complaintsRes as List)) {
+        if (c['status'] == 'open') openC++;
+        if (c['status'] == 'in_progress') inProgC++;
+      }
+
+      // 3. Fetch next booking
+      final todayStr = DateTime.now().toIso8601String().split('T')[0];
+      final bookingsRes = await supabase
+          .from('bookings')
+          .select('booking_date, start_time, facilities(name)')
+          .eq('resident_id', residentId)
+          .gte('booking_date', todayStr)
+          .neq('status', 'cancelled')
+          .order('booking_date', ascending: true)
+          .order('start_time', ascending: true)
+          .limit(1);
+
+      String bookingText = 'No upcoming bookings';
+      if ((bookingsRes as List).isNotEmpty) {
+        final b = bookingsRes[0];
+        final facilityName = b['facilities']['name'] ?? 'Facility';
+        final dateStr = b['booking_date'];
+        
+        try {
+          final dateParts = dateStr.toString().split('-');
+          final d = DateTime(int.parse(dateParts[0]), int.parse(dateParts[1]), int.parse(dateParts[2]));
+          final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          bookingText = 'Next: $facilityName, ${months[d.month - 1]} ${d.day}';
+        } catch (_) {
+          bookingText = 'Next: $facilityName, $dateStr';
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _familyCount = fCount;
+          _vehiclesCount = vCount;
+          _openComplaints = openC;
+          _inProgressComplaints = inProgC;
+          _nextBookingInfo = bookingText;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching profile stats: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _handleSignOut() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sign Out not connected to Auth yet.')),
+    );
+  }
+
+  void _navigateToFamilyMembers() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const FamilyMembersPage()),
+    ).then((_) {
+      _fetchProfileStats();
+    });
+  }
+
+  void _navigateToVehicles() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const VehiclesPage()),
+    ).then((_) {
+      _fetchProfileStats();
+    });
+  }
+
+  void _navigateToComplaints() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const MyComplaintsPage()),
+    ).then((_) {
+      _fetchProfileStats();
+    });
+  }
+
+  void _navigateToNotifications() {
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => const NotificationsSettingsPage()));
+  }
+
+  void _navigateToPrivacySecurity() {
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => const PrivacySecurityPage()));
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final ext = theme.extension<AppThemeExtension>()!;
 
+    String complaintsText = 'No active complaints';
+    if (_openComplaints > 0 || _inProgressComplaints > 0) {
+      final parts = <String>[];
+      if (_openComplaints > 0) parts.add('$_openComplaints open');
+      if (_inProgressComplaints > 0) parts.add('$_inProgressComplaints in progress');
+      complaintsText = parts.join(' · ');
+    }
+
     final menuSections = [
       {
         'title': 'My Home',
         'items': [
           {'icon': 'building-2', 'label': 'Apartment Details', 'sub': '${currentUser.block}, ${currentUser.apartment}'},
-          {'icon': 'users', 'label': 'Family Members', 'sub': '3 members registered'},
-          {'icon': 'car', 'label': 'Registered Vehicles', 'sub': '2 vehicles'},
+          {'icon': 'users', 'label': 'Family Members', 'sub': _isLoading ? 'Loading...' : '$_familyCount members registered', 'action': _navigateToFamilyMembers},
+          {'icon': 'car', 'label': 'Registered Vehicles', 'sub': _isLoading ? 'Loading...' : '$_vehiclesCount vehicles', 'action': _navigateToVehicles},
         ],
       },
       {
         'title': 'Activity',
         'items': [
           {'icon': 'newspaper', 'label': 'Community Feed', 'sub': 'News, events & announcements', 'highlight': true},
-          {'icon': 'message-circle', 'label': 'My Complaints', 'sub': '2 open · 1 in progress'},
-          {'icon': 'calendar', 'label': 'My Bookings', 'sub': 'Next: Clubhouse, Dec 2'},
+          {'icon': 'message-circle', 'label': 'My Complaints', 'sub': _isLoading ? 'Loading...' : complaintsText, 'action': _navigateToComplaints},
+          {'icon': 'calendar', 'label': 'My Bookings', 'sub': _isLoading ? 'Loading...' : _nextBookingInfo},
         ],
       },
       {
         'title': 'Account',
         'items': [
-          {'icon': 'bell', 'label': 'Notifications', 'sub': 'Manage alerts & reminders'},
-          {'icon': 'shield-check', 'label': 'Privacy & Security', 'sub': ''},
+          {'icon': 'bell', 'label': 'Notifications', 'sub': 'Manage alerts & reminders', 'action': _navigateToNotifications},
+          {'icon': 'shield-check', 'label': 'Privacy & Security', 'sub': '', 'action': _navigateToPrivacySecurity},
           {'icon': 'help-circle', 'label': 'Help & Support', 'sub': ''},
-          {'icon': 'log-out', 'label': 'Sign Out', 'sub': '', 'danger': true},
+          {'icon': 'log-out', 'label': 'Sign Out', 'sub': '', 'danger': true, 'action': _handleSignOut},
         ],
       },
     ];
@@ -109,36 +260,45 @@ class ProfilePage extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Stack(
-                      children: [
-                        UserAvatar(
-                          gender: currentUser.gender,
-                          ageGroup: currentUser.ageGroup,
-                          heritage: currentUser.heritage,
-                          index: currentUser.avatarIndex,
-                          size: 64,
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: theme.colorScheme.surface, width: 2),
-                            ),
-                            child: Center(
-                              child: CustomIcon(
-                                icon: 'pencil',
-                                size: 11,
-                                color: theme.colorScheme.onPrimary,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => const EditProfilePage()),
+                        ).then((_) {
+                          setState(() {}); // Refresh local state after edit
+                        });
+                      },
+                      child: Stack(
+                        children: [
+                          UserAvatar(
+                            gender: currentUser.gender,
+                            ageGroup: currentUser.ageGroup,
+                            heritage: currentUser.heritage,
+                            index: currentUser.avatarIndex,
+                            size: 64,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: theme.colorScheme.surface, width: 2),
+                              ),
+                              child: Center(
+                                child: CustomIcon(
+                                  icon: 'pencil',
+                                  size: 11,
+                                  color: theme.colorScheme.onPrimary,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -170,7 +330,7 @@ class ProfilePage extends StatelessWidget {
                                 child: Text(
                                   currentUser.role,
                                   style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.primary, // Using primary for secondary foreground equivalent
+                                    color: theme.colorScheme.primary,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -195,11 +355,20 @@ class ProfilePage extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Text(
-                      'Edit',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w500,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => const EditProfilePage()),
+                        ).then((_) {
+                          setState(() {}); // Refresh local state after edit
+                        });
+                      },
+                      child: Text(
+                        'Edit',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
@@ -291,7 +460,11 @@ class ProfilePage extends StatelessWidget {
                             return Column(
                               children: [
                                 InkWell(
-                                  onTap: () {},
+                                  onTap: () {
+                                    if (item.containsKey('action')) {
+                                      (item['action'] as Function)();
+                                    }
+                                  },
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                     child: Row(

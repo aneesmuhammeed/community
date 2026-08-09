@@ -4,6 +4,7 @@ import { Moon, BellRing } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import SidebarNav from '@/components/SidebarNav';
 import MobileNav from '@/components/MobileNav';
+import AuthGuard from '@/components/AuthGuard';
 
 export const revalidate = 0;
 
@@ -51,7 +52,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const totalNotifications = (unresolvedComplaints || 0) + (activeVisitors || 0);
 
   return (
-    <div className={styles.layout}>
+    <AuthGuard>
+      <div className={styles.layout}>
       {/* Desktop/Tablet Sidebar (hidden on mobile via CSS) */}
       <aside className={styles.sidebar}>
         <SidebarContent />
@@ -91,7 +93,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <main className={styles.mainContent}>
           {children}
         </main>
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

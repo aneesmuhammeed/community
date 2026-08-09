@@ -52,6 +52,41 @@ class UserModel {
       avatarIndex: json['avatar_index'] as int? ?? 0,
     );
   }
+  UserModel copyWith({
+    String? residentId,
+    String? societyId,
+    String? apartmentId,
+    String? name,
+    String? societyName,
+    String? block,
+    String? apartment,
+    String? phone,
+    String? email,
+    String? role,
+    String? residentType,
+    String? gender,
+    String? ageGroup,
+    String? heritage,
+    int? avatarIndex,
+  }) {
+    return UserModel(
+      residentId: residentId ?? this.residentId,
+      societyId: societyId ?? this.societyId,
+      apartmentId: apartmentId ?? this.apartmentId,
+      name: name ?? this.name,
+      societyName: societyName ?? this.societyName,
+      block: block ?? this.block,
+      apartment: apartment ?? this.apartment,
+      phone: phone ?? this.phone,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      residentType: residentType ?? this.residentType,
+      gender: gender ?? this.gender,
+      ageGroup: ageGroup ?? this.ageGroup,
+      heritage: heritage ?? this.heritage,
+      avatarIndex: avatarIndex ?? this.avatarIndex,
+    );
+  }
 }
 
 // Keeping a mutable or observable state might be better, but we will use a global variable or provider for now.

@@ -99,6 +99,13 @@ facilities,is_active,boolean,NO
 facilities,rules,text,YES
 facilities,created_at,timestamp with time zone,NO
 facilities,updated_at,timestamp with time zone,NO
+family_members,id,uuid,NO
+family_members,resident_id,uuid,NO
+family_members,name,text,NO
+family_members,relation,character varying,NO
+family_members,gender,character varying,NO
+family_members,age_group,character varying,NO
+family_members,created_at,timestamp with time zone,NO
 facility_schedules,id,uuid,NO
 facility_schedules,facility_id,uuid,NO
 facility_schedules,day_type,character varying,NO
