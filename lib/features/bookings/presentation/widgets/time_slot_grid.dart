@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import '../../../../core/widgets/custom_icon.dart';
 
 class TimeSlotGrid extends StatelessWidget {
+  final List<Map<String, dynamic>> slots;
   final int selectedIndex;
   final ValueChanged<int>? onSlotSelected;
 
   const TimeSlotGrid({
     Key? key,
+    required this.slots,
     this.selectedIndex = -1,
     this.onSlotSelected,
   }) : super(key: key);
@@ -15,21 +17,14 @@ class TimeSlotGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final slots = [
-      {'time': '8:00 AM – 10:00 AM', 'available': true},
-      {'time': '10:00 AM – 12:00 PM', 'available': false},
-      {'time': '12:00 PM – 2:00 PM', 'available': true},
-      {'time': '2:00 PM – 4:00 PM', 'available': true},
-      {'time': '4:00 PM – 6:00 PM', 'available': false},
-      {'time': '6:00 PM – 9:00 PM', 'available': true},
-    ];
+
 
     return GridView.builder(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 3.5,
+        childAspectRatio: 3.0,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
       ),
@@ -68,6 +63,7 @@ class TimeSlotGrid extends StatelessWidget {
         return GestureDetector(
           onTap: isAvailable ? () => onSlotSelected?.call(i) : null,
           child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: bgColor,
               borderRadius: BorderRadius.circular(12),

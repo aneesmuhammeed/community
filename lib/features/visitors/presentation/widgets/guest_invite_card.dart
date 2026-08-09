@@ -307,24 +307,6 @@ class GuestInviteCard extends StatelessWidget {
               Text('Invited to ${unitNumber.isNotEmpty ? unitNumber : relation}', style: theme.textTheme.bodyMedium?.copyWith(color: const Color(0xFF64748B))),
               const SizedBox(height: 16),
               
-              // Pass ID Pill
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE0E7FF), // blue-100
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CustomIcon(icon: 'hash', size: 16, color: Color(0xFF3B82F6)),
-                    const SizedBox(width: 8),
-                    Text(code, style: theme.textTheme.titleMedium?.copyWith(color: const Color(0xFF3B82F6), fontWeight: FontWeight.bold, letterSpacing: 1)),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              
               // Expires info
               if (validUntil.isNotEmpty)
                 Row(

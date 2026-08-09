@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/custom_icon.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class QRCodeDisplay extends StatelessWidget {
   final String name;
@@ -19,26 +20,6 @@ class QRCodeDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    // Pattern arrays from React
-    final qrPattern = [
-      1,1,1,1,1,1,1,
-      1,0,0,0,0,0,1,
-      1,0,1,0,1,0,1,
-      1,0,0,1,0,1,1,
-      1,0,1,0,1,0,1,
-      1,0,0,0,0,0,1,
-      1,1,1,1,1,1,1,
-    ];
-    final extra = [
-      0,0,0,0,0,0,0,
-      0,0,1,0,0,1,0,
-      0,1,0,0,1,0,0,
-      1,0,1,0,0,1,0,
-      0,0,0,1,0,0,0,
-      0,1,0,0,1,0,0,
-      0,0,1,0,0,1,0,
-    ];
-
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -59,23 +40,20 @@ class QRCodeDisplay extends StatelessWidget {
             ),
             child: Stack(
               children: [
-                GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 7,
-                    crossAxisSpacing: 1,
-                    mainAxisSpacing: 1,
+                Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: QrImageView(
+                      data: code,
+                      version: QrVersions.auto,
+                      size: 152.0,
+                      padding: EdgeInsets.zero,
+                    ),
                   ),
-                  itemCount: 49,
-                  itemBuilder: (context, i) {
-                    final isFilled = qrPattern[i] == 1 || extra[i] == 1;
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: isFilled ? Colors.white : const Color(0xFF1A1D23),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    );
-                  },
                 ),
                 // Center logo overlay
                 Center(
@@ -85,6 +63,7 @@ class QRCodeDisplay extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: theme.colorScheme.primary,
                       borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
                     child: Center(
                       child: CustomIcon(
