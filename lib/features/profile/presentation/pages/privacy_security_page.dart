@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/widgets/custom_icon.dart';
@@ -23,10 +24,16 @@ class _PrivacySecurityPageState extends State<PrivacySecurityPage> {
   }
 
   Future<void> _checkBiometrics() async {
-    final isSupported = await _auth.isDeviceSupported();
-    setState(() {
-      _isBiometricSupported = isSupported;
-    });
+    if (kIsWeb) return;
+    
+    try {
+      final isSupported = await _auth.isDeviceSupported();
+      setState(() {
+        _isBiometricSupported = isSupported;
+      });
+    } catch (e) {
+      debugPrint('Biometric check error: $e');
+    }
   }
 
   Future<void> _toggleBiometrics(bool enable) async {

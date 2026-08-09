@@ -13,25 +13,16 @@ export const revalidate = 0;
 export default async function FacilitiesPage() {
   const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
 
-  // Fetch facilities
-  const { data: facilities } = await supabase
-    .from('facilities')
-    .select('*')
-    .eq('society_id', SOCIETY_ID)
-    .order('name');
-
-  // Fetch bookings with facility details
-  const { data: rawBookings } = await supabase
-    .from('bookings')
-    .select('*, facilities(name)')
-    .eq('society_id', SOCIETY_ID)
-    .order('created_at', { ascending: false });
-
-  // Fetch resident details to map names and flat numbers
-  const { data: details } = await supabase
-    .from('v_resident_details')
-    .select('resident_id, full_name, unit_number')
-    .eq('society_id', SOCIETY_ID);
+  // Fetch all data in parallel
+  const [
+    { data: facilities },
+    { data: rawBookings },
+    { data: details }
+  ] = await Promise.all([
+    supabase.from('facilities').select('*').eq('society_id', SOCIETY_ID).order('name'),
+    supabase.from('bookings').select('*, facilities(name)').eq('society_id', SOCIETY_ID).order('created_at', { ascending: false }),
+    supabase.from('v_resident_details').select('resident_id, full_name, unit_number').eq('society_id', SOCIETY_ID)
+  ]);
 
   const detailsMap: Record<string, any> = {};
   if (details) {
@@ -45,7 +36,7 @@ export default async function FacilitiesPage() {
     ...b,
     resident_name: detailsMap[b.resident_id]?.full_name || 'Unknown Resident',
     unit_number: detailsMap[b.resident_id]?.unit_number || 'Unknown Flat',
-    facility_name: (b.facilities as any)?.name || 'Unknown Facility'
+    facility_name: (b.facilities as { name: string } | null)?.name || 'Unknown Facility'
   })) || [];
 
   return (

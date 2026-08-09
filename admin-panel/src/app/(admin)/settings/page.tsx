@@ -1,8 +1,12 @@
-export default function SettingsPage() {
+import SettingsClient from './SettingsClient';
+import { getSocietySettings } from './actions';
+
+export const dynamic = 'force-dynamic';
+
+export default async function SettingsPage() {
+  const society = await getSocietySettings();
+
   return (
-    <div style={{ padding: '24px' }}>
-      <h1>Settings</h1>
-      <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>This section is currently under construction.</p>
-    </div>
+    <SettingsClient initialData={society} />
   );
 }

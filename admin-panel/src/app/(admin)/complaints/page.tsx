@@ -1,8 +1,12 @@
-export default function ComplaintsPage() {
+import ComplaintsClient from './ComplaintsClient';
+import { getComplaints } from './actions';
+
+export const dynamic = 'force-dynamic';
+
+export default async function ComplaintsPage() {
+  const complaints = await getComplaints();
+
   return (
-    <div style={{ padding: '24px' }}>
-      <h1>Complaints & Tickets</h1>
-      <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>This section is currently under construction.</p>
-    </div>
+    <ComplaintsClient initialData={complaints} />
   );
 }

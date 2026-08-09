@@ -10,9 +10,23 @@ type BillingCycle = {
   apartment_id: string;
   billing_month: string;
   total_amount: number;
-  amount_due: number;
   due_date: string;
   status: string;
+};
+
+const formatDate = (dateStr: string) => {
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric'
+  });
+};
+
+const getStatusClass = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'paid': return styles.statusPaid;
+    case 'overdue': return styles.statusOverdue;
+    case 'pending':
+    default: return styles.statusPending;
+  }
 };
 
 export default function MaintenanceClient({ initialData }: { initialData: BillingCycle[] }) {
@@ -22,22 +36,12 @@ export default function MaintenanceClient({ initialData }: { initialData: Billin
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this billing cycle?')) return;
     setIsProcessingId(id);
-    await deleteBillingCycle(id);
-    setIsProcessingId(null);
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric'
-    });
-  };
-
-  const getStatusClass = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'paid': return styles.statusPaid;
-      case 'overdue': return styles.statusOverdue;
-      case 'pending':
-      default: return styles.statusPending;
+    try {
+      await deleteBillingCycle(id);
+    } catch (e) {
+      alert('Failed to delete billing cycle');
+    } finally {
+      setIsProcessingId(null);
     }
   };
 
@@ -62,7 +66,6 @@ export default function MaintenanceClient({ initialData }: { initialData: Billin
               <tr>
                 <th>Billing Month</th>
                 <th>Total Amount</th>
-                <th>Amount Due</th>
                 <th>Due Date</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -73,7 +76,6 @@ export default function MaintenanceClient({ initialData }: { initialData: Billin
                 <tr key={bill.id}>
                   <td>{bill.billing_month}</td>
                   <td>₹{bill.total_amount}</td>
-                  <td>₹{bill.amount_due}</td>
                   <td>{formatDate(bill.due_date)}</td>
                   <td>
                     <span className={`${styles.statusBadge} ${getStatusClass(bill.status)}`}>

@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/models/user_model.dart';
+import '../../data/profile_repository.dart';
 
 class NotificationsSettingsPage extends StatefulWidget {
   const NotificationsSettingsPage({Key? key}) : super(key: key);
@@ -15,6 +16,7 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
   bool _isLoading = true;
   bool _globalPushEnabled = true;
   bool _announcementsEnabled = true;
+  final _repository = ProfileRepository();
 
   @override
   void initState() {
@@ -24,12 +26,7 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
 
   Future<void> _fetchSettings() async {
     try {
-      final supabase = Supabase.instance.client;
-      final response = await supabase
-          .from('user_notification_settings')
-          .select()
-          .eq('resident_id', currentUser.residentId)
-          .maybeSingle();
+      final response = await _repository.getNotificationSettings(currentUser.residentId);
 
       if (response != null) {
         setState(() {
@@ -38,11 +35,7 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
         });
       } else {
         // If no settings row exists yet, we insert one
-        await supabase.from('user_notification_settings').insert({
-          'resident_id': currentUser.residentId,
-          'global_push_enabled': true,
-          'announcements_enabled': true,
-        });
+        await _repository.createDefaultNotificationSettings(currentUser.residentId);
       }
     } catch (e) {
       debugPrint('Error fetching notification settings: $e');
@@ -55,11 +48,7 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
 
   Future<void> _updateSetting(String key, bool value) async {
     try {
-      final supabase = Supabase.instance.client;
-      await supabase
-          .from('user_notification_settings')
-          .update({key: value})
-          .eq('resident_id', currentUser.residentId);
+      await _repository.updateNotificationSetting(currentUser.residentId, key, value);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update setting: $e')));

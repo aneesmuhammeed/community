@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/models/user_model.dart';
+import '../../../../core/models/vehicle_model.dart';
+import '../../data/profile_repository.dart';
 import '../widgets/add_vehicle_modal.dart';
 
 class VehiclesPage extends StatefulWidget {
@@ -14,7 +15,8 @@ class VehiclesPage extends StatefulWidget {
 
 class _VehiclesPageState extends State<VehiclesPage> {
   bool _isLoading = true;
-  List<Map<String, dynamic>> _vehicles = [];
+  List<VehicleModel> _vehicles = [];
+  final _repository = ProfileRepository();
 
   @override
   void initState() {
@@ -24,16 +26,11 @@ class _VehiclesPageState extends State<VehiclesPage> {
 
   Future<void> _fetchVehicles() async {
     try {
-      final res = await Supabase.instance.client
-          .from('vehicles')
-          .select()
-          .eq('resident_id', currentUser.residentId)
-          .eq('is_active', true)
-          .order('created_at', ascending: true);
+      final res = await _repository.getVehicles(currentUser.residentId);
 
       if (mounted) {
         setState(() {
-          _vehicles = List<Map<String, dynamic>>.from(res);
+          _vehicles = res;
           _isLoading = false;
         });
       }
@@ -47,7 +44,7 @@ class _VehiclesPageState extends State<VehiclesPage> {
 
   Future<void> _deleteVehicle(String id) async {
     try {
-      await Supabase.instance.client.from('vehicles').delete().eq('id', id);
+      await _repository.deleteVehicle(id);
       _fetchVehicles();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vehicle removed')));
@@ -143,15 +140,14 @@ class _VehiclesPageState extends State<VehiclesPage> {
     );
   }
 
-  Widget _buildVehicleCard(ThemeData theme, Map<String, dynamic> vehicle) {
-    final type = vehicle['vehicle_type'] as String? ?? 'car';
-    final String make = vehicle['make'] ?? '';
-    final String model = vehicle['model'] ?? '';
-    final String color = vehicle['color'] ?? '';
-    final String regNo = vehicle['registration_no'] ?? 'Unknown';
+  Widget _buildVehicleCard(ThemeData theme, VehicleModel vehicle) {
+    final type = vehicle.vehicleType;
+    final String make = vehicle.make ?? '';
+    final String model = vehicle.model ?? '';
+    final String color = vehicle.color ?? '';
+    final String regNo = vehicle.registrationNo;
 
-    String title = '$make $model'.trim();
-    if (title.isEmpty) title = '$color $type'.toUpperCase();
+    String title = vehicle.displayTitle;
 
     final ext = theme.extension<AppThemeExtension>()!;
 
@@ -215,7 +211,7 @@ class _VehiclesPageState extends State<VehiclesPage> {
           ),
           IconButton(
             icon: const CustomIcon(icon: 'trash-2', size: 20, color: Color(0xFFEF4444)),
-            onPressed: () => _confirmDelete(vehicle['id'], regNo),
+            onPressed: () => _confirmDelete(vehicle.id, regNo),
           ),
         ],
       ),

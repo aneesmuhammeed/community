@@ -5,13 +5,12 @@ import '../../../../core/models/user_model.dart';
 import '../widgets/guest_invite_card.dart';
 import '../widgets/qr_code_display.dart';
 import 'qr_scanner_page.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/models/guest_invite_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
-import 'package:uuid/uuid.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:async';
+import '../../data/visitor_repository.dart';
 
 class VisitorInvitePage extends StatefulWidget {
   const VisitorInvitePage({Key? key}) : super(key: key);
@@ -29,8 +28,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
   String? _generatedOtp;
   bool _showAllInvites = false;
   String? _generatedValidUntil;
-  Timer? _countdownTimer;
-  String _timeRemaining = '';
+  final _repository = VisitorRepository();
 
   @override
   void initState() {
@@ -44,29 +42,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
     });
   }
 
-  void _startCountdown() {
-    _countdownTimer?.cancel();
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_generatedValidUntil == null) {
-        timer.cancel();
-        return;
-      }
-      final validUntil = DateTime.parse(_generatedValidUntil!).toLocal();
-      final now = DateTime.now();
-      final diff = validUntil.difference(now);
-      if (diff.isNegative) {
-        timer.cancel();
-        if (mounted) setState(() => _timeRemaining = 'Expired');
-      } else {
-        final hours = diff.inHours;
-        final minutes = (diff.inMinutes % 60).toString().padLeft(2, '0');
-        final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
-        if (mounted) setState(() {
-          _timeRemaining = hours > 0 ? '$hours:$minutes:$seconds left' : '$minutes:$seconds left';
-        });
-      }
-    });
-  }
+  // Removed _startCountdown to use a localized widget instead
 
   Future<void> _generatePass() async {
     if (_nameController.text.trim().isEmpty) {
@@ -77,36 +53,23 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
     setState(() => _isGenerating = true);
 
     try {
-      final inviteCode = 'VIS-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
-      final otp = (100000 + (DateTime.now().millisecondsSinceEpoch % 900000)).toString(); // 6 digit OTP
-
-      await Supabase.instance.client.from('visitors').insert({
-        'id': const Uuid().v4(),
-        'resident_id': currentUser.residentId,
-        'apartment_id': currentUser.apartmentId,
-        'society_id': currentUser.societyId,
-        'guest_name': _nameController.text,
-        'relation': 'friend',
-        'purpose': _purposeController.text.isNotEmpty ? _purposeController.text : 'Visit',
-        'invite_method': 'qr',
-        'invite_code': inviteCode,
-        'otp_value': otp,
-        'valid_from': DateTime.now().toUtc().toIso8601String(),
-        'valid_until': DateTime.now().add(const Duration(hours: 6)).toUtc().toIso8601String(),
-        'valid_hours': 6,
-        'status': 'active',
-      });
+      final result = await _repository.createInvite(
+        residentId: currentUser.residentId,
+        apartmentId: currentUser.apartmentId,
+        societyId: currentUser.societyId,
+        guestName: _nameController.text,
+        purpose: _purposeController.text,
+      );
 
       // Optimistic UI update
       setState(() {
-        _generatedQrCode = inviteCode;
-        _generatedOtp = otp;
-        _generatedValidUntil = DateTime.now().add(const Duration(hours: 6)).toUtc().toIso8601String();
+        _generatedQrCode = result['inviteCode'];
+        _generatedOtp = result['otp'];
+        _generatedValidUntil = result['validUntil'];
         _isGenerating = false;
         _nameController.clear();
         _purposeController.clear();
       });
-      _startCountdown();
       _fetchAndSetInvites();
     } catch (e) {
       print('=== SUPABASE INSERT ERROR ===');
@@ -121,10 +84,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
 
   Future<void> _revokeInvite(String id) async {
     try {
-      await Supabase.instance.client
-          .from('visitors')
-          .update({'status': 'cancelled'})
-          .eq('id', id);
+      await _repository.revokeInvite(id);
       _fetchAndSetInvites();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invite revoked successfully.')));
     } catch (e) {
@@ -160,19 +120,13 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
 
   @override
   void dispose() {
-    _countdownTimer?.cancel();
     _nameController.dispose();
     _purposeController.dispose();
     super.dispose();
   }
 
   Future<List<GuestInviteModel>> _fetchInvites() async {
-    final response = await Supabase.instance.client
-        .from('visitors')
-        .select()
-        .eq('resident_id', currentUser.residentId)
-        .order('created_at', ascending: false);
-    return (response as List).map((data) => GuestInviteModel.fromJson(data)).toList();
+    return _repository.getInvites(currentUser.residentId);
   }
 
   @override
@@ -413,13 +367,8 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
                             children: [
                               CustomIcon(icon: 'clock', size: 12, color: theme.colorScheme.primary),
                               const SizedBox(width: 6),
-                              Text(
-                                _timeRemaining.isNotEmpty ? _timeRemaining : '6:00:00 left',
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.primary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                              if (_generatedValidUntil != null)
+                                _CountdownTimerWidget(validUntilIso: _generatedValidUntil!),
                             ],
                           ),
                         ),
@@ -462,7 +411,6 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
                       _generatedQrCode = null;
                       _generatedOtp = null;
                       _generatedValidUntil = null;
-                      _countdownTimer?.cancel();
                     });
                   },
                   style: FilledButton.styleFrom(
@@ -620,6 +568,64 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _CountdownTimerWidget extends StatefulWidget {
+  final String validUntilIso;
+  
+  const _CountdownTimerWidget({required this.validUntilIso});
+
+  @override
+  State<_CountdownTimerWidget> createState() => _CountdownTimerWidgetState();
+}
+
+class _CountdownTimerWidgetState extends State<_CountdownTimerWidget> {
+  late Timer _timer;
+  String _timeRemaining = 'Loading...';
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final validUntil = DateTime.parse(widget.validUntilIso).toLocal();
+      final diff = validUntil.difference(DateTime.now());
+      
+      if (diff.isNegative) {
+        timer.cancel();
+        if (mounted) setState(() => _timeRemaining = 'Expired');
+      } else {
+        final hours = diff.inHours;
+        final minutes = (diff.inMinutes % 60).toString().padLeft(2, '0');
+        final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
+        if (mounted) {
+          setState(() {
+            _timeRemaining = hours > 0 ? '$hours:$minutes:$seconds left' : '$minutes:$seconds left';
+          });
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      _timeRemaining,
+      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+        color: Theme.of(context).colorScheme.primary,
+        fontWeight: FontWeight.w500,
+      ),
     );
   }
 }

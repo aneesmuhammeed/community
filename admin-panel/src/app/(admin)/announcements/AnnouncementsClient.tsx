@@ -14,6 +14,19 @@ type Announcement = {
   created_at: string;
 };
 
+const formatDate = (isoStr: string) => {
+  return new Date(isoStr).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric'
+  });
+};
+
+const formatFullDate = (isoStr: string) => {
+  return new Date(isoStr).toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit'
+  });
+};
+
 export default function AnnouncementsClient({ initialData }: { initialData: Announcement[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProcessingId, setIsProcessingId] = useState<string | null>(null);
@@ -22,29 +35,25 @@ export default function AnnouncementsClient({ initialData }: { initialData: Anno
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this announcement?')) return;
     setIsProcessingId(id);
-    await deleteAnnouncement(id);
-    setIsProcessingId(null);
-    // Close popup if the deleted item was open
-    if (selectedAnnouncement?.id === id) setSelectedAnnouncement(null);
+    try {
+      await deleteAnnouncement(id);
+      if (selectedAnnouncement?.id === id) setSelectedAnnouncement(null);
+    } catch (e) {
+      alert('Failed to delete announcement');
+    } finally {
+      setIsProcessingId(null);
+    }
   };
 
   const handleTogglePin = async (id: string, currentStatus: boolean) => {
     setIsProcessingId(id);
-    await togglePinAnnouncement(id, currentStatus);
-    setIsProcessingId(null);
-  };
-
-  const formatDate = (isoStr: string) => {
-    return new Date(isoStr).toLocaleDateString('en-US', {
-      month: 'short', day: 'numeric', year: 'numeric'
-    });
-  };
-
-  const formatFullDate = (isoStr: string) => {
-    return new Date(isoStr).toLocaleDateString('en-US', {
-      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
-      hour: 'numeric', minute: '2-digit'
-    });
+    try {
+      await togglePinAnnouncement(id, currentStatus);
+    } catch (e) {
+      alert('Failed to pin/unpin announcement');
+    } finally {
+      setIsProcessingId(null);
+    }
   };
 
   return (

@@ -6,10 +6,9 @@ import '../widgets/facility_card.dart';
 import '../widgets/time_slot_grid.dart';
 import '../widgets/booking_confirmation_card.dart';
 import '../widgets/my_booking_card.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/models/booking_model.dart';
 import '../../../../core/theme/app_theme.dart';
-import 'package:uuid/uuid.dart';
+import '../../data/booking_repository.dart';
 
 class FacilityBookingPage extends StatefulWidget {
   const FacilityBookingPage({Key? key}) : super(key: key);
@@ -30,6 +29,7 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
 
   List<Map<String, dynamic>> _dynamicSlots = [];
   bool _isLoadingSlots = false;
+  final _repository = BookingRepository();
 
   @override
   void initState() {
@@ -45,22 +45,11 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
   }
 
   Future<List<BookingModel>> _fetchBookings() async {
-    final response = await Supabase.instance.client
-        .from('bookings')
-        .select('*, facilities(name, capacity)') // Note: icon is not in schema
-        .eq('resident_id', currentUser.residentId)
-        .order('created_at', ascending: false);
-    return (response as List).map((data) => BookingModel.fromJson(data)).toList();
+    return _repository.getBookings(currentUser.residentId);
   }
 
   Future<List<Map<String, dynamic>>> _fetchFacilities() async {
-    final response = await Supabase.instance.client
-        .from('facilities')
-        .select()
-        .eq('society_id', currentUser.societyId)
-        .eq('is_active', true)
-        .eq('status', 'available');
-    return List<Map<String, dynamic>>.from(response);
+    return _repository.getFacilities(currentUser.societyId);
   }
 
   Future<void> _onFacilitySelected(String id) async {
@@ -82,97 +71,15 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
     });
 
     try {
-      final selectedDateStr = _selectedDate.toIso8601String().split('T')[0];
-
-      // 1. Determine day type (WEEKDAY, WEEKEND, HOLIDAY)
-      String dayType = 'WEEKDAY';
-      final holidayResponse = await Supabase.instance.client
-          .from('holidays')
-          .select('id')
-          .eq('society_id', currentUser.societyId)
-          .eq('date', selectedDateStr)
-          .maybeSingle();
-          
-      if (holidayResponse != null) {
-        dayType = 'HOLIDAY';
-      } else if (_selectedDate.weekday == DateTime.saturday || _selectedDate.weekday == DateTime.sunday) {
-        dayType = 'WEEKEND';
-      }
-
-      // 2. Fetch schedules for this day type
-      final scheduleResponse = await Supabase.instance.client
-          .from('facility_schedules')
-          .select('start_time, end_time')
-          .eq('facility_id', _selectedFacilityId!)
-          .eq('day_type', dayType)
-          .order('start_time');
-          
-      final schedules = List<Map<String, dynamic>>.from(scheduleResponse);
-
-      // 3. Fetch existing bookings
-      final bookingResponse = await Supabase.instance.client
-          .from('bookings')
-          .select('start_time, end_time, status')
-          .eq('facility_id', _selectedFacilityId!)
-          .eq('booking_date', selectedDateStr)
-          .neq('status', 'cancelled');
-          
-      final existingBookings = List<Map<String, dynamic>>.from(bookingResponse);
-      
-      // 4. Fetch slot blocks/overrides
-      final blocksResponse = await Supabase.instance.client
-          .from('facility_slot_blocks')
-          .select('start_time, end_time')
-          .eq('facility_id', _selectedFacilityId!)
-          .eq('date', selectedDateStr);
-          
-      final slotBlocks = List<Map<String, dynamic>>.from(blocksResponse);
-
-      List<Map<String, dynamic>> generatedSlots = [];
-      
-      final now = DateTime.now();
-      final isToday = _selectedDate.year == now.year && _selectedDate.month == now.month && _selectedDate.day == now.day;
-
-      for (var schedule in schedules) {
-        final startStr = schedule['start_time'].toString().substring(0, 5);
-        final endStr = schedule['end_time'].toString().substring(0, 5);
-        
-        final startParts = startStr.split(':');
-        final endParts = endStr.split(':');
-        
-        int startH = int.parse(startParts[0]);
-        int startM = int.parse(startParts[1]);
-        int endH = int.parse(endParts[0]);
-        int endM = int.parse(endParts[1]);
-
-        // Check if passed for today
-        if (isToday) {
-          if (startH < now.hour || (startH == now.hour && startM <= now.minute)) {
-            continue; // Skip past slots
-          }
-        }
-
-        // Check if blocked by admin
-        bool isBlocked = slotBlocks.any((b) => b['start_time'].toString().startsWith(startStr));
-        if (isBlocked) continue; // Don't even show blocked slots
-
-        // Check if booked by user
-        bool isBooked = existingBookings.any((b) => b['start_time'].toString().startsWith(startStr));
-
-        final displayStart = _formatAmPm(startH, startM);
-        final displayEnd = _formatAmPm(endH, endM);
-
-        generatedSlots.add({
-          'time': '$displayStart – $displayEnd',
-          'start': '$startStr:00',
-          'end': '$endStr:00',
-          'available': !isBooked,
-        });
-      }
+      final slots = await _repository.getAvailableSlots(
+        currentUser.societyId,
+        _selectedFacilityId!,
+        _selectedDate,
+      );
       
       if (mounted) {
         setState(() {
-          _dynamicSlots = generatedSlots;
+          _dynamicSlots = slots;
           _isLoadingSlots = false;
         });
       }
@@ -182,13 +89,6 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
         setState(() => _isLoadingSlots = false);
       }
     }
-  }
-
-  String _formatAmPm(int hour, int min) {
-    final ampm = hour >= 12 ? 'PM' : 'AM';
-    int h = hour % 12;
-    if (h == 0) h = 12;
-    return '$h:${min.toString().padLeft(2, '0')} $ampm';
   }
 
   Future<void> _submitBooking() async {
@@ -223,17 +123,14 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
       final selectedFacility = facilityList.firstWhere((f) => f['id'] == _selectedFacilityId);
       final bookingFee = (selectedFacility['booking_fee'] as num?)?.toDouble() ?? 0.0;
       
-      await Supabase.instance.client.from('bookings').insert({
-        'id': const Uuid().v4(),
-        'resident_id': currentUser.residentId,
-        'facility_id': _selectedFacilityId,
-        'society_id': currentUser.societyId,
-        'booking_date': _selectedDate.toIso8601String().split('T')[0],
-        'start_time': slot['start'],
-        'end_time': slot['end'],
-        'status': 'pending',
-        'booking_fee': bookingFee,
-      });
+      await _repository.submitBooking(
+        residentId: currentUser.residentId,
+        societyId: currentUser.societyId,
+        facilityId: _selectedFacilityId!,
+        selectedDate: _selectedDate,
+        slot: slot,
+        bookingFee: bookingFee,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Facility booked successfully!')));
@@ -244,18 +141,14 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
         });
         _fetchData();
       }
-    } on PostgrestException catch (e) {
-      if (mounted) {
-        if (e.code == '23505' || e.message.contains('unique_active_booking') || e.message.contains('no_overlapping_bookings')) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sorry, this slot was just booked by someone else!')));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Database Error: ${e.message}')));
-        }
-        _loadSlotsForSelectedDate();
-      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        if (e.toString().contains('23505') || e.toString().contains('unique_active_booking') || e.toString().contains('no_overlapping_bookings')) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sorry, this slot was just booked by someone else!')));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        }
+        _loadSlotsForSelectedDate();
       }
     } finally {
       if (mounted) {
@@ -266,11 +159,7 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
 
   Future<void> _cancelBooking(String bookingId) async {
     try {
-      await Supabase.instance.client
-          .from('bookings')
-          .update({'status': 'cancelled'})
-          .eq('id', bookingId)
-          .eq('resident_id', currentUser.residentId);
+      await _repository.cancelBooking(bookingId, currentUser.residentId);
           
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking cancelled successfully')));

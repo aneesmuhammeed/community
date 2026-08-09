@@ -7,7 +7,8 @@ import '../widgets/billing_history_item.dart';
 import '../widgets/expense_breakdown.dart';
 import '../widgets/payment_methods.dart';
 import '../widgets/recent_transaction.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../core/models/maintenance_models.dart';
+import '../../data/billing_repository.dart';
 import '../../../../core/models/maintenance_models.dart';
 import 'package:community_hub/features/layout/presentation/pages/notifications_page.dart';
 
@@ -19,34 +20,37 @@ class MaintenanceAndBillingPage extends StatefulWidget {
 }
 
 class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
-  late Future<List<OutstandingDueModel>> _duesFuture;
-  late Future<List<BillingHistoryModel>> _historyFuture;
+  bool _isLoading = true;
+  List<OutstandingDueModel> _dues = [];
+  List<BillingHistoryModel> _history = [];
+  final _repository = BillingRepository();
 
   @override
   void initState() {
     super.initState();
-    _duesFuture = _fetchDues();
-    _historyFuture = _fetchHistory();
+    _fetchData();
   }
 
-  Future<List<OutstandingDueModel>> _fetchDues() async {
-    final response = await Supabase.instance.client
-        .from('billing_cycles')
-        .select()
-        .eq('apartment_id', currentUser.apartmentId)
-        .or('status.eq.pending,status.eq.overdue')
-        .order('due_date', ascending: false);
-    return (response as List).map((data) => OutstandingDueModel.fromJson(data)).toList();
-  }
+  Future<void> _fetchData() async {
+    try {
+      final results = await Future.wait([
+        _repository.getOutstandingDues(currentUser.apartmentId),
+        _repository.getBillingHistory(currentUser.apartmentId),
+      ]);
 
-  Future<List<BillingHistoryModel>> _fetchHistory() async {
-    final response = await Supabase.instance.client
-        .from('billing_cycles')
-        .select()
-        .eq('apartment_id', currentUser.apartmentId)
-        .eq('status', 'paid')
-        .order('created_at', ascending: false);
-    return (response as List).map((data) => BillingHistoryModel.fromJson(data)).toList();
+      if (mounted) {
+        setState(() {
+          _dues = results[0] as List<OutstandingDueModel>;
+          _history = results[1] as List<BillingHistoryModel>;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
   }
 
   @override
@@ -128,52 +132,34 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
           ),
           // Outstanding Dues
           SliverToBoxAdapter(
-            child: FutureBuilder<List<OutstandingDueModel>>(
-              future: _duesFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Padding(
+            child: _isLoading
+                ? const Padding(
                     padding: EdgeInsets.all(20),
                     child: Center(child: CircularProgressIndicator()),
-                  );
-                } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const SizedBox.shrink();
-                }
-
-                final due = snapshot.data!.first;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  child: OutstandingDuesCard(
-                    amount: due.amount.toInt(),
-                    dueDate: due.dueDate,
-                    status: due.isOverdue ? 'overdue' : 'pending',
-                  ),
-                );
-              },
-            ),
+                  )
+                : _dues.isEmpty
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        child: OutstandingDuesCard(
+                          amount: _dues.first.amount.toInt(),
+                          dueDate: _dues.first.dueDate,
+                          status: _dues.first.isOverdue ? 'overdue' : 'pending',
+                        ),
+                      ),
           ),
           // Payment Summary
           SliverToBoxAdapter(
-            child: FutureBuilder<List<OutstandingDueModel>>(
-              future: _duesFuture,
-              builder: (context, snapshot) {
-                final pendingAmount = snapshot.hasData && snapshot.data!.isNotEmpty
-                  ? snapshot.data!.first.amount.toInt()
-                  : 0;
-                final nextDueDate = snapshot.hasData && snapshot.data!.isNotEmpty
-                  ? snapshot.data!.first.dueDate
-                  : '—';
-
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                  child: PaymentSummaryRow(
-                    paidThisYear: 42000,
-                    pendingAmount: pendingAmount,
-                    nextDueDate: nextDueDate,
+            child: _isLoading
+                ? const SizedBox.shrink()
+                : Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                    child: PaymentSummaryRow(
+                      paidThisYear: 42000,
+                      pendingAmount: _dues.isNotEmpty ? _dues.first.amount.toInt() : 0,
+                      nextDueDate: _dues.isNotEmpty ? _dues.first.dueDate : '—',
+                    ),
                   ),
-                );
-              },
-            ),
           ),
           // Billing History
           SliverToBoxAdapter(
@@ -203,31 +189,21 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
                         ),
                       ],
                     ),
-                    child: FutureBuilder<List<BillingHistoryModel>>(
-                      future: _historyFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator());
-                        } else if (snapshot.hasError) {
-                          return Padding(padding: const EdgeInsets.all(20), child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
-                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return const Padding(padding: EdgeInsets.all(20), child: Text('No billing history found.'));
-                        }
-
-                        final history = snapshot.data!;
-                        return Column(
-                          children: history.map((item) {
-                            return BillingHistoryItem(
-                              month: item.title,
-                              amount: item.amount.toInt(),
-                              dueDate: item.date,
-                              status: item.status,
-                              paidDate: item.status == 'paid' ? item.date : '—',
-                            );
-                          }).toList(),
-                        );
-                      },
-                    ),
+                    child: _isLoading
+                        ? const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())
+                        : _history.isEmpty
+                            ? const Padding(padding: EdgeInsets.all(20), child: Text('No billing history found.'))
+                            : Column(
+                                children: _history.map((item) {
+                                  return BillingHistoryItem(
+                                    month: item.title,
+                                    amount: item.amount.toInt(),
+                                    dueDate: item.date,
+                                    status: item.status,
+                                    paidDate: item.status == 'paid' ? item.date : '—',
+                                  );
+                                }).toList(),
+                              ),
                   ),
                 ],
               ),
@@ -266,21 +242,12 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  FutureBuilder<List<OutstandingDueModel>>(
-                    future: _duesFuture,
-                    builder: (context, snapshot) {
-                      final amount = snapshot.hasData && snapshot.data!.isNotEmpty
-                        ? snapshot.data!.first.amount.toInt()
-                        : 0;
-                      final billingMonth = snapshot.hasData && snapshot.data!.isNotEmpty
-                        ? snapshot.data!.first.title.replaceAll(' Maintenance', '')
-                        : '';
-                      return PaymentMethods(
-                        amount: amount,
-                        billingMonth: billingMonth,
-                      );
-                    },
-                  ),
+                  _isLoading
+                      ? const SizedBox.shrink()
+                      : PaymentMethods(
+                          amount: _dues.isNotEmpty ? _dues.first.amount.toInt() : 0,
+                          billingMonth: _dues.isNotEmpty ? _dues.first.title.replaceAll(' Maintenance', '') : '',
+                        ),
                 ],
               ),
             ),

@@ -34,10 +34,13 @@ export default async function VisitorsPage({
     }
   }
 
-  const { data: rawVisitors } = await query;
-  
-  // Bypass RLS on apartments/profiles by using v_resident_details
-  const { data: details } = await supabase.from('v_resident_details').select('resident_id, full_name, unit_number').eq('society_id', SOCIETY_ID);
+  const [
+    { data: rawVisitors },
+    { data: details }
+  ] = await Promise.all([
+    query,
+    supabase.from('v_resident_details').select('resident_id, full_name, unit_number').eq('society_id', SOCIETY_ID)
+  ]);
   
   const detailsMap: Record<string, any> = {};
   if (details) {

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/models/user_model.dart';
+import '../../../../core/models/complaint_model.dart';
+import '../../data/complaint_repository.dart';
 
 class MyComplaintsPage extends StatefulWidget {
   const MyComplaintsPage({Key? key}) : super(key: key);
@@ -13,7 +14,8 @@ class MyComplaintsPage extends StatefulWidget {
 
 class _MyComplaintsPageState extends State<MyComplaintsPage> {
   bool _isLoading = true;
-  List<Map<String, dynamic>> _complaints = [];
+  List<ComplaintModel> _complaints = [];
+  final _repository = ComplaintRepository();
 
   @override
   void initState() {
@@ -23,15 +25,11 @@ class _MyComplaintsPageState extends State<MyComplaintsPage> {
 
   Future<void> _fetchComplaints() async {
     try {
-      final res = await Supabase.instance.client
-          .from('complaints')
-          .select()
-          .eq('resident_id', currentUser.residentId)
-          .order('created_at', ascending: false);
+      final complaints = await _repository.getComplaints(currentUser.residentId);
 
       if (mounted) {
         setState(() {
-          _complaints = List<Map<String, dynamic>>.from(res);
+          _complaints = complaints;
           _isLoading = false;
         });
       }
@@ -108,10 +106,10 @@ class _MyComplaintsPageState extends State<MyComplaintsPage> {
     );
   }
 
-  Widget _buildComplaintCard(ThemeData theme, Map<String, dynamic> complaint) {
-    final status = complaint['status'] as String? ?? 'open';
-    final category = complaint['category'] as String? ?? 'general';
-    final dateStr = complaint['created_at'] as String?;
+  Widget _buildComplaintCard(ThemeData theme, ComplaintModel complaint) {
+    final status = complaint.status.toLowerCase();
+    final category = complaint.category;
+    final dateStr = complaint.createdAt;
     
     Color statusColor = const Color(0xFFF59E0B);
     Color statusBg = const Color(0xFFFEF3C7);
@@ -184,12 +182,12 @@ class _MyComplaintsPageState extends State<MyComplaintsPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            complaint['title'] ?? 'No Title',
+            complaint.title,
             style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           Text(
-            complaint['description'] ?? 'No description provided.',
+            complaint.description ?? 'No description provided.',
             style: theme.textTheme.bodyMedium?.copyWith(color: const Color(0xFF64748B)),
           ),
           const SizedBox(height: 12),

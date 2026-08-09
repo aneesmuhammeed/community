@@ -9,11 +9,12 @@ import '../widgets/announcement_card.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/models/guest_invite_model.dart';
 import '../../../../core/models/announcement_model.dart';
+import '../../../../main.dart'; // Ensure global currentUser is imported
 
 class HomeDashboardPage extends StatefulWidget {
   final Function(int)? onNavigate;
 
-  const HomeDashboardPage({Key? key, this.onNavigate}) : super(key: key);
+  const HomeDashboardPage({super.key, this.onNavigate});
 
   @override
   State<HomeDashboardPage> createState() => _HomeDashboardPageState();
@@ -30,6 +31,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     _announcementsFuture = _fetchAnnouncements();
   }
 
+  // TODO: Move to a Repository class
   Future<List<GuestInviteModel>> _fetchVisitors() async {
     final response = await Supabase.instance.client
         .from('visitors')
@@ -39,6 +41,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     return (response as List).map((data) => GuestInviteModel.fromJson(data)).toList();
   }
 
+  // TODO: Move to a Repository class
   Future<List<AnnouncementModel>> _fetchAnnouncements() async {
     final response = await Supabase.instance.client
         .from('announcements')
@@ -72,21 +75,19 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           ),
         ),
 
-        // Quick Actions
+        // Quick Actions - Refactored to Wrap for responsiveness
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pagePadding),
           sliver: SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Quick Actions',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                Text('Quick Actions', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: AppSpacing.md),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.spaceBetween,
                   children: [
                     QuickActionButton(
                       icon: 'user-check', 
@@ -110,7 +111,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                       icon: 'message-square', 
                       label: 'Community', 
                       colorVariant: 'purple',
-                      onTap: () {}, // Community doesn't have a direct tab yet
+                      onTap: () {}, 
                     ),
                   ],
                 ),
@@ -128,10 +129,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Recent Invites',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                Text('Recent Invites', style: Theme.of(context).textTheme.titleLarge),
                 TextButton(
                   onPressed: () => widget.onNavigate?.call(1),
                   style: TextButton.styleFrom(
@@ -160,9 +158,13 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
             future: _visitorsFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
+                return const SliverToBoxAdapter(
+                  child: Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
+                );
               } else if (snapshot.hasError) {
-                return SliverToBoxAdapter(child: Text('Error loading visitors: ${snapshot.error}'));
+                return const SliverToBoxAdapter(
+                  child: Center(child: Text('Failed to load visitors. Please try again.', style: TextStyle(color: Colors.red))),
+                );
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const SliverToBoxAdapter(child: Text('No recent invites.'));
               }
@@ -174,6 +176,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                     final visitor = visitors[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 10),
+                      // Ideally, refactor GuestInviteCard to accept GuestInviteModel directly
                       child: GuestInviteCard(
                         id: visitor.id,
                         name: visitor.name,
@@ -200,28 +203,30 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         
         const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
 
-        // Announcements
+        // Announcements Header
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pagePadding),
           sliver: SliverToBoxAdapter(
-            child: Text(
-              'Announcements',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            child: Text('Announcements', style: Theme.of(context).textTheme.titleLarge),
           ),
         ),
         
         const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
 
+        // Announcements List
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pagePadding),
           sliver: FutureBuilder<List<AnnouncementModel>>(
             future: _announcementsFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()));
+                return const SliverToBoxAdapter(
+                  child: Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
+                );
               } else if (snapshot.hasError) {
-                return SliverToBoxAdapter(child: Text('Error loading announcements: ${snapshot.error}'));
+                return const SliverToBoxAdapter(
+                  child: Center(child: Text('Failed to load announcements.', style: TextStyle(color: Colors.red))),
+                );
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const SliverToBoxAdapter(child: Text('No announcements.'));
               }
@@ -247,7 +252,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           ),
         ),
         
-        // Bottom padding to ensure last item is visible above FAB/NavBar
         const SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
     );

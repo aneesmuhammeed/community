@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/widgets/user_avatar.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/models/user_model.dart';
 import 'family_members_page.dart';
-
 import 'vehicles_page.dart';
-import 'edit_profile_page.dart';
 import '../../../complaints/presentation/pages/my_complaints_page.dart';
 import 'notifications_settings_page.dart';
 import 'privacy_security_page.dart';
+import 'help_support_page.dart';
+import '../../data/profile_repository.dart';
 
 class ProfilePage extends StatefulWidget {
   final Function(int)? onNavigate;
@@ -28,6 +27,7 @@ class _ProfilePageState extends State<ProfilePage> {
   int _openComplaints = 0;
   int _inProgressComplaints = 0;
   String _nextBookingInfo = 'No upcoming bookings';
+  final _repository = ProfileRepository();
 
   @override
   void initState() {
@@ -37,72 +37,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _fetchProfileStats() async {
     try {
-      final supabase = Supabase.instance.client;
-      final residentId = currentUser.residentId;
-
-      // 1. Fetch family members count
-      final familyRes = await supabase
-          .from('family_members')
-          .select('id')
-          .eq('resident_id', residentId);
-      final fCount = (familyRes as List).length;
-
-      // 1.5 Fetch vehicles count
-      final vehiclesRes = await supabase
-          .from('vehicles')
-          .select('id')
-          .eq('resident_id', residentId)
-          .eq('is_active', true);
-      final vCount = (vehiclesRes as List).length;
-
-      // 2. Fetch complaints stats
-      final complaintsRes = await supabase
-          .from('complaints')
-          .select('status')
-          .eq('resident_id', residentId);
-      
-      int openC = 0;
-      int inProgC = 0;
-      for (var c in (complaintsRes as List)) {
-        if (c['status'] == 'open') openC++;
-        if (c['status'] == 'in_progress') inProgC++;
-      }
-
-      // 3. Fetch next booking
-      final todayStr = DateTime.now().toIso8601String().split('T')[0];
-      final bookingsRes = await supabase
-          .from('bookings')
-          .select('booking_date, start_time, facilities(name)')
-          .eq('resident_id', residentId)
-          .gte('booking_date', todayStr)
-          .neq('status', 'cancelled')
-          .order('booking_date', ascending: true)
-          .order('start_time', ascending: true)
-          .limit(1);
-
-      String bookingText = 'No upcoming bookings';
-      if ((bookingsRes as List).isNotEmpty) {
-        final b = bookingsRes[0];
-        final facilityName = b['facilities']['name'] ?? 'Facility';
-        final dateStr = b['booking_date'];
-        
-        try {
-          final dateParts = dateStr.toString().split('-');
-          final d = DateTime(int.parse(dateParts[0]), int.parse(dateParts[1]), int.parse(dateParts[2]));
-          final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          bookingText = 'Next: $facilityName, ${months[d.month - 1]} ${d.day}';
-        } catch (_) {
-          bookingText = 'Next: $facilityName, $dateStr';
-        }
-      }
+      final stats = await _repository.getProfileStats(currentUser.residentId);
 
       if (mounted) {
         setState(() {
-          _familyCount = fCount;
-          _vehiclesCount = vCount;
-          _openComplaints = openC;
-          _inProgressComplaints = inProgC;
-          _nextBookingInfo = bookingText;
+          _familyCount = stats.familyCount;
+          _vehiclesCount = stats.vehiclesCount;
+          _openComplaints = stats.openComplaints;
+          _inProgressComplaints = stats.inProgressComplaints;
+          _nextBookingInfo = stats.nextBookingInfo;
           _isLoading = false;
         });
       }
@@ -152,6 +95,10 @@ class _ProfilePageState extends State<ProfilePage> {
     Navigator.of(context).push(MaterialPageRoute(builder: (context) => const PrivacySecurityPage()));
   }
 
+  void _navigateToHelpSupport() {
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => const HelpSupportPage()));
+  }
+
   void _navigateToBookings() {
     if (widget.onNavigate != null) {
       widget.onNavigate!(4);
@@ -193,7 +140,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'items': [
           {'icon': 'bell', 'label': 'Notifications', 'sub': 'Manage alerts & reminders', 'action': _navigateToNotifications},
           {'icon': 'shield-check', 'label': 'Privacy & Security', 'sub': '', 'action': _navigateToPrivacySecurity},
-          {'icon': 'help-circle', 'label': 'Help & Support', 'sub': ''},
+          {'icon': 'help-circle', 'label': 'Help & Support', 'sub': 'Contact support or read FAQs', 'action': _navigateToHelpSupport},
           {'icon': 'log-out', 'label': 'Sign Out', 'sub': '', 'danger': true, 'action': _handleSignOut},
         ],
       },
@@ -268,45 +215,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 child: Row(
                   children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) => const EditProfilePage()),
-                        ).then((_) {
-                          setState(() {}); // Refresh local state after edit
-                        });
-                      },
-                      child: Stack(
-                        children: [
-                          UserAvatar(
-                            gender: currentUser.gender,
-                            ageGroup: currentUser.ageGroup,
-                            heritage: currentUser.heritage,
-                            index: currentUser.avatarIndex,
-                            size: 64,
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              width: 24,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primary,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: theme.colorScheme.surface, width: 2),
-                              ),
-                              child: Center(
-                                child: CustomIcon(
-                                  icon: 'pencil',
-                                  size: 11,
-                                  color: theme.colorScheme.onPrimary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    UserAvatar(
+                      gender: currentUser.gender,
+                      ageGroup: currentUser.ageGroup,
+                      heritage: currentUser.heritage,
+                      index: currentUser.avatarIndex,
+                      size: 64,
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -363,22 +277,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ],
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (context) => const EditProfilePage()),
-                        ).then((_) {
-                          setState(() {}); // Refresh local state after edit
-                        });
-                      },
-                      child: Text(
-                        'Edit',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
+
                   ],
                 ),
               ),
@@ -467,54 +366,57 @@ class _ProfilePageState extends State<ProfilePage> {
 
                             return Column(
                               children: [
-                                InkWell(
-                                  onTap: () {
-                                    if (item.containsKey('action')) {
-                                      (item['action'] as Function)();
-                                    }
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: iconBgColor,
-                                            borderRadius: BorderRadius.circular(8),
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: item.containsKey('action') 
+                                        ? () => (item['action'] as Function)() 
+                                        : null,
+                                    splashColor: item.containsKey('action') ? null : Colors.transparent,
+                                    highlightColor: item.containsKey('action') ? null : Colors.transparent,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: BoxDecoration(
+                                              color: iconBgColor,
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: Center(
+                                              child: CustomIcon(icon: item['icon'] as String, size: 16, color: iconColor),
+                                            ),
                                           ),
-                                          child: Center(
-                                            child: CustomIcon(icon: item['icon'] as String, size: 16, color: iconColor),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                item['label'] as String,
-                                                style: theme.textTheme.bodyMedium?.copyWith(
-                                                  color: isDanger ? theme.colorScheme.error : theme.colorScheme.onSurface,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                              if ((item['sub'] as String).isNotEmpty) ...[
-                                                const SizedBox(height: 2),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
                                                 Text(
-                                                  item['sub'] as String,
-                                                  style: theme.textTheme.labelSmall?.copyWith(
-                                                    color: const Color(0xFF64748B),
+                                                  item['label'] as String,
+                                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                                    color: isDanger ? theme.colorScheme.error : theme.colorScheme.onSurface,
+                                                    fontWeight: FontWeight.w500,
                                                   ),
                                                 ),
+                                                if ((item['sub'] as String).isNotEmpty) ...[
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    item['sub'] as String,
+                                                    style: theme.textTheme.labelSmall?.copyWith(
+                                                      color: const Color(0xFF64748B),
+                                                    ),
+                                                  ),
+                                                ],
                                               ],
-                                            ],
+                                            ),
                                           ),
-                                        ),
-                                        if (!isDanger)
-                                          const CustomIcon(icon: 'chevron-right', size: 16, color: Color(0xFF64748B)),
-                                      ],
+                                          if (!isDanger && item.containsKey('action'))
+                                            const CustomIcon(icon: 'chevron-right', size: 16, color: Color(0xFF64748B)),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),

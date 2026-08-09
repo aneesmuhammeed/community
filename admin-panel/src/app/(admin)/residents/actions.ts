@@ -37,3 +37,19 @@ export async function deleteResident(residentId: string) {
   
   revalidatePath('/residents');
 }
+
+export async function reassignResident(residentId: string, apartmentId: string) {
+  if (!residentId || !apartmentId) return;
+  
+  const { error } = await supabase
+    .from('residents')
+    .update({ apartment_id: apartmentId })
+    .eq('id', residentId)
+    .eq('society_id', SOCIETY_ID);
+    
+  if (error) {
+    console.error('Error reassigning resident:', error);
+  }
+  
+  revalidatePath('/residents');
+}

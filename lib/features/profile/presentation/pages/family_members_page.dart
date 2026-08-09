@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/models/user_model.dart';
+import '../../../../core/models/family_member_model.dart';
+import '../../data/profile_repository.dart';
 import '../widgets/add_family_member_modal.dart';
 
 class FamilyMembersPage extends StatefulWidget {
@@ -14,7 +15,8 @@ class FamilyMembersPage extends StatefulWidget {
 
 class _FamilyMembersPageState extends State<FamilyMembersPage> {
   bool _isLoading = true;
-  List<Map<String, dynamic>> _members = [];
+  List<FamilyMemberModel> _members = [];
+  final _repository = ProfileRepository();
 
   @override
   void initState() {
@@ -24,15 +26,11 @@ class _FamilyMembersPageState extends State<FamilyMembersPage> {
 
   Future<void> _fetchMembers() async {
     try {
-      final res = await Supabase.instance.client
-          .from('family_members')
-          .select()
-          .eq('resident_id', currentUser.residentId)
-          .order('created_at', ascending: true);
+      final res = await _repository.getFamilyMembers(currentUser.residentId);
 
       if (mounted) {
         setState(() {
-          _members = List<Map<String, dynamic>>.from(res);
+          _members = res;
           _isLoading = false;
         });
       }
@@ -46,7 +44,7 @@ class _FamilyMembersPageState extends State<FamilyMembersPage> {
 
   Future<void> _deleteMember(String id) async {
     try {
-      await Supabase.instance.client.from('family_members').delete().eq('id', id);
+      await _repository.deleteFamilyMember(id);
       _fetchMembers();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Member deleted')));
@@ -143,12 +141,12 @@ class _FamilyMembersPageState extends State<FamilyMembersPage> {
     );
   }
 
-  Widget _buildMemberCard(ThemeData theme, Map<String, dynamic> member) {
+  Widget _buildMemberCard(ThemeData theme, FamilyMemberModel member) {
     final ext = theme.extension<AppThemeExtension>()!;
     
     // Choose icon based on relation/gender roughly
     String iconStr = 'user';
-    if (member['age_group'] == 'Child') iconStr = 'baby';
+    if (member.ageGroup == 'Child') iconStr = 'baby';
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -187,12 +185,12 @@ class _FamilyMembersPageState extends State<FamilyMembersPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  member['name'],
+                  member.name,
                   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${member['relation']} · ${member['age_group']}',
+                  '${member.relation} · ${member.ageGroup}',
                   style: theme.textTheme.labelSmall?.copyWith(color: const Color(0xFF64748B)),
                 ),
               ],
@@ -200,7 +198,7 @@ class _FamilyMembersPageState extends State<FamilyMembersPage> {
           ),
           IconButton(
             icon: const CustomIcon(icon: 'trash-2', size: 20, color: Color(0xFFEF4444)),
-            onPressed: () => _confirmDelete(member['id'], member['name']),
+            onPressed: () => _confirmDelete(member.id, member.name),
           ),
         ],
       ),

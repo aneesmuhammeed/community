@@ -9,7 +9,7 @@ import '../widgets/ai_chat_fab.dart';
 import '../widgets/bottom_tab_bar.dart';
 
 class MainLayoutPage extends StatefulWidget {
-  const MainLayoutPage({Key? key}) : super(key: key);
+  const MainLayoutPage({super.key});
 
   @override
   State<MainLayoutPage> createState() => _MainLayoutPageState();
@@ -26,9 +26,7 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
     _pages = [
       HomeDashboardPage(
         onNavigate: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          setState(() => _currentIndex = index);
         },
       ),
       const VisitorInvitePage(),
@@ -37,9 +35,7 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
       const FacilityBookingPage(),
       ProfilePage(
         onNavigate: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          setState(() => _currentIndex = index);
         },
       ),
     ];
@@ -48,13 +44,15 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
+      // IndexedStack preserves the state (e.g., scroll position, fetched data) of all tabs
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomTabBar(
         activeTab: _currentIndex,
         onTabSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          setState(() => _currentIndex = index);
         },
       ),
       floatingActionButton: const AIChatFAB(),
