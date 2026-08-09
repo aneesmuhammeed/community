@@ -129,6 +129,10 @@ class CustomIcon extends StatelessWidget {
         return LucideIcons.mail;
       case 'help-circle':
         return LucideIcons.helpCircle;
+      case 'plus':
+        return LucideIcons.plus;
+      case 'bell-dot':
+        return LucideIcons.bellDot;
       default:
         return LucideIcons.helpCircle;
     }

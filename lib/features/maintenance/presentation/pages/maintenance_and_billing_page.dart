@@ -9,6 +9,7 @@ import '../widgets/payment_methods.dart';
 import '../widgets/recent_transaction.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/models/maintenance_models.dart';
+import 'package:community_hub/features/layout/presentation/pages/notifications_page.dart';
 
 class MaintenanceAndBillingPage extends StatefulWidget {
   const MaintenanceAndBillingPage({Key? key}) : super(key: key);
@@ -32,6 +33,7 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
     final response = await Supabase.instance.client
         .from('billing_cycles')
         .select()
+        .eq('apartment_id', currentUser.apartmentId)
         .or('status.eq.pending,status.eq.overdue')
         .order('due_date', ascending: false);
     return (response as List).map((data) => OutstandingDueModel.fromJson(data)).toList();
@@ -41,6 +43,7 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
     final response = await Supabase.instance.client
         .from('billing_cycles')
         .select()
+        .eq('apartment_id', currentUser.apartmentId)
         .eq('status', 'paid')
         .order('created_at', ascending: false);
     return (response as List).map((data) => BillingHistoryModel.fromJson(data)).toList();
@@ -83,15 +86,39 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9), // muted
+                        color: const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Center(
-                        child: CustomIcon(
-                          icon: 'bell',
-                          size: 18,
-                          color: theme.colorScheme.onSurface,
-                        ),
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: GestureDetector(
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const NotificationsPage()),
+                              ),
+                              child: CustomIcon(
+                                icon: 'bell',
+                                size: 18,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                          // Unread badge
+                          Positioned(
+                            top: 6,
+                            right: 6,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.error,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -112,7 +139,7 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
                 } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
                   return const SizedBox.shrink();
                 }
-                
+
                 final due = snapshot.data!.first;
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -127,13 +154,25 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
           ),
           // Payment Summary
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-              child: const PaymentSummaryRow(
-                paidThisYear: 42000,
-                pendingAmount: 3500,
-                nextDueDate: 'Dec 5, 2024',
-              ),
+            child: FutureBuilder<List<OutstandingDueModel>>(
+              future: _duesFuture,
+              builder: (context, snapshot) {
+                final pendingAmount = snapshot.hasData && snapshot.data!.isNotEmpty
+                  ? snapshot.data!.first.amount.toInt()
+                  : 0;
+                final nextDueDate = snapshot.hasData && snapshot.data!.isNotEmpty
+                  ? snapshot.data!.first.dueDate
+                  : '—';
+
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                  child: PaymentSummaryRow(
+                    paidThisYear: 42000,
+                    pendingAmount: pendingAmount,
+                    nextDueDate: nextDueDate,
+                  ),
+                );
+              },
             ),
           ),
           // Billing History
@@ -143,23 +182,11 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Billing History',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        'View all',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'Billing History',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Container(
@@ -181,7 +208,9 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator());
-                        } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+                        } else if (snapshot.hasError) {
+                          return Padding(padding: const EdgeInsets.all(20), child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                           return const Padding(padding: EdgeInsets.all(20), child: Text('No billing history found.'));
                         }
 
@@ -237,7 +266,21 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const PaymentMethods(),
+                  FutureBuilder<List<OutstandingDueModel>>(
+                    future: _duesFuture,
+                    builder: (context, snapshot) {
+                      final amount = snapshot.hasData && snapshot.data!.isNotEmpty
+                        ? snapshot.data!.first.amount.toInt()
+                        : 0;
+                      final billingMonth = snapshot.hasData && snapshot.data!.isNotEmpty
+                        ? snapshot.data!.first.title.replaceAll(' Maintenance', '')
+                        : '';
+                      return PaymentMethods(
+                        amount: amount,
+                        billingMonth: billingMonth,
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -249,23 +292,11 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Recent Transactions',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        'View all',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'Recent Transactions',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Container(
