@@ -13,7 +13,9 @@ import 'notifications_settings_page.dart';
 import 'privacy_security_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  final Function(int)? onNavigate;
+
+  const ProfilePage({Key? key, this.onNavigate}) : super(key: key);
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -150,6 +152,12 @@ class _ProfilePageState extends State<ProfilePage> {
     Navigator.of(context).push(MaterialPageRoute(builder: (context) => const PrivacySecurityPage()));
   }
 
+  void _navigateToBookings() {
+    if (widget.onNavigate != null) {
+      widget.onNavigate!(4);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -177,7 +185,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'items': [
           {'icon': 'newspaper', 'label': 'Community Feed', 'sub': 'News, events & announcements', 'highlight': true},
           {'icon': 'message-circle', 'label': 'My Complaints', 'sub': _isLoading ? 'Loading...' : complaintsText, 'action': _navigateToComplaints},
-          {'icon': 'calendar', 'label': 'My Bookings', 'sub': _isLoading ? 'Loading...' : _nextBookingInfo},
+          {'icon': 'calendar', 'label': 'My Bookings', 'sub': _isLoading ? 'Loading...' : _nextBookingInfo, 'action': _navigateToBookings},
         ],
       },
       {

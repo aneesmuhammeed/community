@@ -34,10 +34,8 @@ class _PrivacySecurityPageState extends State<PrivacySecurityPage> {
       try {
         final authenticated = await _auth.authenticate(
           localizedReason: 'Please authenticate to enable biometric login',
-          options: const AuthenticationOptions(
-            biometricOnly: true,
-            stickyAuth: true,
-          ),
+          biometricOnly: true,
+          persistAcrossBackgrounding: true,
         );
         if (authenticated) {
           setState(() => _biometricEnabled = true);

@@ -35,7 +35,13 @@ class _MainLayoutPageState extends State<MainLayoutPage> {
       const RaiseComplaintPage(),
       const MaintenanceAndBillingPage(),
       const FacilityBookingPage(),
-      const ProfilePage(),
+      ProfilePage(
+        onNavigate: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+      ),
     ];
   }
 

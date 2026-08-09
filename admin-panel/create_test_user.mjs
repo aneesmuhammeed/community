@@ -5,8 +5,8 @@ const supabaseKey = 'sb_publishable_8c1pSPTJIbo_bYlGlHmpOA_7LoARw1C';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function createTestUser() {
-  const email = 'testuser@example.com';
-  const password = 'Password123!';
+  const email = 'anees@gmail.com';
+  const password = 'anees@2004';
 
   console.log(`Attempting to sign up ${email}...`);
   
