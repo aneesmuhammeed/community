@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════
-   Maintenance & Billing — Minimalistic & Responsive
+   Maintenance & Billing — Admin Panel
+   Aligned with Flutter app billing implementation
    ═══════════════════════════════════════════════ */
 
 .container {
@@ -49,6 +50,102 @@
   cursor: not-allowed;
 }
 
+/* ─── Summary Cards ─────────────────────────── */
+.summaryRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summaryCard {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.summaryValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.summaryCollected { border-left: 3px solid #22c55e; }
+.summaryPending  { border-left: 3px solid #f59e0b; }
+.summaryOverdue  { border-left: 3px solid #ef4444; }
+
+.summaryCollected .summaryValue { color: #16a34a; }
+.summaryPending .summaryValue  { color: #d97706; }
+.summaryOverdue .summaryValue  { color: #dc2626; }
+
+/* ─── Tabs ──────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 150ms ease;
+}
+
+.tab:hover {
+  color: var(--foreground);
+}
+
+.tabActive {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+/* ─── Filter Row ────────────────────────────── */
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.filterSelect {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.8125rem;
+  color: var(--foreground);
+  background: white;
+  outline: none;
+  min-width: 220px;
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+
+.filterSelect:focus {
+  border-color: var(--primary);
+}
+
+/* ─── Table ─────────────────────────────────── */
 .tableContainer {
   background: white;
   border-radius: var(--radius-lg);
@@ -64,31 +161,51 @@
 }
 
 .table th {
-  padding: 1rem 1.25rem;
-  font-size: 0.8125rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--muted);
   border-bottom: 1px solid var(--border);
   background-color: #f8fafc;
+  white-space: nowrap;
 }
 
 .table td {
-  padding: 1rem 1.25rem;
-  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
   color: var(--foreground);
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 .table tr:last-child td {
   border-bottom: none;
 }
 
+.table tr:hover td {
+  background-color: #f8fafc;
+}
+
+.apartmentCell {
+  font-weight: 500;
+}
+
+.refNo {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.75rem;
+  background: #f1f5f9;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  color: #475569;
+}
+
+/* ─── Status Badges ─────────────────────────── */
 .statusBadge {
   display: inline-flex;
   align-items: center;
   padding: 0.25rem 0.625rem;
   border-radius: 99px;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   text-transform: capitalize;
 }
@@ -108,6 +225,13 @@
   color: var(--danger-fg);
 }
 
+/* ─── Action Buttons ────────────────────────── */
+.actionBtns {
+  display: flex;
+  gap: 0.375rem;
+  align-items: center;
+}
+
 .iconBtn {
   background: none;
   border: none;
@@ -117,11 +241,28 @@
   border-radius: 4px;
   transition: all var(--transition);
   font-size: 0.875rem;
+  line-height: 1;
 }
 
 .iconBtn:hover {
   background-color: #f1f5f9;
   color: var(--foreground);
+}
+
+.iconBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.paidBtn {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #22c55e;
+}
+
+.paidBtn:hover {
+  color: #16a34a;
+  background-color: #dcfce7;
 }
 
 .deleteBtn:hover {
@@ -136,6 +277,18 @@
   border-radius: var(--radius-lg);
   border: 1px dashed var(--border);
   color: var(--muted);
+}
+
+.emptyState h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 0.875rem;
 }
 
 /* ─── Modal ─────────────────────────────────── */
@@ -158,7 +311,7 @@
   background: white;
   border-radius: var(--radius-lg);
   width: 100%;
-  max-width: 480px;
+  max-width: 560px;
   padding: 1.5rem;
   box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.15);
   max-height: 90vh;
@@ -199,12 +352,12 @@
 }
 
 .formGroup {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .label {
   display: block;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #334155;
   margin-bottom: 0.375rem;
@@ -212,16 +365,63 @@
 
 .input {
   width: 100%;
-  padding: 0.625rem 0.75rem;
+  padding: 0.5rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   outline: none;
   transition: border-color var(--transition);
+  box-sizing: border-box;
 }
 
 .input:focus {
   border-color: var(--primary);
+}
+
+/* ─── Expense Breakdown Section ──────────────── */
+.breakdownSection {
+  margin: 1.25rem 0;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.breakdownTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.75rem;
+}
+
+.breakdownGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.breakdownField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.totalAmount {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--primary);
 }
 
 .modalActions {
@@ -253,7 +453,7 @@
   margin-bottom: 1rem;
   padding: 0.5rem;
   background-color: #fee2e2;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-sm, 4px);
 }
 
 /* ═══════════════════════════════════════════════
@@ -263,6 +463,23 @@
   .header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .summaryRow {
+    grid-template-columns: 1fr;
+  }
+
+  .filterRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterSelect {
+    min-width: 100%;
+  }
+
+  .breakdownGrid {
+    grid-template-columns: 1fr;
   }
 
   .modalOverlay {

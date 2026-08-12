@@ -3,9 +3,10 @@
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 
-const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
+const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID;
 
 export async function verifyScannedCode(code: string) {
+  if (!SOCIETY_ID) return { error: 'Society ID not configured' };
   if (!code) return { error: 'No code provided.' };
 
   // Note: Since visitors has nested relations requiring RLS, we fetch the basic details

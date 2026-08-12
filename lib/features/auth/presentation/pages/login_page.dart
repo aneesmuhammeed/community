@@ -1,17 +1,19 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../main.dart';
 import '../../../layout/presentation/pages/main_layout_page.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
@@ -51,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
             .maybeSingle();
 
         if (res != null) {
-          currentUser = UserModel.fromJson(res); // TODO: Move to Provider/Riverpod
+          ref.read(userProvider.notifier).setUser(UserModel.fromJson(res)); // TODO: Move to Provider/Riverpod
           if (mounted) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const MainLayoutPage()),
@@ -64,6 +66,8 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on AuthException catch (e) {
       setState(() => _errorMessage = e.message);
+    } on Exception catch (e) {
+      setState(() => _errorMessage = e.toString().replaceAll('Exception: ', ''));
     } catch (e) {
       setState(() => _errorMessage = 'Invalid login credentials.');
     } finally {

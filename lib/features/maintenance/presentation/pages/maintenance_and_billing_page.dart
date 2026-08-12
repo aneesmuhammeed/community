@@ -1,3 +1,5 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/widgets/custom_icon.dart';
@@ -12,14 +14,14 @@ import '../../data/billing_repository.dart';
 import '../../../../core/models/maintenance_models.dart';
 import 'package:community_hub/features/layout/presentation/pages/notifications_page.dart';
 
-class MaintenanceAndBillingPage extends StatefulWidget {
+class MaintenanceAndBillingPage extends ConsumerStatefulWidget {
   const MaintenanceAndBillingPage({Key? key}) : super(key: key);
 
   @override
-  State<MaintenanceAndBillingPage> createState() => _MaintenanceAndBillingPageState();
+  ConsumerState<MaintenanceAndBillingPage> createState() => _MaintenanceAndBillingPageState();
 }
 
-class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
+class _MaintenanceAndBillingPageState extends ConsumerState<MaintenanceAndBillingPage> {
   bool _isLoading = true;
   List<OutstandingDueModel> _dues = [];
   List<BillingHistoryModel> _history = [];
@@ -34,8 +36,8 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
   Future<void> _fetchData() async {
     try {
       final results = await Future.wait([
-        _repository.getOutstandingDues(currentUser.apartmentId),
-        _repository.getBillingHistory(currentUser.apartmentId),
+        _repository.getOutstandingDues(ref.read(userProvider)!.apartmentId),
+        _repository.getBillingHistory(ref.read(userProvider)!.apartmentId),
       ]);
 
       if (mounted) {
@@ -73,7 +75,7 @@ class _MaintenanceAndBillingPageState extends State<MaintenanceAndBillingPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          currentUser.societyName,
+                          ref.watch(userProvider)!.societyName,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: const Color(0xFF64748B),
                           ),

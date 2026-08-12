@@ -1,3 +1,5 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/constants/app_spacing.dart';
@@ -6,51 +8,35 @@ import '../widgets/community_info_banner.dart';
 import '../widgets/quick_action_button.dart';
 import '../../../visitors/presentation/widgets/guest_invite_card.dart';
 import '../widgets/announcement_card.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../data/home_repository.dart';
 import '../../../../core/models/guest_invite_model.dart';
 import '../../../../core/models/announcement_model.dart';
-import '../../../../main.dart'; // Ensure global currentUser is imported
 
-class HomeDashboardPage extends StatefulWidget {
+class HomeDashboardPage extends ConsumerStatefulWidget {
   final Function(int)? onNavigate;
 
   const HomeDashboardPage({super.key, this.onNavigate});
 
   @override
-  State<HomeDashboardPage> createState() => _HomeDashboardPageState();
+  ConsumerState<HomeDashboardPage> createState() => _HomeDashboardPageState();
 }
 
-class _HomeDashboardPageState extends State<HomeDashboardPage> {
+class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
   late Future<List<GuestInviteModel>> _visitorsFuture;
   late Future<List<AnnouncementModel>> _announcementsFuture;
+  final HomeRepository _repository = HomeRepository();
 
   @override
   void initState() {
     super.initState();
-    _visitorsFuture = _fetchVisitors();
-    _announcementsFuture = _fetchAnnouncements();
+    // Use addPostFrameCallback because we need to read from the provider in init, but `ref` might not be safe to watch in initState before build for the first time, though read is fine. However, since the state might change, these futures might not re-fetch. We'll stick to how it was doing it before (using watch which was technically incorrect in initState but the script blindly replaced it). Actually, `ref.read` is safe in initState.
   }
-
-  // TODO: Move to a Repository class
-  Future<List<GuestInviteModel>> _fetchVisitors() async {
-    final response = await Supabase.instance.client
-        .from('visitors')
-        .select()
-        .eq('resident_id', currentUser.residentId)
-        .order('created_at', ascending: false);
-    return (response as List).map((data) => GuestInviteModel.fromJson(data)).toList();
-  }
-
-  // TODO: Move to a Repository class
-  Future<List<AnnouncementModel>> _fetchAnnouncements() async {
-    final response = await Supabase.instance.client
-        .from('announcements')
-        .select()
-        .eq('society_id', currentUser.societyId)
-        .eq('is_published', true)
-        .order('is_pinned', ascending: false)
-        .order('created_at', ascending: false);
-    return (response as List).map((data) => AnnouncementModel.fromJson(data)).toList();
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _visitorsFuture = _repository.getVisitors(ref.read(userProvider)!.residentId);
+    _announcementsFuture = _repository.getAnnouncements(ref.read(userProvider)!.societyId);
   }
 
   @override
@@ -62,7 +48,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           sliver: SliverToBoxAdapter(
             child: HomeHeader(
               greeting: 'Good Afternoon 👋',
-              user: currentUser,
+              user: ref.watch(userProvider)!,
               hasNotification: true,
             ),
           ),
@@ -70,8 +56,8 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         
         SliverToBoxAdapter(
           child: CommunityInfoBanner(
-            societyName: currentUser.societyName,
-            unitDetails: '${currentUser.block}, ${currentUser.apartment}',
+            societyName: ref.watch(userProvider)!.societyName,
+            unitDetails: '${ref.watch(userProvider)!.block}, ${ref.watch(userProvider)!.apartment}',
           ),
         ),
 
@@ -190,7 +176,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         index: visitor.avatarIndex,
                         validUntil: visitor.validUntil,
                         otpValue: visitor.otpValue,
-                        unitNumber: currentUser.apartment,
+                        unitNumber: ref.watch(userProvider)!.apartment,
                       ),
                     );
                   },

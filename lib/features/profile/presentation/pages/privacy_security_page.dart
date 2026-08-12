@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/theme/app_theme.dart';
 
@@ -15,7 +16,7 @@ class PrivacySecurityPage extends StatefulWidget {
 class _PrivacySecurityPageState extends State<PrivacySecurityPage> {
   final LocalAuthentication _auth = LocalAuthentication();
   bool _isBiometricSupported = false;
-  bool _biometricEnabled = false; // In a real app, load this from SecureStorage
+  bool _biometricEnabled = false;
   
   @override
   void initState() {
@@ -25,14 +26,20 @@ class _PrivacySecurityPageState extends State<PrivacySecurityPage> {
 
   Future<void> _checkBiometrics() async {
     if (kIsWeb) return;
-    
     try {
       final isSupported = await _auth.isDeviceSupported();
       setState(() {
         _isBiometricSupported = isSupported;
       });
+      final enabledString = await const FlutterSecureStorage().read(key: 'biometricEnabled');
+      if (enabledString == 'true') {
+        setState(() => _biometricEnabled = true);
+      }
     } catch (e) {
       debugPrint('Biometric check error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Biometric check error: $e')));
+      }
     }
   }
 
@@ -46,7 +53,7 @@ class _PrivacySecurityPageState extends State<PrivacySecurityPage> {
         );
         if (authenticated) {
           setState(() => _biometricEnabled = true);
-          // TODO: Save preference securely
+          await const FlutterSecureStorage().write(key: 'biometricEnabled', value: 'true');
         }
       } catch (e) {
         debugPrint('Biometric auth error: $e');
@@ -56,7 +63,7 @@ class _PrivacySecurityPageState extends State<PrivacySecurityPage> {
       }
     } else {
       setState(() => _biometricEnabled = false);
-      // TODO: Save preference securely
+      await const FlutterSecureStorage().write(key: 'biometricEnabled', value: 'false');
     }
   }
 

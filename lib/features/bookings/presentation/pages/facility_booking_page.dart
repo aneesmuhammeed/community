@@ -1,3 +1,5 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/widgets/custom_icon.dart';
@@ -10,14 +12,14 @@ import '../../../../core/models/booking_model.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../data/booking_repository.dart';
 
-class FacilityBookingPage extends StatefulWidget {
+class FacilityBookingPage extends ConsumerStatefulWidget {
   const FacilityBookingPage({Key? key}) : super(key: key);
 
   @override
-  State<FacilityBookingPage> createState() => _FacilityBookingPageState();
+  ConsumerState<FacilityBookingPage> createState() => _FacilityBookingPageState();
 }
 
-class _FacilityBookingPageState extends State<FacilityBookingPage> {
+class _FacilityBookingPageState extends ConsumerState<FacilityBookingPage> {
   late Future<List<BookingModel>> _bookingsFuture;
   late Future<List<Map<String, dynamic>>> _facilitiesFuture;
 
@@ -45,11 +47,11 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
   }
 
   Future<List<BookingModel>> _fetchBookings() async {
-    return _repository.getBookings(currentUser.residentId);
+    return _repository.getBookings(ref.read(userProvider)!.residentId);
   }
 
   Future<List<Map<String, dynamic>>> _fetchFacilities() async {
-    return _repository.getFacilities(currentUser.societyId);
+    return _repository.getFacilities(ref.read(userProvider)!.societyId);
   }
 
   Future<void> _onFacilitySelected(String id) async {
@@ -72,7 +74,7 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
 
     try {
       final slots = await _repository.getAvailableSlots(
-        currentUser.societyId,
+        ref.read(userProvider)!.societyId,
         _selectedFacilityId!,
         _selectedDate,
       );
@@ -124,8 +126,8 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
       final bookingFee = (selectedFacility['booking_fee'] as num?)?.toDouble() ?? 0.0;
       
       await _repository.submitBooking(
-        residentId: currentUser.residentId,
-        societyId: currentUser.societyId,
+        residentId: ref.read(userProvider)!.residentId,
+        societyId: ref.read(userProvider)!.societyId,
         facilityId: _selectedFacilityId!,
         selectedDate: _selectedDate,
         slot: slot,
@@ -159,7 +161,7 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
 
   Future<void> _cancelBooking(String bookingId) async {
     try {
-      await _repository.cancelBooking(bookingId, currentUser.residentId);
+      await _repository.cancelBooking(bookingId, ref.read(userProvider)!.residentId);
           
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking cancelled successfully')));
@@ -193,7 +195,7 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          currentUser.societyName,
+                          ref.watch(userProvider)!.societyName,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: const Color(0xFF64748B),
                           ),
@@ -370,7 +372,7 @@ class _FacilityBookingPageState extends State<FacilityBookingPage> {
                           crossAxisCount: 2,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: 0.73,
+                          childAspectRatio: 0.70,
                         ),
                         itemCount: filteredFacilities.length,
                         itemBuilder: (context, index) {

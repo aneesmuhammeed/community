@@ -1,3 +1,5 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -6,14 +8,14 @@ import '../../../../core/models/family_member_model.dart';
 import '../../data/profile_repository.dart';
 import '../widgets/add_family_member_modal.dart';
 
-class FamilyMembersPage extends StatefulWidget {
+class FamilyMembersPage extends ConsumerStatefulWidget {
   const FamilyMembersPage({Key? key}) : super(key: key);
 
   @override
-  State<FamilyMembersPage> createState() => _FamilyMembersPageState();
+  ConsumerState<FamilyMembersPage> createState() => _FamilyMembersPageState();
 }
 
-class _FamilyMembersPageState extends State<FamilyMembersPage> {
+class _FamilyMembersPageState extends ConsumerState<FamilyMembersPage> {
   bool _isLoading = true;
   List<FamilyMemberModel> _members = [];
   final _repository = ProfileRepository();
@@ -26,7 +28,7 @@ class _FamilyMembersPageState extends State<FamilyMembersPage> {
 
   Future<void> _fetchMembers() async {
     try {
-      final res = await _repository.getFamilyMembers(currentUser.residentId);
+      final res = await _repository.getFamilyMembers(ref.read(userProvider)!.residentId);
 
       if (mounted) {
         setState(() {

@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
 import '../../../../core/models/booking_model.dart';
 import 'package:uuid/uuid.dart';
-
 class BookingRepository {
   final SupabaseClient _supabase;
 
@@ -31,47 +31,78 @@ class BookingRepository {
 
     // 1. Determine day type (WEEKDAY, WEEKEND, HOLIDAY)
     String dayType = 'WEEKDAY';
-    final holidayResponse = await _supabase
-        .from('holidays')
-        .select('id')
-        .eq('society_id', societyId)
-        .eq('date', selectedDateStr)
-        .maybeSingle();
-        
-    if (holidayResponse != null) {
-      dayType = 'HOLIDAY';
-    } else if (selectedDate.weekday == DateTime.saturday || selectedDate.weekday == DateTime.sunday) {
-      dayType = 'WEEKEND';
+    
+    try {
+      final holidayResponse = await _supabase
+          .from('holidays')
+          .select('id')
+          .eq('society_id', societyId)
+          .eq('date', selectedDateStr)
+          .maybeSingle();
+          
+      if (holidayResponse != null) {
+        dayType = 'HOLIDAY';
+      } else if (selectedDate.weekday == DateTime.saturday || selectedDate.weekday == DateTime.sunday) {
+        dayType = 'WEEKEND';
+      }
+    } catch (e) {
+      // Fallback if holidays table is missing or query fails
+      debugPrint('Warning: Failed to check holidays. Falling back to default day type. Error: $e');
+      if (selectedDate.weekday == DateTime.saturday || selectedDate.weekday == DateTime.sunday) {
+        dayType = 'WEEKEND';
+      }
     }
 
     // 2. Fetch schedules for this day type
-    final scheduleResponse = await _supabase
-        .from('facility_schedules')
-        .select('start_time, end_time')
-        .eq('facility_id', facilityId)
-        .eq('day_type', dayType)
-        .order('start_time');
-        
-    final schedules = List<Map<String, dynamic>>.from(scheduleResponse);
+    List<Map<String, dynamic>> schedules = [];
+    try {
+      final scheduleResponse = await _supabase
+          .from('facility_schedules')
+          .select('start_time, end_time')
+          .eq('facility_id', facilityId)
+          .eq('day_type', dayType)
+          .order('start_time');
+      schedules = List<Map<String, dynamic>>.from(scheduleResponse);
+    } catch (e) {
+      debugPrint('Warning: Failed to fetch facility_schedules. Error: $e');
+    }
+    
+    // Default fallback schedule if none defined or table missing (e.g., 9 AM to 6 PM, 1 hr slots)
+    if (schedules.isEmpty) {
+      for (int i = 9; i < 18; i++) {
+        schedules.add({
+          'start_time': '${i.toString().padLeft(2, '0')}:00:00',
+          'end_time': '${(i + 1).toString().padLeft(2, '0')}:00:00',
+        });
+      }
+    }
 
     // 3. Fetch existing bookings
-    final bookingResponse = await _supabase
-        .from('bookings')
-        .select('start_time, end_time, status')
-        .eq('facility_id', facilityId)
-        .eq('booking_date', selectedDateStr)
-        .neq('status', 'cancelled');
-        
-    final existingBookings = List<Map<String, dynamic>>.from(bookingResponse);
+    List<Map<String, dynamic>> existingBookings = [];
+    try {
+      final bookingResponse = await _supabase
+          .from('bookings')
+          .select('start_time, end_time, status')
+          .eq('facility_id', facilityId)
+          .eq('booking_date', selectedDateStr)
+          .neq('status', 'cancelled');
+      existingBookings = List<Map<String, dynamic>>.from(bookingResponse);
+    } catch (e) {
+      debugPrint('Warning: Failed to fetch bookings. Error: $e');
+    }
     
     // 4. Fetch slot blocks/overrides
-    final blocksResponse = await _supabase
-        .from('facility_slot_blocks')
-        .select('start_time, end_time')
-        .eq('facility_id', facilityId)
-        .eq('date', selectedDateStr);
-        
-    final slotBlocks = List<Map<String, dynamic>>.from(blocksResponse);
+    List<Map<String, dynamic>> slotBlocks = [];
+    try {
+      final blocksResponse = await _supabase
+          .from('facility_slot_blocks')
+          .select('start_time, end_time')
+          .eq('facility_id', facilityId)
+          .eq('date', selectedDateStr);
+      slotBlocks = List<Map<String, dynamic>>.from(blocksResponse);
+    } catch (e) {
+      debugPrint('Warning: Failed to fetch facility_slot_blocks. Error: $e');
+    }
 
     List<Map<String, dynamic>> generatedSlots = [];
     

@@ -4,8 +4,10 @@ import 'core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/models/user_model.dart';
 import 'features/layout/presentation/pages/main_layout_page.dart';
-import 'features/auth/presentation/pages/login_page.dart';
 import 'core/config/env.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/providers/user_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,16 +31,55 @@ Future<void> main() async {
     ),
   );
 
-  // Bypass login for testing
-  currentUser = testUser;
-  Widget initialScreen = const MainLayoutPage();
+  // ─── Resolve user BEFORE building the widget tree ───
+  UserModel initialUser = const UserModel(
+    residentId: '55555555-5555-5555-5555-555555555555',
+    societyId: '11111111-1111-1111-1111-111111111111',
+    apartmentId: '33333333-3333-3333-3333-333333333333',
+    name: 'Demo Resident',
+    societyName: 'Green Valley Heights',
+    block: 'Block A',
+    apartment: 'A-405',
+    phone: '+91 9876543210',
+    email: 'demo@community.app',
+    role: 'resident',
+    residentType: 'Owner',
+    gender: 'male',
+    ageGroup: '25-35',
+    heritage: '',
+    avatarIndex: 0,
+  );
 
-  runApp(CommunityHubApp(initialScreen: initialScreen));
+  final authUser = Supabase.instance.client.auth.currentUser;
+  if (authUser != null) {
+    try {
+      final res = await Supabase.instance.client
+          .from('v_resident_details')
+          .select()
+          .eq('user_id', authUser.id)
+          .maybeSingle();
+      if (res != null) {
+        initialUser = UserModel.fromJson(res);
+      }
+    } catch (e) {
+      debugPrint('Auth fetch error: $e');
+    }
+  }
+
+  // Create a container and pre-set the user
+  final container = ProviderContainer();
+  container.read(userProvider.notifier).setUser(initialUser);
+
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: const CommunityHubApp(),
+    ),
+  );
 }
 
 class CommunityHubApp extends StatelessWidget {
-  final Widget initialScreen;
-  const CommunityHubApp({Key? key, required this.initialScreen}) : super(key: key);
+  const CommunityHubApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +89,7 @@ class CommunityHubApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
-      home: initialScreen,
+      home: const MainLayoutPage(),
     );
   }
 }

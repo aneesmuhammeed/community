@@ -7,6 +7,7 @@ import EditFacilityModal from './EditFacilityModal';
 import CreateFacilityModal from './CreateFacilityModal';
 import ManageHolidaysModal from './ManageHolidaysModal';
 import ManageSchedulesModal from './ManageSchedulesModal';
+import ActionForm from '@/components/ActionForm';
 
 export const revalidate = 0;
 
@@ -125,16 +126,16 @@ export default async function FacilitiesPage() {
                 
                 {booking.status === 'pending' && (
                   <div className={styles.actionButtons}>
-                    <form action={approveBooking}>
+                    <ActionForm action={approveBooking}>
                       <input type="hidden" name="id" value={booking.id} />
                       <input type="hidden" name="society_id" value={SOCIETY_ID} />
                       <button type="submit" className={styles.btnApprove}>Approve</button>
-                    </form>
-                    <form action={denyBooking}>
+                    </ActionForm>
+                    <ActionForm action={denyBooking}>
                       <input type="hidden" name="id" value={booking.id} />
                       <input type="hidden" name="society_id" value={SOCIETY_ID} />
                       <button type="submit" className={styles.btnDeny}>Deny</button>
-                    </form>
+                    </ActionForm>
                   </div>
                 )}
               </div>

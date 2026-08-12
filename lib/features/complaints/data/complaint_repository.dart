@@ -9,9 +9,16 @@ class ComplaintRepository {
   Future<List<ComplaintModel>> getComplaints(String residentId) async {
     final response = await _supabase
         .from('complaints')
-        .select()
+        .select('*, complaint_images(storage_path)')
         .eq('resident_id', residentId)
         .order('created_at', ascending: false);
-    return (response as List).map((data) => ComplaintModel.fromJson(data)).toList();
+        
+    return (response as List).map((data) {
+      final images = (data['complaint_images'] as List<dynamic>?)
+          ?.map((e) => e['storage_path'] as String)
+          .toList() ?? [];
+      data['images'] = images;
+      return ComplaintModel.fromJson(data);
+    }).toList();
   }
 }

@@ -1,4 +1,5 @@
 import '../../../core/models/complaint_model.dart';
+import 'package:image_picker/image_picker.dart';
 
 abstract class ComplaintRepository {
   Future<ComplaintModel> createComplaint({
@@ -8,7 +9,7 @@ abstract class ComplaintRepository {
     required String title,
     required String category,
     required String description,
-    required List<String> imagePaths,
+    required List<XFile> images,
     required String location,
     required bool isEmergency,
   });

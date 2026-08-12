@@ -11,6 +11,7 @@ type Complaint = {
   priority: string;
   status: string;
   created_at: string;
+  complaint_images?: { storage_path: string }[];
 };
 
 const formatDate = (dateStr: string) => {
@@ -65,6 +66,32 @@ export default function ComplaintsClient({ initialData }: { initialData: Complai
                   <td style={{ padding: '12px 16px' }}>
                     <div style={{ fontWeight: '500', color: '#0f172a' }}>{c.title}</div>
                     <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '4px' }}>{c.description}</div>
+                    {c.complaint_images && c.complaint_images.length > 0 && (
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                        {c.complaint_images.map((img, idx) => (
+                          // Since Flutter might upload local paths, we use a placeholder if it's not a valid http URL
+                          <div 
+                            key={idx} 
+                            style={{ 
+                              width: '40px', 
+                              height: '40px', 
+                              borderRadius: '4px', 
+                              overflow: 'hidden',
+                              border: '1px solid #e2e8f0',
+                              background: '#f8fafc'
+                            }}
+                          >
+                            {img.storage_path.startsWith('http') ? (
+                              <img src={img.storage_path} alt="Complaint attachment" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#94a3b8' }}>
+                                File
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </td>
                   <td style={{ padding: '12px 16px', textTransform: 'capitalize' }}>{c.category}</td>
                   <td style={{ padding: '12px 16px', textTransform: 'capitalize' }}>

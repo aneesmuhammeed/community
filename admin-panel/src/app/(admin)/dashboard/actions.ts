@@ -3,27 +3,36 @@
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 
+const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID;
+
 export async function approveVisitor(formData: FormData) {
   const id = formData.get('id') as string;
-  if (!id) return;
-  await supabase.from('visitors').update({ 
+  if (!id) return { error: 'Missing ID' };
+  const { error } = await supabase.from('visitors').update({ 
     status: 'approved',
     arrived_at: new Date().toISOString()
   }).eq('id', id);
+  
+  if (error) return { error: error.message };
+  
   revalidatePath('/dashboard');
   revalidatePath('/visitors');
+  return { success: true };
 }
 
 export async function denyVisitor(formData: FormData) {
   const id = formData.get('id') as string;
-  if (!id) return;
-  await supabase.from('visitors').update({ status: 'cancelled' }).eq('id', id);
+  if (!id) return { error: 'Missing ID' };
+  const { error } = await supabase.from('visitors').update({ status: 'cancelled' }).eq('id', id);
+  if (error) return { error: error.message };
+  
   revalidatePath('/dashboard');
   revalidatePath('/visitors');
+  return { success: true };
 }
 
 export async function verifyOtp(formData: FormData) {
-  const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
+  if (!SOCIETY_ID) return { error: 'Society ID not configured' };
   const otp = formData.get('otp') as string;
   const flat = formData.get('flat') as string;
   if (!otp || !flat) return { error: 'Flat Number and OTP are required' };

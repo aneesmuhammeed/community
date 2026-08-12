@@ -1,17 +1,19 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/models/user_model.dart';
 import 'package:uuid/uuid.dart';
 
-class AddVehicleModal extends StatefulWidget {
+class AddVehicleModal extends ConsumerStatefulWidget {
   const AddVehicleModal({Key? key}) : super(key: key);
 
   @override
-  State<AddVehicleModal> createState() => _AddVehicleModalState();
+  ConsumerState<AddVehicleModal> createState() => _AddVehicleModalState();
 }
 
-class _AddVehicleModalState extends State<AddVehicleModal> {
+class _AddVehicleModalState extends ConsumerState<AddVehicleModal> {
   final _formKey = GlobalKey<FormState>();
   final _makeController = TextEditingController();
   final _modelController = TextEditingController();
@@ -40,7 +42,7 @@ class _AddVehicleModalState extends State<AddVehicleModal> {
     try {
       await Supabase.instance.client.from('vehicles').insert({
         'id': const Uuid().v4(),
-        'resident_id': currentUser.residentId,
+        'resident_id': ref.read(userProvider)!.residentId,
         'vehicle_type': _vehicleType,
         'make': _makeController.text.trim(),
         'model': _modelController.text.trim(),

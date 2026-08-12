@@ -3,9 +3,10 @@
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 
-const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
+const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID;
 
 export async function getAnnouncements() {
+  if (!SOCIETY_ID) return [];
   const { data, error } = await supabase
     .from('announcements')
     .select('*')
@@ -21,6 +22,7 @@ export async function getAnnouncements() {
 }
 
 export async function createAnnouncement(formData: FormData) {
+  if (!SOCIETY_ID) return { error: 'Society ID not configured' };
   const title = formData.get('title') as string;
   const body = formData.get('body') as string;
   const tag = formData.get('tag') as string;
@@ -42,7 +44,6 @@ export async function createAnnouncement(formData: FormData) {
   });
 
   if (error) {
-    console.error('Create announcement error:', error);
     return { error: error.message };
   }
 
@@ -51,16 +52,17 @@ export async function createAnnouncement(formData: FormData) {
 }
 
 export async function deleteAnnouncement(id: string) {
-  if (!id) return;
-  await supabase.from('announcements').delete().eq('id', id);
+  if (!id) return { error: 'Missing ID' };
+  const { error } = await supabase.from('announcements').delete().eq('id', id);
+  if (error) return { error: error.message };
   revalidatePath('/announcements');
+  return { success: true };
 }
 
 export async function togglePinAnnouncement(id: string, currentPinStatus: boolean) {
-  if (!id) return;
-  await supabase
-    .from('announcements')
-    .update({ is_pinned: !currentPinStatus })
-    .eq('id', id);
+  if (!id) return { error: 'Missing ID' };
+  const { error } = await supabase.from('announcements').update({ is_pinned: !currentPinStatus }).eq('id', id);
+  if (error) return { error: error.message };
   revalidatePath('/announcements');
+  return { success: true };
 }

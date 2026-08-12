@@ -1,3 +1,5 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/widgets/user_avatar.dart';
@@ -11,16 +13,16 @@ import 'privacy_security_page.dart';
 import 'help_support_page.dart';
 import '../../data/profile_repository.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends ConsumerStatefulWidget {
   final Function(int)? onNavigate;
 
   const ProfilePage({Key? key, this.onNavigate}) : super(key: key);
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  ConsumerState<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends ConsumerState<ProfilePage> {
   bool _isLoading = true;
   int _familyCount = 0;
   int _vehiclesCount = 0;
@@ -37,7 +39,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _fetchProfileStats() async {
     try {
-      final stats = await _repository.getProfileStats(currentUser.residentId);
+      final stats = await _repository.getProfileStats(ref.read(userProvider)!.residentId);
 
       if (mounted) {
         setState(() {
@@ -50,9 +52,10 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       }
     } catch (e) {
-      print('Error fetching profile stats: $e');
+      debugPrint('Error fetching profile stats: $e');
       if (mounted) {
         setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading profile stats')));
       }
     }
   }
@@ -122,7 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
       {
         'title': 'My Home',
         'items': [
-          {'icon': 'building-2', 'label': 'Apartment Details', 'sub': '${currentUser.block}, ${currentUser.apartment}'},
+          {'icon': 'building-2', 'label': 'Apartment Details', 'sub': '${ref.watch(userProvider)!.block}, ${ref.watch(userProvider)!.apartment}'},
           {'icon': 'users', 'label': 'Family Members', 'sub': _isLoading ? 'Loading...' : '$_familyCount members registered', 'action': _navigateToFamilyMembers},
           {'icon': 'car', 'label': 'Registered Vehicles', 'sub': _isLoading ? 'Loading...' : '$_vehiclesCount vehicles', 'action': _navigateToVehicles},
         ],
@@ -162,7 +165,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          currentUser.societyName,
+                          ref.watch(userProvider)!.societyName,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: const Color(0xFF64748B),
                           ),
@@ -216,10 +219,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Row(
                   children: [
                     UserAvatar(
-                      gender: currentUser.gender,
-                      ageGroup: currentUser.ageGroup,
-                      heritage: currentUser.heritage,
-                      index: currentUser.avatarIndex,
+                      gender: ref.watch(userProvider)!.gender,
+                      ageGroup: ref.watch(userProvider)!.ageGroup,
+                      heritage: ref.watch(userProvider)!.heritage,
+                      index: ref.watch(userProvider)!.avatarIndex,
                       size: 64,
                     ),
                     const SizedBox(width: 16),
@@ -228,14 +231,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            currentUser.name,
+                            ref.watch(userProvider)!.name,
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${currentUser.block} · ${currentUser.apartment}',
+                            '${ref.watch(userProvider)!.block} · ${ref.watch(userProvider)!.apartment}',
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: const Color(0xFF64748B),
                             ),
@@ -250,7 +253,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  currentUser.role,
+                                  ref.watch(userProvider)!.role,
                                   style: theme.textTheme.labelSmall?.copyWith(
                                     color: theme.colorScheme.primary,
                                     fontWeight: FontWeight.w500,
@@ -265,7 +268,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  currentUser.residentType,
+                                  ref.watch(userProvider)!.residentType,
                                   style: theme.textTheme.labelSmall?.copyWith(
                                     color: const Color(0xFF10B981), // accent
                                     fontWeight: FontWeight.w500,
@@ -302,8 +305,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 child: Column(
                   children: [
-                    _buildContactRow(context, 'phone', 'Phone', currentUser.phone, true),
-                    _buildContactRow(context, 'mail', 'Email', currentUser.email, false),
+                    _buildContactRow(context, 'phone', 'Phone', ref.watch(userProvider)!.phone, true),
+                    _buildContactRow(context, 'mail', 'Email', ref.watch(userProvider)!.email, false),
                   ],
                 ),
               ),

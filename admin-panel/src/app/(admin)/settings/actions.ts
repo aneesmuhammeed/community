@@ -3,9 +3,10 @@
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
 
-const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
+const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID;
 
 export async function getSocietySettings() {
+  if (!SOCIETY_ID) return null;
   const { data, error } = await supabase
     .from('societies')
     .select('*')
@@ -21,6 +22,7 @@ export async function getSocietySettings() {
 }
 
 export async function updateSocietySettings(formData: FormData) {
+  if (!SOCIETY_ID) return { error: 'Society ID not configured' };
   const name = formData.get('name') as string;
   const address = formData.get('address') as string;
   const city = formData.get('city') as string;

@@ -29,7 +29,7 @@ export default async function ResidentsPage() {
           <div className={styles.emptyState}>No residents found in this society.</div>
         ) : (
           residents.map((resident) => (
-            <ResidentItem key={resident.resident_id} resident={resident} apartments={apartments || []} />
+            <ResidentItem key={resident.resident_id} resident={resident} apartments={(apartments as any) || []} />
           ))
         )}
       </div>

@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../core/models/complaint_model.dart';
 import '../domain/complaint_repository.dart';
 
@@ -18,7 +21,7 @@ class SupabaseComplaintRepository implements ComplaintRepository {
     required String title,
     required String category,
     required String description,
-    required List<String> imagePaths,
+    required List<XFile> images,
     required String location,
     required bool isEmergency,
   }) async {
@@ -43,34 +46,60 @@ class SupabaseComplaintRepository implements ComplaintRepository {
     try {
       await _client.from('complaints').insert(insertData);
 
-      if (imagePaths.isNotEmpty) {
-        final List<Map<String, dynamic>> imageInserts = imagePaths.map((path) => {
-          'id': _uuid.v4(),
-          'complaint_id': id,
-          'storage_path': path,
-          // 'uploaded_by': residentId, // Commented out to avoid foreign key violation with mock data
-          'uploaded_at': now,
-        }).toList();
+      final List<String> uploadedPaths = [];
+
+      if (images.isNotEmpty) {
+        final List<Map<String, dynamic>> imageInserts = [];
+        
+        for (final xfile in images) {
+          final ext = xfile.name.split('.').last;
+          final storagePath = '$id/${_uuid.v4()}.$ext';
+          
+          if (kIsWeb) {
+            final bytes = await xfile.readAsBytes();
+            await _client.storage.from('complaints').uploadBinary(
+              storagePath, 
+              bytes,
+              fileOptions: FileOptions(contentType: xfile.mimeType ?? 'image/$ext'),
+            );
+          } else {
+            await _client.storage.from('complaints').upload(
+              storagePath, 
+              File(xfile.path),
+              fileOptions: FileOptions(contentType: xfile.mimeType ?? 'image/$ext'),
+            );
+          }
+          
+          final publicUrl = _client.storage.from('complaints').getPublicUrl(storagePath);
+          uploadedPaths.add(publicUrl);
+
+          imageInserts.add({
+            'id': _uuid.v4(),
+            'complaint_id': id,
+            'storage_path': publicUrl,
+            'uploaded_at': now,
+          });
+        }
 
         await _client.from('complaint_images').insert(imageInserts);
       }
+
+      return ComplaintModel(
+        id: id,
+        residentId: residentId,
+        apartmentId: apartmentId,
+        title: title,
+        category: category,
+        description: description,
+        images: uploadedPaths,
+        location: location,
+        isEmergency: isEmergency,
+        status: 'open',
+        createdAt: now,
+        ticketId: id.substring(0, 8).toUpperCase(),
+      );
     } catch (e) {
       rethrow;
     }
-
-    return ComplaintModel(
-      id: id,
-      residentId: residentId,
-      apartmentId: apartmentId,
-      title: title,
-      category: category,
-      description: description,
-      images: imagePaths, // Storing local paths for immediate UI feedback if needed
-      location: location,
-      isEmergency: isEmergency,
-      status: 'open',
-      createdAt: now,
-      ticketId: id.substring(0, 8).toUpperCase(),
-    );
   }
 }

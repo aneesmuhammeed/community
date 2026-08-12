@@ -1,3 +1,5 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -6,14 +8,14 @@ import '../../../../core/models/vehicle_model.dart';
 import '../../data/profile_repository.dart';
 import '../widgets/add_vehicle_modal.dart';
 
-class VehiclesPage extends StatefulWidget {
+class VehiclesPage extends ConsumerStatefulWidget {
   const VehiclesPage({Key? key}) : super(key: key);
 
   @override
-  State<VehiclesPage> createState() => _VehiclesPageState();
+  ConsumerState<VehiclesPage> createState() => _VehiclesPageState();
 }
 
-class _VehiclesPageState extends State<VehiclesPage> {
+class _VehiclesPageState extends ConsumerState<VehiclesPage> {
   bool _isLoading = true;
   List<VehicleModel> _vehicles = [];
   final _repository = ProfileRepository();
@@ -26,7 +28,7 @@ class _VehiclesPageState extends State<VehiclesPage> {
 
   Future<void> _fetchVehicles() async {
     try {
-      final res = await _repository.getVehicles(currentUser.residentId);
+      final res = await _repository.getVehicles(ref.read(userProvider)!.residentId);
 
       if (mounted) {
         setState(() {

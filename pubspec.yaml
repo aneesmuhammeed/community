@@ -45,6 +45,8 @@ dependencies:
   flutter_dotenv: ^6.0.1
   image_picker: ^1.2.3
   local_auth: ^3.0.2
+  flutter_secure_storage: ^11.0.0
+  flutter_riverpod: ^2.6.1
 
 dev_dependencies:
   flutter_test:

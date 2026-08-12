@@ -1,17 +1,19 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/models/user_model.dart';
 import 'package:uuid/uuid.dart';
 
-class AddFamilyMemberModal extends StatefulWidget {
+class AddFamilyMemberModal extends ConsumerStatefulWidget {
   const AddFamilyMemberModal({Key? key}) : super(key: key);
 
   @override
-  State<AddFamilyMemberModal> createState() => _AddFamilyMemberModalState();
+  ConsumerState<AddFamilyMemberModal> createState() => _AddFamilyMemberModalState();
 }
 
-class _AddFamilyMemberModalState extends State<AddFamilyMemberModal> {
+class _AddFamilyMemberModalState extends ConsumerState<AddFamilyMemberModal> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   
@@ -38,7 +40,7 @@ class _AddFamilyMemberModalState extends State<AddFamilyMemberModal> {
     try {
       await Supabase.instance.client.from('family_members').insert({
         'id': const Uuid().v4(),
-        'resident_id': currentUser.residentId,
+        'resident_id': ref.read(userProvider)!.residentId,
         'name': _nameController.text.trim(),
         'relation': _relation,
         'gender': _gender,

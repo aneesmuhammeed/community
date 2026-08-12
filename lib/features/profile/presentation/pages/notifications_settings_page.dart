@@ -1,3 +1,5 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/widgets/custom_icon.dart';
@@ -5,14 +7,14 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/models/user_model.dart';
 import '../../data/profile_repository.dart';
 
-class NotificationsSettingsPage extends StatefulWidget {
+class NotificationsSettingsPage extends ConsumerStatefulWidget {
   const NotificationsSettingsPage({Key? key}) : super(key: key);
 
   @override
-  State<NotificationsSettingsPage> createState() => _NotificationsSettingsPageState();
+  ConsumerState<NotificationsSettingsPage> createState() => _NotificationsSettingsPageState();
 }
 
-class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
+class _NotificationsSettingsPageState extends ConsumerState<NotificationsSettingsPage> {
   bool _isLoading = true;
   bool _globalPushEnabled = true;
   bool _announcementsEnabled = true;
@@ -26,7 +28,7 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
 
   Future<void> _fetchSettings() async {
     try {
-      final response = await _repository.getNotificationSettings(currentUser.residentId);
+      final response = await _repository.getNotificationSettings(ref.read(userProvider)!.residentId);
 
       if (response != null) {
         setState(() {
@@ -35,10 +37,13 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
         });
       } else {
         // If no settings row exists yet, we insert one
-        await _repository.createDefaultNotificationSettings(currentUser.residentId);
+        await _repository.createDefaultNotificationSettings(ref.read(userProvider)!.residentId);
       }
     } catch (e) {
       debugPrint('Error fetching notification settings: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading settings: $e')));
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -48,7 +53,7 @@ class _NotificationsSettingsPageState extends State<NotificationsSettingsPage> {
 
   Future<void> _updateSetting(String key, bool value) async {
     try {
-      await _repository.updateNotificationSetting(currentUser.residentId, key, value);
+      await _repository.updateNotificationSetting(ref.read(userProvider)!.residentId, key, value);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update setting: $e')));

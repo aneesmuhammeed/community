@@ -29,13 +29,13 @@ class GuestInviteModel {
 
   factory GuestInviteModel.fromJson(Map<String, dynamic> json) {
     return GuestInviteModel(
-      id: json['id'] as String,
-      name: json['guest_name'] as String,
-      relation: json['relation'] as String,
-      date: json['valid_from'] as String,
+      id: json['id'] as String? ?? '',
+      name: json['guest_name'] as String? ?? 'Guest',
+      relation: json['relation'] as String? ?? 'guest',
+      date: json['valid_from'] as String? ?? '',
       method: json['invite_method'] as String? ?? 'qr',
       code: json['invite_code'] as String? ?? '',
-      status: (json['arrived_at'] != null && json['left_at'] == null) ? 'entered' : json['status'] as String,
+      status: (json['arrived_at'] != null && json['left_at'] == null) ? 'entered' : json['status'] as String? ?? 'active',
       gender: 'male',
       heritage: 'South Asian',
       avatarIndex: 1,

@@ -1,3 +1,5 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,14 +9,14 @@ import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/models/complaint_model.dart';
 import '../../data/supabase_complaint_repository.dart';
 
-class RaiseComplaintPage extends StatefulWidget {
+class RaiseComplaintPage extends ConsumerStatefulWidget {
   const RaiseComplaintPage({Key? key}) : super(key: key);
 
   @override
-  State<RaiseComplaintPage> createState() => _RaiseComplaintPageState();
+  ConsumerState<RaiseComplaintPage> createState() => _RaiseComplaintPageState();
 }
 
-class _RaiseComplaintPageState extends State<RaiseComplaintPage> {
+class _RaiseComplaintPageState extends ConsumerState<RaiseComplaintPage> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
   final _customLocationController = TextEditingController();
@@ -57,11 +59,11 @@ class _RaiseComplaintPageState extends State<RaiseComplaintPage> {
     if (_selectedImages.length >= _maxImages) return;
 
     try {
-      final List<XFile> pickedFiles = await _picker.pickMultiImage(
+      final List<XFile>? pickedFiles = await _picker.pickMultiImage(
         imageQuality: 70,
       );
 
-      if (pickedFiles.isNotEmpty) {
+      if (pickedFiles != null && pickedFiles.isNotEmpty) {
         setState(() {
           final int remainingSlots = _maxImages - _selectedImages.length;
           _selectedImages.addAll(pickedFiles.take(remainingSlots));
@@ -141,17 +143,7 @@ class _RaiseComplaintPageState extends State<RaiseComplaintPage> {
     );
   }
 
-  String _getFinalLocation() {
-    if (_selectedLocation == 'My Apartment') {
-      return currentUser.apartmentId;
-    }
-    if (_isOtherLocation) {
-      return _customLocationController.text.trim().isNotEmpty
-          ? _customLocationController.text.trim()
-          : 'Other';
-    }
-    return _selectedLocation ?? '';
-  }
+
 
   bool _validateForm() {
     if (_selectedCategoryIndex == null) {
@@ -185,20 +177,33 @@ class _RaiseComplaintPageState extends State<RaiseComplaintPage> {
   Future<void> _submitComplaint() async {
     if (!_validateForm()) return;
 
+    final user = ref.read(userProvider);
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User session not found')));
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     try {
-      final imagePaths = _selectedImages.map((e) => e.path).toList();
-      final finalLocation = _getFinalLocation();
+      String finalLocation = _selectedLocation ?? '';
+      if (_selectedLocation == 'My Apartment') {
+        finalLocation = user.apartmentId;
+      } else if (_isOtherLocation) {
+        finalLocation = _customLocationController.text.trim().isNotEmpty
+            ? _customLocationController.text.trim()
+            : 'Other';
+      }
 
       final complaint = await _repository.createComplaint(
-        residentId: currentUser.residentId,
-        apartmentId: currentUser.apartmentId,
-        societyId: currentUser.societyId,
+        residentId: user.residentId,
+        apartmentId: user.apartmentId,
+        societyId: user.societyId,
         title: _titleController.text.trim(),
         category: categories[_selectedCategoryIndex!],
         description: _descController.text.trim(),
-        imagePaths: imagePaths,
+        images: _selectedImages,
         location: finalLocation,
         isEmergency: _isEmergency,
       );
@@ -264,7 +269,7 @@ class _RaiseComplaintPageState extends State<RaiseComplaintPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          currentUser.societyName,
+                          ref.watch(userProvider)!.societyName,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: const Color(0xFF64748B),
                           ),
@@ -457,13 +462,17 @@ class _RaiseComplaintPageState extends State<RaiseComplaintPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Upload Images (Optional)',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: const Color(0xFF64748B),
-                          fontWeight: FontWeight.w500,
+                      Expanded(
+                        child: Text(
+                          'Upload Images (Optional)',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: const Color(0xFF64748B),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         '${_selectedImages.length}/$_maxImages',
                         style: theme.textTheme.labelSmall?.copyWith(

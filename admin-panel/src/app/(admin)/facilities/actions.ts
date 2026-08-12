@@ -6,27 +6,29 @@ import { revalidatePath } from 'next/cache';
 export async function approveBooking(formData: FormData) {
   const id = formData.get('id') as string;
   const societyId = formData.get('society_id') as string;
-  if (!id || !societyId) return;
+  if (!id || !societyId) return { error: 'Missing id or society_id' };
   try {
     const { error } = await supabase.from('bookings').update({ status: 'confirmed' }).eq('id', id).eq('society_id', societyId);
-    if (error) console.error('Error approving booking:', error);
-  } catch (err) {
-    console.error('Failed to approve booking:', err);
+    if (error) return { error: error.message };
+  } catch (err: any) {
+    return { error: err.message || 'Failed to approve booking' };
   }
   revalidatePath('/facilities');
+  return { success: true };
 }
 
 export async function denyBooking(formData: FormData) {
   const id = formData.get('id') as string;
   const societyId = formData.get('society_id') as string;
-  if (!id || !societyId) return;
+  if (!id || !societyId) return { error: 'Missing id or society_id' };
   try {
     const { error } = await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', id).eq('society_id', societyId);
-    if (error) console.error('Error denying booking:', error);
-  } catch (err) {
-    console.error('Failed to deny booking:', err);
+    if (error) return { error: error.message };
+  } catch (err: any) {
+    return { error: err.message || 'Failed to deny booking' };
   }
   revalidatePath('/facilities');
+  return { success: true };
 }
 
 export async function updateFacilitySettings(formData: FormData) {
@@ -34,14 +36,17 @@ export async function updateFacilitySettings(formData: FormData) {
   const operating_hours = formData.get('operating_hours') as string;
   const slot_duration = parseInt(formData.get('slot_duration') as string, 10);
   
-  if (!id || !operating_hours || isNaN(slot_duration)) return;
+  if (!id || !operating_hours || isNaN(slot_duration)) return { error: 'Missing required fields' };
   
-  await supabase.from('facilities').update({
+  const { error } = await supabase.from('facilities').update({
     operating_hours,
     slot_duration
   }).eq('id', id);
   
+  if (error) return { error: error.message };
+  
   revalidatePath('/facilities');
+  return { success: true };
 }
 
 export async function addFacility(formData: FormData) {
@@ -52,7 +57,7 @@ export async function addFacility(formData: FormData) {
   const slot_duration = parseInt(formData.get('slot_duration') as string, 10);
   const booking_fee = parseFloat(formData.get('booking_fee') as string);
   
-  if (!society_id || !name || !operating_hours) return;
+  if (!society_id || !name || !operating_hours) return { error: 'Missing required fields' };
   
   const { error } = await supabase.from('facilities').insert({
     society_id,
@@ -67,8 +72,9 @@ export async function addFacility(formData: FormData) {
   });
   
   if (error) {
-    console.error('Error inserting facility:', error);
+    return { error: error.message };
   }
   
   revalidatePath('/facilities');
+  return { success: true };
 }

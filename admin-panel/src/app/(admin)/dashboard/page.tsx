@@ -50,7 +50,8 @@ export default async function DashboardPage() {
   // Aggregate Facility Data
   const facilityMap: Record<string, number> = {};
   bookingsData?.forEach(b => {
-    const name = (b.facilities as { name: string } | null)?.name || 'Unknown';
+    const fac = b.facilities as any;
+    const name = (Array.isArray(fac) ? fac[0]?.name : fac?.name) || 'Unknown';
     facilityMap[name] = (facilityMap[name] || 0) + 1;
   });
   const facilityChartData = Object.entries(facilityMap).map(([name, value]) => ({ name, value }));

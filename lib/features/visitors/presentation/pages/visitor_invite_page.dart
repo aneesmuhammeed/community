@@ -1,3 +1,5 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -12,14 +14,14 @@ import 'package:share_plus/share_plus.dart';
 import 'dart:async';
 import '../../data/visitor_repository.dart';
 
-class VisitorInvitePage extends StatefulWidget {
+class VisitorInvitePage extends ConsumerStatefulWidget {
   const VisitorInvitePage({Key? key}) : super(key: key);
 
   @override
-  State<VisitorInvitePage> createState() => _VisitorInvitePageState();
+  ConsumerState<VisitorInvitePage> createState() => _VisitorInvitePageState();
 }
 
-class _VisitorInvitePageState extends State<VisitorInvitePage> {
+class _VisitorInvitePageState extends ConsumerState<VisitorInvitePage> {
   late Future<List<GuestInviteModel>> _invitesFuture;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _purposeController = TextEditingController();
@@ -54,9 +56,9 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
 
     try {
       final result = await _repository.createInvite(
-        residentId: currentUser.residentId,
-        apartmentId: currentUser.apartmentId,
-        societyId: currentUser.societyId,
+        residentId: ref.read(userProvider)!.residentId,
+        apartmentId: ref.read(userProvider)!.apartmentId,
+        societyId: ref.read(userProvider)!.societyId,
         guestName: _nameController.text,
         purpose: _purposeController.text,
       );
@@ -72,9 +74,9 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
       });
       _fetchAndSetInvites();
     } catch (e) {
-      print('=== SUPABASE INSERT ERROR ===');
-      print(e);
-      print('=============================');
+      debugPrint('=== SUPABASE INSERT ERROR ===');
+      debugPrint(e.toString());
+      debugPrint('=============================');
       setState(() => _isGenerating = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
@@ -126,7 +128,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
   }
 
   Future<List<GuestInviteModel>> _fetchInvites() async {
-    return _repository.getInvites(currentUser.residentId);
+    return _repository.getInvites(ref.read(userProvider)!.residentId);
   }
 
   @override
@@ -150,7 +152,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${currentUser.societyName} · ${currentUser.block}',
+                            '${ref.watch(userProvider)!.societyName} · ${ref.watch(userProvider)!.block}',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: const Color(0xFF64748B),
                             ),
@@ -337,7 +339,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'One-Time Password (Flat ${currentUser.apartment})',
+                          'One-Time Password (Flat ${ref.watch(userProvider)!.apartment})',
                           style: theme.textTheme.labelMedium?.copyWith(
                             color: theme.colorScheme.onSecondary,
                             fontWeight: FontWeight.w500,
@@ -512,7 +514,7 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
                           index: invite.avatarIndex,
                           validUntil: invite.validUntil,
                           otpValue: invite.otpValue,
-                          unitNumber: currentUser.apartment,
+                          unitNumber: ref.watch(userProvider)!.apartment,
                           onRevoke: invite.status == 'active' ? () => _revokeInvite(invite.id) : null,
                         ),
                       );
@@ -572,16 +574,16 @@ class _VisitorInvitePageState extends State<VisitorInvitePage> {
   }
 }
 
-class _CountdownTimerWidget extends StatefulWidget {
+class _CountdownTimerWidget extends ConsumerStatefulWidget {
   final String validUntilIso;
   
   const _CountdownTimerWidget({required this.validUntilIso});
 
   @override
-  State<_CountdownTimerWidget> createState() => _CountdownTimerWidgetState();
+  ConsumerState<_CountdownTimerWidget> createState() => _CountdownTimerWidgetState();
 }
 
-class _CountdownTimerWidgetState extends State<_CountdownTimerWidget> {
+class _CountdownTimerWidgetState extends ConsumerState<_CountdownTimerWidget> {
   late Timer _timer;
   String _timeRemaining = 'Loading...';
 

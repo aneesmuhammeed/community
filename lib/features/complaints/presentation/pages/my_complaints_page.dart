@@ -1,3 +1,7 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/custom_icon.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -5,14 +9,14 @@ import '../../../../core/models/user_model.dart';
 import '../../../../core/models/complaint_model.dart';
 import '../../data/complaint_repository.dart';
 
-class MyComplaintsPage extends StatefulWidget {
+class MyComplaintsPage extends ConsumerStatefulWidget {
   const MyComplaintsPage({Key? key}) : super(key: key);
 
   @override
-  State<MyComplaintsPage> createState() => _MyComplaintsPageState();
+  ConsumerState<MyComplaintsPage> createState() => _MyComplaintsPageState();
 }
 
-class _MyComplaintsPageState extends State<MyComplaintsPage> {
+class _MyComplaintsPageState extends ConsumerState<MyComplaintsPage> {
   bool _isLoading = true;
   List<ComplaintModel> _complaints = [];
   final _repository = ComplaintRepository();
@@ -25,7 +29,7 @@ class _MyComplaintsPageState extends State<MyComplaintsPage> {
 
   Future<void> _fetchComplaints() async {
     try {
-      final complaints = await _repository.getComplaints(currentUser.residentId);
+      final complaints = await _repository.getComplaints(ref.read(userProvider)!.residentId);
 
       if (mounted) {
         setState(() {
@@ -195,6 +199,30 @@ class _MyComplaintsPageState extends State<MyComplaintsPage> {
             'Raised on $formattedDate',
             style: theme.textTheme.labelSmall?.copyWith(color: const Color(0xFF94A3B8)),
           ),
+          if (complaint.images.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 60,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: complaint.images.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final imagePath = complaint.images[index];
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: kIsWeb || imagePath.startsWith('http')
+                          ? Image.network(imagePath, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.broken_image))
+                          : Image.file(File(imagePath), fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.broken_image)),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ],
       ),
     );

@@ -1,3 +1,5 @@
+import '../../../../core/providers/user_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/widgets/custom_icon.dart';
@@ -5,14 +7,14 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/widgets/user_avatar.dart';
 
-class EditProfilePage extends StatefulWidget {
+class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({Key? key}) : super(key: key);
 
   @override
-  State<EditProfilePage> createState() => _EditProfilePageState();
+  ConsumerState<EditProfilePage> createState() => _EditProfilePageState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage> {
+class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _nameCtrl;
@@ -33,14 +35,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    _nameCtrl = TextEditingController(text: currentUser.name);
-    _phoneCtrl = TextEditingController(text: currentUser.phone);
-    _emailCtrl = TextEditingController(text: currentUser.email);
+    _nameCtrl = TextEditingController(text: ref.read(userProvider)!.name);
+    _phoneCtrl = TextEditingController(text: ref.read(userProvider)!.phone);
+    _emailCtrl = TextEditingController(text: ref.read(userProvider)!.email);
 
-    _gender = currentUser.gender;
-    _ageGroup = currentUser.ageGroup;
-    _heritage = currentUser.heritage;
-    _avatarIndex = currentUser.avatarIndex;
+    _gender = ref.read(userProvider)!.gender;
+    _ageGroup = ref.read(userProvider)!.ageGroup;
+    _heritage = ref.read(userProvider)!.heritage;
+    _avatarIndex = ref.read(userProvider)!.avatarIndex;
     
     // Fallbacks in case user model has invalid values not in dropdown
     if (!_genders.contains(_gender)) _gender = 'other';
@@ -73,10 +75,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
         'age_group': _ageGroup,
         'heritage': _heritage,
         'avatar_index': _avatarIndex,
-      }).eq('id', currentUser.residentId);
+      }).eq('id', ref.read(userProvider)!.residentId);
 
       // Update local state in memory
-      currentUser = currentUser.copyWith(
+      ref.read(userProvider.notifier).setUser(ref.read(userProvider)!.copyWith(
         name: _nameCtrl.text.trim(),
         phone: _phoneCtrl.text.trim(),
         email: _emailCtrl.text.trim(),
