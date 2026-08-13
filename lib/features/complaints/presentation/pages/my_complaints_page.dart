@@ -8,6 +8,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/models/complaint_model.dart';
 import '../../data/complaint_repository.dart';
+import 'raise_complaint_page.dart';
 
 class MyComplaintsPage extends ConsumerStatefulWidget {
   const MyComplaintsPage({Key? key}) : super(key: key);
@@ -79,6 +80,16 @@ class _MyComplaintsPageState extends ConsumerState<MyComplaintsPage> {
                     },
                   ),
                 ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const RaiseComplaintPage()),
+          ).then((_) => _fetchComplaints());
+        },
+        backgroundColor: theme.colorScheme.primary,
+        icon: Icon(Icons.add, color: theme.colorScheme.onPrimary),
+        label: Text('New Complaint', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary, fontWeight: FontWeight.w600)),
+      ),
     );
   }
 

@@ -61,7 +61,7 @@ export default function ResidentItem({ resident, apartments }: Props) {
         </div>
         
         <div className={styles.actionButtons}>
-          <form action={toggleResidentStatus.bind(null, resident.resident_id, resident.is_active)}>
+          <form action={toggleResidentStatus.bind(null, resident.resident_id, resident.is_active) as any}>
             <button type="submit" className={styles.btnToggle}>
               {resident.is_active ? 'Deactivate' : 'Activate'}
             </button>

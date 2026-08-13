@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, Users, UserCheck, Calendar, 
-  MessageSquare, Wrench, Bell, Radio, 
+  MessageSquare, Wrench, Bell,
   BarChart3, Settings, ScanLine
 } from 'lucide-react';
 import styles from '@/app/(admin)/layout.module.css';
@@ -18,17 +18,23 @@ const NAV_ITEMS = [
   { href: '/complaints', icon: MessageSquare, label: 'Complaints' },
   { href: '/maintenance', icon: Wrench, label: 'Maintenance' },
   { href: '/announcements', icon: Bell, label: 'Announcements' },
-  { href: '/feed', icon: Radio, label: 'Feed' },
   { href: '/reports', icon: BarChart3, label: 'Reports' },
-  { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
-export default function SidebarNav() {
+export default function SidebarNav({ role = 'SUPER_ADMIN' }: { role?: string }) {
   const pathname = usePathname();
+
+  // Filter based on role
+  const filteredItems = NAV_ITEMS.filter(item => {
+    if (role === 'SECURITY_GUARD') {
+      return item.href === '/visitors';
+    }
+    return true; // Super Admin sees everything
+  });
 
   return (
     <nav className={styles.nav}>
-      {NAV_ITEMS.map((item) => {
+      {filteredItems.map((item) => {
         const isActive = pathname.startsWith(item.href);
         const Icon = item.icon;
         

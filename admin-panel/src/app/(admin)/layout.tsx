@@ -1,13 +1,13 @@
 import styles from './layout.module.css';
 import { Moon, BellRing } from 'lucide-react';
 
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/server';
 import SidebarNav from '@/components/SidebarNav';
 import MobileNav from '@/components/MobileNav';
 
 export const revalidate = 0;
 
-function SidebarContent() {
+function SidebarContent({ role }: { role: string }) {
   return (
     <>
       <div className={styles.sidebarHeader}>
@@ -28,7 +28,7 @@ function SidebarContent() {
         </div>
       </div>
 
-      <SidebarNav />
+      <SidebarNav role={role} />
       
       <div className={styles.sidebarFooter}>
         <span>v1.0.0 · CommunityHub</span>
@@ -39,7 +39,14 @@ function SidebarContent() {
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
+  const supabase = await createClient();
   
+  // Get User Role
+  const { data: { user } } = await supabase.auth.getUser();
+  const email = user?.email || '';
+  let role = 'SUPER_ADMIN';
+  if (email.startsWith('guard')) role = 'SECURITY_GUARD';
+
   const [
     { count: unresolvedComplaints },
     { count: activeVisitors }
@@ -54,12 +61,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className={styles.layout}>
       {/* Desktop/Tablet Sidebar (hidden on mobile via CSS) */}
       <aside className={styles.sidebar}>
-        <SidebarContent />
+        <SidebarContent role={role} />
       </aside>
 
       {/* Mobile Drawer */}
       <MobileNav>
-        <SidebarContent />
+        <SidebarContent role={role} />
       </MobileNav>
 
       {/* Main Content Area */}
@@ -79,9 +86,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <BellRing size={18} />
             </button>
             <div className={styles.userProfile}>
-              <div className={styles.userAvatar}>SA</div>
+              <div className={styles.userAvatar}>
+                {role === 'SECURITY_GUARD' ? 'SG' : 'SA'}
+              </div>
               <div className={styles.userDetails}>
-                <span className={styles.userName}>Super Admin</span>
+                <span className={styles.userName}>
+                  {role === 'SECURITY_GUARD' ? 'Security Guard' : 'Super Admin'}
+                </span>
                 <span className={styles.userRole}>Maple Heights</span>
               </div>
             </div>

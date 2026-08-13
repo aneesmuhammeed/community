@@ -161,11 +161,11 @@ export default async function DashboardPage() {
                 </div>
                 {v.status === 'active' && (
                   <div className={styles.actions}>
-                    <form action={approveVisitor} style={{ display: 'inline' }}>
+                    <form action={approveVisitor as any} style={{ display: 'inline' }}>
                       <input type="hidden" name="id" value={v.id} />
                       <button type="submit" className={styles.btnApprove}>✓ Approve</button>
                     </form>
-                    <form action={denyVisitor} style={{ display: 'inline' }}>
+                    <form action={denyVisitor as any} style={{ display: 'inline' }}>
                       <input type="hidden" name="id" value={v.id} />
                       <button type="submit" className={styles.btnDeny}>✕ Deny</button>
                     </form>

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/custom_icon.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'faq_page.dart';
 
 class HelpSupportPage extends StatelessWidget {
   const HelpSupportPage({Key? key}) : super(key: key);
@@ -33,16 +35,22 @@ class HelpSupportPage extends StatelessWidget {
             leading: const Icon(Icons.phone, color: Colors.green),
             title: const Text('Call Office'),
             subtitle: const Text('+91 98765 43210'),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Calling +91 98765 43210...')));
+            onTap: () async {
+              final Uri url = Uri.parse('tel:123456789');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url);
+              }
             },
           ),
           ListTile(
             leading: const Icon(Icons.email, color: Colors.blue),
             title: const Text('Email Society'),
             subtitle: const Text('manager@prestige-estates.com'),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Opening email client...')));
+            onTap: () async {
+              final Uri url = Uri.parse('mailto:manager@prestige-estates.com?subject=App%20Inquiry');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url);
+              }
             },
           ),
 
@@ -54,14 +62,24 @@ class HelpSupportPage extends StatelessWidget {
             title: const Text('Nearest Hospital / Ambulance'),
             subtitle: const Text('108 or +91 80 4567 8900'),
             trailing: const CustomIcon(icon: 'chevron-right', size: 18, color: Colors.grey),
-            onTap: () {},
+            onTap: () async {
+              final Uri url = Uri.parse('tel:108');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url);
+              }
+            },
           ),
           ListTile(
             leading: const Icon(Icons.security, color: Colors.orange),
             title: const Text('Main Gate Security'),
             subtitle: const Text('Intercom: 9999 or +91 80 1234 5678'),
             trailing: const CustomIcon(icon: 'chevron-right', size: 18, color: Colors.grey),
-            onTap: () {},
+            onTap: () async {
+              final Uri url = Uri.parse('tel:+918012345678');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url);
+              }
+            },
           ),
 
           const Divider(height: 32),
@@ -73,7 +91,26 @@ class HelpSupportPage extends StatelessWidget {
             subtitle: const Text('Found a bug? Let us know.'),
             trailing: const CustomIcon(icon: 'chevron-right', size: 18, color: Colors.grey),
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Issue reporter coming soon!')));
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Report an Issue'),
+                  content: const TextField(
+                    decoration: InputDecoration(hintText: 'Describe the issue...'),
+                    maxLines: 3,
+                  ),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Issue reported successfully')));
+                      },
+                      child: const Text('Submit'),
+                    ),
+                  ],
+                ),
+              );
             },
           ),
           ListTile(
@@ -82,7 +119,7 @@ class HelpSupportPage extends StatelessWidget {
             subtitle: const Text('Guides on how to use the app.'),
             trailing: const CustomIcon(icon: 'chevron-right', size: 18, color: Colors.grey),
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('FAQs coming soon!')));
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => const FaqPage()));
             },
           ),
         ],

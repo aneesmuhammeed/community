@@ -130,11 +130,11 @@ export default async function VisitorsPage({
                   
                   {v.status === 'active' && (
                     <div className={vStyles.visitorActionButtons}>
-                      <form action={approveVisitor} style={{ display: 'inline' }}>
+                      <form action={approveVisitor as any} style={{ display: 'inline' }}>
                         <input type="hidden" name="id" value={v.id} />
                         <SubmitButton label="Approve" loadingLabel="Wait..." variant="primary" />
                       </form>
-                      <form action={denyVisitor} style={{ display: 'inline' }}>
+                      <form action={denyVisitor as any} style={{ display: 'inline' }}>
                         <input type="hidden" name="id" value={v.id} />
                         <SubmitButton label="Deny" loadingLabel="Wait..." variant="danger" />
                       </form>
@@ -143,7 +143,7 @@ export default async function VisitorsPage({
                   
                   {v.arrived_at !== null && v.left_at === null && (
                     <div className={vStyles.visitorActionButtons}>
-                      <form action={checkoutVisitor} style={{ display: 'inline' }}>
+                      <form action={checkoutVisitor as any} style={{ display: 'inline' }}>
                         <input type="hidden" name="id" value={v.id} />
                         <SubmitButton label="Checkout" loadingLabel="Wait..." variant="secondary" />
                       </form>

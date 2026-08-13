@@ -108,6 +108,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     }
   }
 
+  void _navigateToFeed() {
+    if (widget.onNavigate != null) {
+      widget.onNavigate!(0);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -133,7 +139,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       {
         'title': 'Activity',
         'items': [
-          {'icon': 'newspaper', 'label': 'Community Feed', 'sub': 'News, events & announcements', 'highlight': true},
+          {'icon': 'newspaper', 'label': 'Community Feed', 'sub': 'News, events & announcements', 'highlight': true, 'action': _navigateToFeed},
           {'icon': 'message-circle', 'label': 'My Complaints', 'sub': _isLoading ? 'Loading...' : complaintsText, 'action': _navigateToComplaints},
           {'icon': 'calendar', 'label': 'My Bookings', 'sub': _isLoading ? 'Loading...' : _nextBookingInfo, 'action': _navigateToBookings},
         ],
@@ -142,7 +148,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         'title': 'Account',
         'items': [
           {'icon': 'bell', 'label': 'Notifications', 'sub': 'Manage alerts & reminders', 'action': _navigateToNotifications},
-          {'icon': 'shield-check', 'label': 'Privacy & Security', 'sub': '', 'action': _navigateToPrivacySecurity},
+          {'icon': 'shield-check', 'label': 'Privacy & Security', 'sub': 'Biometrics, passwords & sessions', 'action': _navigateToPrivacySecurity},
           {'icon': 'help-circle', 'label': 'Help & Support', 'sub': 'Contact support or read FAQs', 'action': _navigateToHelpSupport},
           {'icon': 'log-out', 'label': 'Sign Out', 'sub': '', 'danger': true, 'action': _handleSignOut},
         ],

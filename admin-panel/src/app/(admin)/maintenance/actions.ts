@@ -18,12 +18,15 @@ export async function getApartments() {
     console.error('Error fetching apartments:', error);
     return [];
   }
-  return (data || []).map((apt: any) => ({
-    id: apt.id,
-    unit_number: apt.unit_number,
-    floor: apt.floor,
-    block_name: apt.blocks?.name || '—',
-  }));
+  return (data || []).map((apt: any) => {
+    const blk = Array.isArray(apt.blocks) ? apt.blocks[0] : (apt.blocks || apt.block);
+    return {
+      id: apt.id,
+      unit_number: apt.unit_number,
+      floor: apt.floor,
+      block_name: blk?.name || '—',
+    };
+  });
 }
 
 // ─── Fetch billing cycles with apartment info ───
@@ -39,11 +42,15 @@ export async function getBillingCycles() {
     console.error('Error fetching billing cycles:', error);
     return [];
   }
-  return (data || []).map((bill: any) => ({
-    ...bill,
-    unit_number: bill.apartments?.unit_number || '—',
-    block_name: bill.apartments?.blocks?.name || '—',
-  }));
+  return (data || []).map((bill: any) => {
+    const apt = Array.isArray(bill.apartments) ? bill.apartments[0] : (bill.apartments || bill.apartment);
+    const blk = Array.isArray(apt?.blocks) ? apt.blocks[0] : (apt?.blocks || apt?.block);
+    return {
+      ...bill,
+      unit_number: apt?.unit_number || '—',
+      block_name: blk?.name || '—',
+    };
+  });
 }
 
 // ─── Aggregate billing summary for the year ───
