@@ -2,10 +2,14 @@
 
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
+import { requireRole } from '@/utils/supabase/auth';
+import { getSocietyId } from '@/utils/supabase/auth';
 
-const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID;
+
 
 export async function approveVisitor(formData: FormData) {
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD', 'SECURITY_GUARD']); } catch (e: any) { return { error: e.message }; }
+  
   const id = formData.get('id') as string;
   if (!id) return { error: 'Missing ID' };
   const { error } = await supabase.from('visitors').update({ 
@@ -21,6 +25,8 @@ export async function approveVisitor(formData: FormData) {
 }
 
 export async function denyVisitor(formData: FormData) {
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD', 'SECURITY_GUARD']); } catch (e: any) { return { error: e.message }; }
+  
   const id = formData.get('id') as string;
   if (!id) return { error: 'Missing ID' };
   const { error } = await supabase.from('visitors').update({ status: 'cancelled' }).eq('id', id);
@@ -32,6 +38,9 @@ export async function denyVisitor(formData: FormData) {
 }
 
 export async function verifyOtp(formData: FormData) {
+  const SOCIETY_ID = await getSocietyId();
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD', 'SECURITY_GUARD']); } catch (e: any) { return { error: e.message }; }
+  
   if (!SOCIETY_ID) return { error: 'Society ID not configured' };
   const otp = formData.get('otp') as string;
   const flat = formData.get('flat') as string;
@@ -94,6 +103,8 @@ export async function verifyOtp(formData: FormData) {
 }
 
 export async function checkoutVisitor(formData: FormData) {
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD', 'SECURITY_GUARD']); } catch (e: any) { return; }
+  
   const id = formData.get('id') as string;
   if (!id) return;
   

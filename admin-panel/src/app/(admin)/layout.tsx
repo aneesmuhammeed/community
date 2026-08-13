@@ -1,9 +1,11 @@
 import styles from './layout.module.css';
-import { Moon, BellRing } from 'lucide-react';
+import { Moon, BellRing, LogOut } from 'lucide-react';
 
 import { createClient } from '@/utils/supabase/server';
+import { logout } from '@/app/login/actions';
 import SidebarNav from '@/components/SidebarNav';
 import MobileNav from '@/components/MobileNav';
+import SOSListener from '@/components/SOSListener';
 
 export const revalidate = 0;
 
@@ -37,15 +39,27 @@ function SidebarContent({ role }: { role: string }) {
   );
 }
 
+import SocietySwitcher from '@/components/SocietySwitcher';
+import { getSocietyId } from '@/utils/supabase/auth';
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
+  const SOCIETY_ID = await getSocietyId();
   const supabase = await createClient();
   
-  // Get User Role
+  // Get User Role from JWT
   const { data: { user } } = await supabase.auth.getUser();
-  const email = user?.email || '';
-  let role = 'SUPER_ADMIN';
-  if (email.startsWith('guard')) role = 'SECURITY_GUARD';
+  const role = user?.app_metadata?.role || 'SUPER_ADMIN';
+
+  // Format the display name based on role
+  let roleDisplayName = 'Super Admin';
+  let roleInitials = 'SA';
+  if (role === 'SECURITY_GUARD') {
+    roleDisplayName = 'Security Guard';
+    roleInitials = 'SG';
+  } else if (role === 'COMMUNITY_HEAD') {
+    roleDisplayName = 'Community Head';
+    roleInitials = 'CH';
+  }
 
   const [
     { count: unresolvedComplaints },
@@ -57,8 +71,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const totalNotifications = (unresolvedComplaints || 0) + (activeVisitors || 0);
 
+  let societies: any[] = [];
+  if (role === 'SUPER_ADMIN') {
+    const { data } = await supabase.from('societies').select('id, name');
+    societies = data || [];
+  }
+
   return (
     <div className={styles.layout}>
+      <SOSListener />
       {/* Desktop/Tablet Sidebar (hidden on mobile via CSS) */}
       <aside className={styles.sidebar}>
         <SidebarContent role={role} />
@@ -75,6 +96,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className={styles.breadcrumbs}>
             <span className={styles.breadcrumbItem}>/</span>
             <span className={styles.breadcrumbCurrent}>Dashboard</span>
+            {role === 'SUPER_ADMIN' && (
+              <div style={{ marginLeft: '16px' }}>
+                <SocietySwitcher societies={societies} currentSocietyId={SOCIETY_ID} />
+              </div>
+            )}
           </div>
           
           <div className={styles.headerActions}>
@@ -87,15 +113,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </button>
             <div className={styles.userProfile}>
               <div className={styles.userAvatar}>
-                {role === 'SECURITY_GUARD' ? 'SG' : 'SA'}
+                {roleInitials}
               </div>
               <div className={styles.userDetails}>
                 <span className={styles.userName}>
-                  {role === 'SECURITY_GUARD' ? 'Security Guard' : 'Super Admin'}
+                  {roleDisplayName}
                 </span>
                 <span className={styles.userRole}>Maple Heights</span>
               </div>
             </div>
+            
+            <form action={logout}>
+              <button className={styles.logoutButton} title="Logout">
+                <LogOut size={20} color="#64748b" />
+              </button>
+            </form>
           </div>
         </header>
         

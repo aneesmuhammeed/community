@@ -415,3 +415,4 @@ For issues or questions, please check the existing GitHub issues or create a new
 - [Next.js](https://nextjs.org) - React framework
 - [Lucide Icons](https://lucide.dev) - Icon set
 - [Google Fonts](https://fonts.google.com) - Typography
+

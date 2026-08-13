@@ -2,10 +2,15 @@
 
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
+import { requireRole } from '@/utils/supabase/auth';
+import { getSocietyId } from '@/utils/supabase/auth';
 
-const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID;
+
 
 export async function toggleResidentStatus(residentId: string, currentStatus: boolean) {
+  const SOCIETY_ID = await getSocietyId();
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD']); } catch (e: any) { return { error: e.message }; }
+  
   if (!SOCIETY_ID) return { error: 'Society ID not configured' };
   if (!residentId) return { error: 'Resident ID missing' };
   
@@ -25,6 +30,9 @@ export async function toggleResidentStatus(residentId: string, currentStatus: bo
 }
 
 export async function deleteResident(residentId: string) {
+  const SOCIETY_ID = await getSocietyId();
+  try { await requireRole(['SUPER_ADMIN']); } catch (e: any) { return { error: e.message }; }
+  
   if (!SOCIETY_ID) return { error: 'Society ID not configured' };
   if (!residentId) return { error: 'Resident ID missing' };
   
@@ -44,6 +52,9 @@ export async function deleteResident(residentId: string) {
 }
 
 export async function reassignResident(residentId: string, apartmentId: string) {
+  const SOCIETY_ID = await getSocietyId();
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD']); } catch (e: any) { return { error: e.message }; }
+  
   if (!SOCIETY_ID) return { error: 'Society ID not configured' };
   if (!residentId || !apartmentId) return { error: 'Missing parameters' };
   

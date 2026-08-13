@@ -2,8 +2,10 @@
 
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
+import { requireRole } from '@/utils/supabase/auth';
 
 export async function approveBooking(formData: FormData) {
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD', 'FACILITY_MANAGER']); } catch (e: any) { return { error: e.message }; }
   const id = formData.get('id') as string;
   const societyId = formData.get('society_id') as string;
   if (!id || !societyId) return { error: 'Missing id or society_id' };
@@ -18,6 +20,7 @@ export async function approveBooking(formData: FormData) {
 }
 
 export async function denyBooking(formData: FormData) {
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD', 'FACILITY_MANAGER']); } catch (e: any) { return { error: e.message }; }
   const id = formData.get('id') as string;
   const societyId = formData.get('society_id') as string;
   if (!id || !societyId) return { error: 'Missing id or society_id' };
@@ -32,6 +35,7 @@ export async function denyBooking(formData: FormData) {
 }
 
 export async function updateFacilitySettings(formData: FormData) {
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD', 'FACILITY_MANAGER']); } catch (e: any) { return { error: e.message }; }
   const id = formData.get('id') as string;
   const operating_hours = formData.get('operating_hours') as string;
   const slot_duration = parseInt(formData.get('slot_duration') as string, 10);
@@ -50,6 +54,7 @@ export async function updateFacilitySettings(formData: FormData) {
 }
 
 export async function addFacility(formData: FormData) {
+  try { await requireRole(['SUPER_ADMIN']); } catch (e: any) { return { error: e.message }; }
   const society_id = formData.get('society_id') as string;
   const name = formData.get('name') as string;
   const capacity = parseInt(formData.get('capacity') as string, 10);

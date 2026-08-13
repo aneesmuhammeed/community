@@ -8,11 +8,13 @@ import CreateFacilityModal from './CreateFacilityModal';
 import ManageHolidaysModal from './ManageHolidaysModal';
 import ManageSchedulesModal from './ManageSchedulesModal';
 import ActionForm from '@/components/ActionForm';
+import { getSocietyId } from '@/utils/supabase/auth';
 
 export const revalidate = 0;
 
 export default async function FacilitiesPage() {
-  const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
+  const SOCIETY_ID = await getSocietyId();
+  
 
   // Fetch all data in parallel
   const [

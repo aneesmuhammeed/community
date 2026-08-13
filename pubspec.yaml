@@ -47,7 +47,7 @@ dependencies:
   local_auth: ^3.0.2
   flutter_secure_storage: ^11.0.0
   flutter_riverpod: ^2.6.1
-
+  google_sign_in: ^7.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

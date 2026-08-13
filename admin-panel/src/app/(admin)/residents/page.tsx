@@ -1,11 +1,13 @@
 import styles from './residents.module.css';
 import { supabase } from '@/lib/supabase';
 import ResidentItem from './ResidentItem';
+import { getSocietyId } from '@/utils/supabase/auth';
 
 export const revalidate = 0;
 
 export default async function ResidentsPage() {
-  const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
+  const SOCIETY_ID = await getSocietyId();
+  
 
   // Fetch residents and apartments concurrently
   const [

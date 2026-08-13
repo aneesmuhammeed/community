@@ -7,6 +7,7 @@ import SubmitButton from './SubmitButton';
 import CopyOtpButton from './CopyOtpButton';
 import { UserCheck, ShieldCheck, DoorOpen, Users, MapPin, CalendarDays, KeyRound } from 'lucide-react';
 import Link from 'next/link';
+import { getSocietyId } from '@/utils/supabase/auth';
 
 export const revalidate = 0;
 
@@ -15,7 +16,8 @@ export default async function VisitorsPage({
 }: {
   searchParams: Promise<{ status?: string }>
 }) {
-  const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID || '11111111-1111-1111-1111-111111111111';
+  const SOCIETY_ID = await getSocietyId();
+  
   const params = await searchParams;
   const filterStatus = params.status || 'all';
 

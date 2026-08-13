@@ -2,10 +2,13 @@
 
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
+import { requireRole } from '@/utils/supabase/auth';
+import { getSocietyId } from '@/utils/supabase/auth';
 
-const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID;
+
 
 export async function getAnnouncements() {
+  const SOCIETY_ID = await getSocietyId();
   if (!SOCIETY_ID) return [];
   const { data, error } = await supabase
     .from('announcements')
@@ -22,6 +25,9 @@ export async function getAnnouncements() {
 }
 
 export async function createAnnouncement(formData: FormData) {
+  const SOCIETY_ID = await getSocietyId();
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD']); } catch (e: any) { return { error: e.message }; }
+  
   if (!SOCIETY_ID) return { error: 'Society ID not configured' };
   const title = formData.get('title') as string;
   const body = formData.get('body') as string;
@@ -52,6 +58,8 @@ export async function createAnnouncement(formData: FormData) {
 }
 
 export async function deleteAnnouncement(id: string) {
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD']); } catch (e: any) { return { error: e.message }; }
+  
   if (!id) return { error: 'Missing ID' };
   const { error } = await supabase.from('announcements').delete().eq('id', id);
   if (error) return { error: error.message };
@@ -60,6 +68,8 @@ export async function deleteAnnouncement(id: string) {
 }
 
 export async function togglePinAnnouncement(id: string, currentPinStatus: boolean) {
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD']); } catch (e: any) { return { error: e.message }; }
+  
   if (!id) return { error: 'Missing ID' };
   const { error } = await supabase.from('announcements').update({ is_pinned: !currentPinStatus }).eq('id', id);
   if (error) return { error: error.message };

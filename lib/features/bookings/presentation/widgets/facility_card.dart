@@ -82,7 +82,7 @@ class FacilityCard extends StatelessWidget {
         children: [
           // Image placeholder with status badge
           Container(
-            height: 100,
+            height: 80,
             decoration: const BoxDecoration(
               color: Color(0xFFF1F5F9),
               borderRadius: BorderRadius.vertical(top: Radius.circular(11)),
@@ -132,12 +132,17 @@ class FacilityCard extends StatelessWidget {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
                   name,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
@@ -189,7 +194,9 @@ class FacilityCard extends StatelessWidget {
                     ],
                   ),
                 ],
-                const SizedBox(height: 12),
+                  ],
+                ),
+                const Spacer(),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -227,8 +234,9 @@ class FacilityCard extends StatelessWidget {
               ],
             ),
           ),
-        ],
-      ),
-    ));
-  }
+        ),
+      ],
+    ),
+  ));
+}
 }

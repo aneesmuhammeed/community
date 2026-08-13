@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import styles from './announcements.module.css';
 import CreateAnnouncementModal from './CreateAnnouncementModal';
+import CreatePollModal from './CreatePollModal';
 import { deleteAnnouncement, togglePinAnnouncement } from './actions';
+import { deletePoll } from './pollActions';
 
 type Announcement = {
   id: string;
@@ -13,6 +15,20 @@ type Announcement = {
   is_pinned: boolean;
   created_at: string;
 };
+
+type PollOption = {
+  id: string;
+  option_text: string;
+}
+
+type Poll = {
+  id: string;
+  title: string;
+  description: string;
+  expires_at: string;
+  created_at: string;
+  options: PollOption[];
+}
 
 const formatDate = (isoStr: string) => {
   return new Date(isoStr).toLocaleDateString('en-US', {
@@ -27,8 +43,10 @@ const formatFullDate = (isoStr: string) => {
   });
 };
 
-export default function AnnouncementsClient({ initialData }: { initialData: Announcement[] }) {
+export default function AnnouncementsClient({ initialData, initialPolls = [] }: { initialData: Announcement[], initialPolls?: Poll[] }) {
+  const [activeTab, setActiveTab] = useState<'notices' | 'polls'>('notices');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPollModalOpen, setIsPollModalOpen] = useState(false);
   const [isProcessingId, setIsProcessingId] = useState<string | null>(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
 
@@ -60,57 +78,122 @@ export default function AnnouncementsClient({ initialData }: { initialData: Anno
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>Community Announcements</h1>
-        <button className={styles.primaryBtn} onClick={() => setIsModalOpen(true)}>
-          <span style={{ fontSize: '18px' }}>+</span> Create Announcement
-        </button>
+        <div className={styles.headerRight}>
+          <div className={styles.tabs}>
+            <button 
+              className={`${styles.tabBtn} ${activeTab === 'notices' ? styles.tabActive : ''}`}
+              onClick={() => setActiveTab('notices')}
+            >
+              Notices
+            </button>
+            <button 
+              className={`${styles.tabBtn} ${activeTab === 'polls' ? styles.tabActive : ''}`}
+              onClick={() => setActiveTab('polls')}
+            >
+              Polls
+            </button>
+          </div>
+          <button 
+            className={styles.primaryBtn} 
+            onClick={() => activeTab === 'notices' ? setIsModalOpen(true) : setIsPollModalOpen(true)}
+          >
+            <span style={{ fontSize: '18px' }}>+</span> 
+            {activeTab === 'notices' ? 'Create Notice' : 'Create Poll'}
+          </button>
+        </div>
       </div>
 
-      {initialData.length === 0 ? (
-        <div className={styles.emptyState}>
-          <h3>No announcements yet</h3>
-          <p>Click &quot;Create Announcement&quot; to post your first update to the community.</p>
-        </div>
-      ) : (
-        <div className={styles.grid}>
-          {initialData.map((item) => (
-            <div
-              key={item.id}
-              className={`${styles.card} ${item.is_pinned ? styles.cardPinned : ''}`}
-              onClick={() => setSelectedAnnouncement(item)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedAnnouncement(item); }}
-            >
-              <div className={styles.cardHeader}>
-                <span className={styles.tagBadge}>{item.tag}</span>
-                <div className={styles.cardActions} onClick={(e) => e.stopPropagation()}>
-                  <button 
-                    className={`${styles.iconBtn} ${item.is_pinned ? styles.pinActive : ''}`} 
-                    onClick={() => handleTogglePin(item.id, item.is_pinned)}
-                    title={item.is_pinned ? "Unpin" : "Pin to top"}
-                    disabled={isProcessingId === item.id}
-                  >
-                    📍
-                  </button>
-                  <button 
-                    className={`${styles.iconBtn} ${styles.deleteBtn}`} 
-                    onClick={() => handleDelete(item.id)}
-                    title="Delete"
-                    disabled={isProcessingId === item.id}
-                  >
-                    🗑️
-                  </button>
+      {activeTab === 'notices' && (
+        initialData.length === 0 ? (
+          <div className={styles.emptyState}>
+            <h3>No announcements yet</h3>
+            <p>Click &quot;Create Notice&quot; to post your first update to the community.</p>
+          </div>
+        ) : (
+          <div className={styles.grid}>
+            {initialData.map((item) => (
+              <div
+                key={item.id}
+                className={`${styles.card} ${item.is_pinned ? styles.cardPinned : ''}`}
+                onClick={() => setSelectedAnnouncement(item)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedAnnouncement(item); }}
+              >
+                <div className={styles.cardHeader}>
+                  <span className={styles.tagBadge}>{item.tag}</span>
+                  <div className={styles.cardActions} onClick={(e) => e.stopPropagation()}>
+                    <button 
+                      className={`${styles.iconBtn} ${item.is_pinned ? styles.pinActive : ''}`} 
+                      onClick={() => handleTogglePin(item.id, item.is_pinned)}
+                      title={item.is_pinned ? "Unpin" : "Pin to top"}
+                      disabled={isProcessingId === item.id}
+                    >
+                      📍
+                    </button>
+                    <button 
+                      className={`${styles.iconBtn} ${styles.deleteBtn}`} 
+                      onClick={() => handleDelete(item.id)}
+                      title="Delete"
+                      disabled={isProcessingId === item.id}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+                <h3 className={styles.cardTitle}>{item.title}</h3>
+                <p className={`${styles.cardBody} ${styles.cardBodyTruncated}`}>{item.body}</p>
+                <div className={styles.cardFooter}>
+                  <span>Posted on {formatDate(item.created_at)}</span>
+                  <span className={styles.readMore}>Read more →</span>
                 </div>
               </div>
-              <h3 className={styles.cardTitle}>{item.title}</h3>
-              <p className={`${styles.cardBody} ${styles.cardBodyTruncated}`}>{item.body}</p>
-              <div className={styles.cardFooter}>
-                <span>Posted on {formatDate(item.created_at)}</span>
-                <span className={styles.readMore}>Read more →</span>
+            ))}
+          </div>
+        )
+      )}
+
+      {activeTab === 'polls' && (
+        initialPolls.length === 0 ? (
+          <div className={styles.emptyState}>
+            <h3>No polls yet</h3>
+            <p>Click &quot;Create Poll&quot; to ask the community a question.</p>
+          </div>
+        ) : (
+          <div className={styles.grid}>
+            {initialPolls.map((poll) => (
+              <div key={poll.id} className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <span className={styles.tagBadge}>Poll</span>
+                  <div className={styles.cardActions}>
+                    <button 
+                      className={`${styles.iconBtn} ${styles.deleteBtn}`} 
+                      onClick={() => handleDeletePoll(poll.id)}
+                      title="Delete"
+                      disabled={isProcessingId === poll.id}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+                <h3 className={styles.cardTitle}>{poll.title}</h3>
+                {poll.description && (
+                  <p className={`${styles.cardBody} ${styles.cardBodyTruncated}`}>{poll.description}</p>
+                )}
+                <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {poll.options.map(opt => (
+                    <div key={opt.id} style={{ padding: '8px 12px', background: '#f1f5f9', borderRadius: '8px', fontSize: '14px', color: '#334155', fontWeight: 500 }}>
+                      {opt.option_text}
+                    </div>
+                  ))}
+                </div>
+                <div className={styles.cardFooter} style={{ marginTop: '16px' }}>
+                  <span>Expires {formatDate(poll.expires_at)}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )
       )}
 
       {/* Detail Popup */}
@@ -149,6 +232,7 @@ export default function AnnouncementsClient({ initialData }: { initialData: Anno
       )}
 
       {isModalOpen && <CreateAnnouncementModal onClose={() => setIsModalOpen(false)} />}
+      {isPollModalOpen && <CreatePollModal onClose={() => setIsPollModalOpen(false)} />}
     </div>
   );
 }

@@ -2,9 +2,14 @@
 
 import { supabase } from '@/lib/supabase';
 
-const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID;
+import { requireRole } from '@/utils/supabase/auth';
+import { getSocietyId } from '@/utils/supabase/auth';
+
+
 
 export async function getReportsData() {
+  const SOCIETY_ID = await getSocietyId();
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD', 'ACCOUNTANT']); } catch (e: any) { return null; }
   if (!SOCIETY_ID) return null;
 
   try {

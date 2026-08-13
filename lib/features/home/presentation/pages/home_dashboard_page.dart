@@ -1,6 +1,7 @@
 import '../../../../core/providers/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../widgets/home_header.dart';
@@ -8,9 +9,11 @@ import '../widgets/community_info_banner.dart';
 import '../widgets/quick_action_button.dart';
 import '../../../visitors/presentation/widgets/guest_invite_card.dart';
 import '../widgets/announcement_card.dart';
+import '../widgets/poll_card.dart';
 import '../../data/home_repository.dart';
 import '../../../../core/models/guest_invite_model.dart';
 import '../../../../core/models/announcement_model.dart';
+import '../../../../core/models/poll_model.dart';
 
 class HomeDashboardPage extends ConsumerStatefulWidget {
   final Function(int)? onNavigate;
@@ -24,6 +27,8 @@ class HomeDashboardPage extends ConsumerStatefulWidget {
 class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
   late Future<List<GuestInviteModel>> _visitorsFuture;
   late Future<List<AnnouncementModel>> _announcementsFuture;
+  late Future<List<PollModel>> _pollsFuture;
+  late Future<List<String>> _votedPollIdsFuture;
   final HomeRepository _repository = HomeRepository();
 
   @override
@@ -37,6 +42,42 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
     super.didChangeDependencies();
     _visitorsFuture = _repository.getVisitors(ref.read(userProvider)!.residentId);
     _announcementsFuture = _repository.getAnnouncements(ref.read(userProvider)!.societyId);
+    _refreshPolls();
+  }
+
+  void _refreshPolls() {
+    final societyId = ref.read(userProvider)!.societyId;
+    final residentId = ref.read(userProvider)!.residentId;
+    setState(() {
+      _pollsFuture = _repository.getPolls(societyId);
+      _votedPollIdsFuture = _repository.getVotedPollIds(residentId);
+    });
+  }
+
+  Future<void> _triggerSOS() async {
+    final residentId = ref.read(userProvider)!.residentId;
+    
+    // Show immediate feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('🚨 SOS Alert Sent to Security!'),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 4),
+      ),
+    );
+
+    try {
+      await Supabase.instance.client.from('sos_alerts').insert({
+        'resident_id': residentId,
+        'status': 'active',
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send SOS: $e'), backgroundColor: Colors.red[900]),
+        );
+      }
+    }
   }
 
   @override
@@ -66,8 +107,21 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pagePadding),
           sliver: SliverToBoxAdapter(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                FilledButton.icon(
+                  onPressed: _triggerSOS,
+                  icon: const Icon(Icons.warning_amber_rounded, size: 28),
+                  label: const Text('EMERGENCY SOS', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.red[600],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 4,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
                 Text('Quick Actions', style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: AppSpacing.md),
                 Wrap(
@@ -232,6 +286,58 @@ class _HomeDashboardPageState extends ConsumerState<HomeDashboardPage> {
                     );
                   },
                   childCount: announcements.length,
+                ),
+              );
+            },
+          ),
+        ),
+        
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
+
+        // Polls Header
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pagePadding),
+          sliver: SliverToBoxAdapter(
+            child: Text('Active Polls', style: Theme.of(context).textTheme.titleLarge),
+          ),
+        ),
+        
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
+
+        // Polls List
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pagePadding),
+          sliver: FutureBuilder(
+            future: Future.wait([_pollsFuture, _votedPollIdsFuture]),
+            builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SliverToBoxAdapter(
+                  child: Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())),
+                );
+              } else if (snapshot.hasError) {
+                return const SliverToBoxAdapter(
+                  child: Center(child: Text('Failed to load polls.', style: TextStyle(color: Colors.red))),
+                );
+              }
+
+              final polls = snapshot.data![0] as List<PollModel>;
+              final votedIds = snapshot.data![1] as List<String>;
+
+              if (polls.isEmpty) {
+                return const SliverToBoxAdapter(child: Text('No active polls.'));
+              }
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final poll = polls[index];
+                    return PollCard(
+                      poll: poll,
+                      hasVoted: votedIds.contains(poll.id),
+                      onVoteCast: _refreshPolls,
+                    );
+                  },
+                  childCount: polls.length,
                 ),
               );
             },

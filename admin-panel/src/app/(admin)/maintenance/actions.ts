@@ -2,11 +2,14 @@
 
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
+import { requireRole } from '@/utils/supabase/auth';
+import { getSocietyId } from '@/utils/supabase/auth';
 
-const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID;
+
 
 // ─── Fetch all apartments (with block name) for billing ───
 export async function getApartments() {
+  const SOCIETY_ID = await getSocietyId();
   if (!SOCIETY_ID) return [];
   const { data, error } = await supabase
     .from('apartments')
@@ -31,6 +34,7 @@ export async function getApartments() {
 
 // ─── Fetch billing cycles with apartment info ───
 export async function getBillingCycles() {
+  const SOCIETY_ID = await getSocietyId();
   if (!SOCIETY_ID) return [];
   const { data, error } = await supabase
     .from('billing_cycles')
@@ -55,6 +59,7 @@ export async function getBillingCycles() {
 
 // ─── Aggregate billing summary for the year ───
 export async function getBillingSummary() {
+  const SOCIETY_ID = await getSocietyId();
   if (!SOCIETY_ID) return { totalCollected: 0, totalPending: 0, overdueCount: 0 };
 
   const currentYear = new Date().getFullYear();
@@ -88,6 +93,7 @@ export async function getBillingSummary() {
 
 // ─── Fetch recent transactions ───
 export async function getTransactions() {
+  const SOCIETY_ID = await getSocietyId();
   if (!SOCIETY_ID) return [];
   const { data, error } = await supabase
     .from('transactions')
@@ -105,6 +111,8 @@ export async function getTransactions() {
 
 // ─── Create a billing cycle with itemized breakdown ───
 export async function createBillingCycle(formData: FormData) {
+  const SOCIETY_ID = await getSocietyId();
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD', 'FACILITY_MANAGER', 'ACCOUNTANT']); } catch (e: any) { return { error: e.message }; }
   if (!SOCIETY_ID) return { error: 'Society ID not configured' };
 
   const apartmentId = formData.get('apartmentId') as string;
@@ -154,6 +162,7 @@ export async function createBillingCycle(formData: FormData) {
 
 // ─── Mark a billing cycle as paid ───
 export async function markAsPaid(id: string) {
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD', 'FACILITY_MANAGER', 'ACCOUNTANT']); } catch (e: any) { return { error: e.message }; }
   if (!id) return { error: 'Missing ID' };
 
   // Fetch the bill to get the total amount and apartment_id
@@ -205,6 +214,7 @@ export async function markAsPaid(id: string) {
 
 // ─── Delete a billing cycle ───
 export async function deleteBillingCycle(id: string) {
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD', 'FACILITY_MANAGER', 'ACCOUNTANT']); } catch (e: any) { return { error: e.message }; }
   if (!id) return { error: 'Missing ID' };
   const { error } = await supabase.from('billing_cycles').delete().eq('id', id);
   if (error) return { error: error.message };

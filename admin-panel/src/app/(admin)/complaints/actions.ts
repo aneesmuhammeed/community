@@ -2,10 +2,13 @@
 
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
+import { requireRole } from '@/utils/supabase/auth';
+import { getSocietyId } from '@/utils/supabase/auth';
 
-const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID;
+
 
 export async function getComplaints() {
+  const SOCIETY_ID = await getSocietyId();
   if (!SOCIETY_ID) return [];
   const { data, error } = await supabase
     .from('complaints')
@@ -31,6 +34,8 @@ export async function getComplaints() {
 }
 
 export async function updateComplaintStatus(id: string, newStatus: string) {
+  try { await requireRole(['SUPER_ADMIN', 'COMMUNITY_HEAD', 'FACILITY_MANAGER']); } catch (e: any) { return { error: e.message }; }
+  
   if (!id || !newStatus) return;
   
   const { error } = await supabase

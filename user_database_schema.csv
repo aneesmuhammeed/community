@@ -1,261 +1,1274 @@
-table_name,column_name,data_type,is_nullable
-announcements,id,uuid,NO
-announcements,society_id,uuid,NO
-announcements,created_by,uuid,YES
-announcements,title,text,NO
-announcements,body,text,NO
-announcements,tag,USER-DEFINED,NO
-announcements,icon,text,YES
-announcements,is_pinned,boolean,NO
-announcements,is_published,boolean,NO
-announcements,publish_at,timestamp with time zone,NO
-announcements,expires_at,timestamp with time zone,YES
-announcements,created_at,timestamp with time zone,NO
-announcements,updated_at,timestamp with time zone,NO
-apartments,id,uuid,NO
-apartments,society_id,uuid,NO
-apartments,block_id,uuid,NO
-apartments,unit_number,text,NO
-apartments,floor,smallint,YES
-apartments,area_sqft,numeric,YES
-apartments,is_occupied,boolean,NO
-apartments,created_at,timestamp with time zone,NO
-apartments,updated_at,timestamp with time zone,NO
-billing_cycles,id,uuid,NO
-billing_cycles,apartment_id,uuid,NO
-billing_cycles,society_id,uuid,NO
-billing_cycles,billing_month,text,NO
-billing_cycles,billing_year,smallint,NO
-billing_cycles,billing_period,daterange,YES
-billing_cycles,base_amount,numeric,NO
-billing_cycles,electricity,numeric,NO
-billing_cycles,water,numeric,NO
-billing_cycles,housekeeping,numeric,NO
-billing_cycles,security,numeric,NO
-billing_cycles,repairs,numeric,NO
-billing_cycles,miscellaneous,numeric,NO
-billing_cycles,total_amount,numeric,NO
-billing_cycles,due_date,date,NO
-billing_cycles,status,USER-DEFINED,NO
-billing_cycles,paid_at,timestamp with time zone,YES
-billing_cycles,paid_amount,numeric,YES
-billing_cycles,late_fee,numeric,NO
-billing_cycles,discount,numeric,NO
-billing_cycles,created_at,timestamp with time zone,NO
-billing_cycles,updated_at,timestamp with time zone,NO
-blocks,id,uuid,NO
-blocks,society_id,uuid,NO
-blocks,name,text,NO
-blocks,created_at,timestamp with time zone,NO
-bookings,id,uuid,NO
-bookings,resident_id,uuid,NO
-bookings,facility_id,uuid,NO
-bookings,society_id,uuid,NO
-bookings,booking_date,date,NO
-bookings,start_time,time without time zone,NO
-bookings,end_time,time without time zone,NO
-bookings,duration_hrs,numeric,YES
-bookings,status,USER-DEFINED,NO
-bookings,booking_fee,numeric,NO
-bookings,paid_at,timestamp with time zone,YES
-bookings,cancelled_at,timestamp with time zone,YES
-bookings,cancel_reason,text,YES
-bookings,notes,text,YES
-bookings,created_at,timestamp with time zone,NO
-bookings,updated_at,timestamp with time zone,NO
-
-complaint_images,id,uuid,NO
-complaint_images,complaint_id,uuid,NO
-complaint_images,storage_path,text,NO
-complaint_images,uploaded_by,uuid,YES
-complaint_images,uploaded_at,timestamp with time zone,NO
-complaints,id,uuid,NO
-complaints,resident_id,uuid,NO
-complaints,apartment_id,uuid,NO
-complaints,society_id,uuid,NO
-complaints,title,text,NO
-complaints,description,text,NO
-complaints,category,USER-DEFINED,NO
-complaints,priority,USER-DEFINED,NO
-complaints,location_label,text,YES
-complaints,status,USER-DEFINED,NO
-complaints,assigned_to,uuid,YES
-complaints,resolved_at,timestamp with time zone,YES
-complaints,resolution_note,text,YES
-complaints,created_at,timestamp with time zone,NO
-complaints,updated_at,timestamp with time zone,NO
-facilities,id,uuid,NO
-facilities,society_id,uuid,NO
-facilities,name,text,NO
-facilities,description,text,YES
-facilities,icon,text,YES
-facilities,capacity,smallint,NO
-facilities,operating_hours,text,NO
-facilities,booking_fee,numeric,NO
-facilities,advance_days,smallint,NO
-facilities,slot_duration,smallint,NO
-facilities,status,USER-DEFINED,NO
-facilities,is_active,boolean,NO
-facilities,rules,text,YES
-facilities,created_at,timestamp with time zone,NO
-facilities,updated_at,timestamp with time zone,NO
-family_members,id,uuid,NO
-family_members,resident_id,uuid,NO
-family_members,name,text,NO
-family_members,relation,character varying,NO
-family_members,gender,character varying,NO
-family_members,age_group,character varying,NO
-family_members,created_at,timestamp with time zone,NO
-facility_schedules,id,uuid,NO
-facility_schedules,facility_id,uuid,NO
-facility_schedules,day_type,character varying,NO
-facility_schedules,start_time,time without time zone,NO
-facility_schedules,end_time,time without time zone,NO
-facility_schedules,is_active,boolean,YES
-facility_schedules,created_at,timestamp with time zone,YES
-facility_slot_blocks,id,uuid,NO
-facility_slot_blocks,facility_id,uuid,NO
-facility_slot_blocks,date,date,NO
-facility_slot_blocks,start_time,time without time zone,NO
-facility_slot_blocks,end_time,time without time zone,NO
-facility_slot_blocks,reason,text,YES
-facility_slot_blocks,created_at,timestamp with time zone,YES
-holidays,id,uuid,NO
-holidays,society_id,uuid,NO
-holidays,date,date,NO
-holidays,name,text,NO
-holidays,created_at,timestamp with time zone,YES
-family_members,id,uuid,NO
-family_members,resident_id,uuid,NO
-family_members,full_name,text,NO
-family_members,relation,text,NO
-family_members,date_of_birth,date,YES
-family_members,phone,text,YES
-family_members,id_proof_url,text,YES
-family_members,created_at,timestamp with time zone,NO
-notifications,id,uuid,NO
-notifications,user_id,uuid,NO
-notifications,society_id,uuid,YES
-notifications,title,text,NO
-notifications,body,text,NO
-notifications,icon,text,YES
-notifications,action_type,text,YES
-notifications,action_ref_id,uuid,YES
-notifications,is_read,boolean,NO
-notifications,read_at,timestamp with time zone,YES
-notifications,created_at,timestamp with time zone,NO
-profiles,id,uuid,NO
-profiles,full_name,text,NO
-profiles,phone,text,YES
-profiles,avatar_url,text,YES
-profiles,gender,text,YES
-profiles,date_of_birth,date,YES
-profiles,created_at,timestamp with time zone,NO
-profiles,updated_at,timestamp with time zone,NO
-resident_profiles,id,uuid,NO
-resident_profiles,name,text,NO
-resident_profiles,society_name,text,NO
-resident_profiles,block,text,NO
-resident_profiles,apartment,text,NO
-resident_profiles,phone,text,NO
-resident_profiles,email,text,NO
-resident_profiles,role,text,NO
-resident_profiles,resident_type,text,NO
-resident_profiles,gender,text,NO
-resident_profiles,age_group,text,NO
-resident_profiles,heritage,text,NO
-resident_profiles,avatar_index,integer,NO
-resident_profiles,created_at,timestamp with time zone,NO
-residents,id,uuid,NO
-residents,user_id,uuid,NO
-residents,apartment_id,uuid,NO
-residents,society_id,uuid,NO
-residents,role,USER-DEFINED,NO
-residents,ownership,USER-DEFINED,NO
-residents,move_in_date,date,YES
-residents,move_out_date,date,YES
-residents,is_active,boolean,NO
-residents,created_at,timestamp with time zone,NO
-residents,updated_at,timestamp with time zone,NO
-societies,id,uuid,NO
-societies,name,text,NO
-societies,address,text,YES
-societies,city,text,YES
-societies,state,text,YES
-societies,pincode,character varying,YES
-societies,logo_url,text,YES
-societies,created_at,timestamp with time zone,NO
-societies,updated_at,timestamp with time zone,NO
-transactions,id,uuid,NO
-transactions,billing_cycle_id,uuid,YES
-transactions,booking_id,uuid,YES
-transactions,resident_id,uuid,NO
-transactions,society_id,uuid,NO
-transactions,amount,numeric,NO
-transactions,method,USER-DEFINED,NO
-transactions,method_label,text,YES
-transactions,reference_no,text,NO
-transactions,gateway_txn_id,text,YES
-transactions,status,USER-DEFINED,NO
-transactions,initiated_at,timestamp with time zone,NO
-transactions,completed_at,timestamp with time zone,YES
-transactions,failed_reason,text,YES
-transactions,created_at,timestamp with time zone,NO
-v_outstanding_dues,id,uuid,YES
-v_outstanding_dues,apartment_id,uuid,YES
-v_outstanding_dues,society_id,uuid,YES
-v_outstanding_dues,billing_month,text,YES
-v_outstanding_dues,total_amount,numeric,YES
-v_outstanding_dues,due_date,date,YES
-v_outstanding_dues,status,USER-DEFINED,YES
-v_outstanding_dues,unit_number,text,YES
-v_outstanding_dues,block_name,text,YES
-v_outstanding_dues,amount_due,numeric,YES
-v_resident_details,resident_id,uuid,YES
-v_resident_details,user_id,uuid,YES
-v_resident_details,full_name,text,YES
-v_resident_details,phone,text,YES
-v_resident_details,avatar_url,text,YES
-v_resident_details,gender,text,YES
-v_resident_details,role,USER-DEFINED,YES
-v_resident_details,ownership,USER-DEFINED,YES
-v_resident_details,is_active,boolean,YES
-v_resident_details,apartment_id,uuid,YES
-v_resident_details,unit_number,text,YES
-v_resident_details,floor,smallint,YES
-v_resident_details,block_id,uuid,YES
-v_resident_details,block_name,text,YES
-v_resident_details,society_id,uuid,YES
-v_resident_details,society_name,text,YES
-v_resident_details,city,text,YES
-vehicles,id,uuid,NO
-vehicles,resident_id,uuid,NO
-vehicles,vehicle_type,USER-DEFINED,NO
-vehicles,make,text,YES
-vehicles,model,text,YES
-vehicles,color,text,YES
-vehicles,registration_no,text,NO
-vehicles,is_active,boolean,NO
-vehicles,created_at,timestamp with time zone,NO
-visitors,id,uuid,NO
-visitors,resident_id,uuid,NO
-visitors,apartment_id,uuid,NO
-visitors,society_id,uuid,NO
-visitors,guest_name,text,NO
-visitors,guest_phone,text,YES
-visitors,relation,USER-DEFINED,NO
-visitors,relation_label,text,YES
-visitors,purpose,text,YES
-visitors,invite_method,USER-DEFINED,NO
-visitors,invite_code,text,NO
-visitors,otp_value,character varying,YES
-visitors,qr_payload,text,YES
-visitors,valid_from,timestamp with time zone,NO
-visitors,valid_until,timestamp with time zone,NO
-visitors,valid_hours,smallint,NO
-visitors,status,USER-DEFINED,NO
-visitors,arrived_at,timestamp with time zone,YES
-visitors,left_at,timestamp with time zone,YES
-visitors,notes,text,YES
-visitors,created_at,timestamp with time zone,NO
-visitors,updated_at,timestamp with time zone,NO
+object_type,schema_name,object_name,detail_name,data_type,is_nullable,column_default
+column,auth,audit_log_entries,created_at,timestamp with time zone,YES,null
+column,auth,audit_log_entries,id,uuid,NO,null
+column,auth,audit_log_entries,instance_id,uuid,YES,null
+column,auth,audit_log_entries,ip_address,character varying,NO,''::character varying
+column,auth,audit_log_entries,payload,json,YES,null
+constraint,auth,audit_log_entries,16498_16529_2_not_null,CHECK,null,null
+constraint,auth,audit_log_entries,16498_16529_5_not_null,CHECK,null,null
+constraint,auth,audit_log_entries,audit_log_entries_pkey,PRIMARY KEY,null,null
+column,auth,custom_oauth_providers,acceptable_client_ids,ARRAY,NO,'{}'::text[]
+column,auth,custom_oauth_providers,attribute_mapping,jsonb,NO,'{}'::jsonb
+column,auth,custom_oauth_providers,authorization_params,jsonb,NO,'{}'::jsonb
+column,auth,custom_oauth_providers,authorization_url,text,YES,null
+column,auth,custom_oauth_providers,cached_discovery,jsonb,YES,null
+column,auth,custom_oauth_providers,client_id,text,NO,null
+column,auth,custom_oauth_providers,client_secret,text,NO,null
+column,auth,custom_oauth_providers,created_at,timestamp with time zone,NO,now()
+column,auth,custom_oauth_providers,custom_claims_allowlist,ARRAY,NO,'{}'::text[]
+column,auth,custom_oauth_providers,discovery_cached_at,timestamp with time zone,YES,null
+column,auth,custom_oauth_providers,discovery_url,text,YES,null
+column,auth,custom_oauth_providers,email_optional,boolean,NO,false
+column,auth,custom_oauth_providers,enabled,boolean,NO,true
+column,auth,custom_oauth_providers,id,uuid,NO,gen_random_uuid()
+column,auth,custom_oauth_providers,identifier,text,NO,null
+column,auth,custom_oauth_providers,issuer,text,YES,null
+column,auth,custom_oauth_providers,jwks_uri,text,YES,null
+column,auth,custom_oauth_providers,name,text,NO,null
+column,auth,custom_oauth_providers,pkce_enabled,boolean,NO,true
+column,auth,custom_oauth_providers,provider_type,text,NO,null
+column,auth,custom_oauth_providers,scopes,ARRAY,NO,'{}'::text[]
+column,auth,custom_oauth_providers,skip_nonce_check,boolean,NO,false
+column,auth,custom_oauth_providers,token_url,text,YES,null
+column,auth,custom_oauth_providers,updated_at,timestamp with time zone,NO,now()
+column,auth,custom_oauth_providers,userinfo_url,text,YES,null
+constraint,auth,custom_oauth_providers,16498_17084_10_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_11_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_12_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_13_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_16_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_1_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_23_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_24_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_25_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_2_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_3_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_4_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_5_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_6_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_7_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_8_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,16498_17084_9_not_null,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_authorization_url_https,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_authorization_url_length,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_client_id_length,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_discovery_url_length,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_identifier_format,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_identifier_key,UNIQUE,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_issuer_length,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_jwks_uri_https,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_jwks_uri_length,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_name_length,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_oauth2_requires_endpoints,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_oidc_discovery_url_https,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_oidc_issuer_https,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_oidc_requires_issuer,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_pkey,PRIMARY KEY,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_provider_type_check,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_token_url_https,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_token_url_length,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_userinfo_url_https,CHECK,null,null
+constraint,auth,custom_oauth_providers,custom_oauth_providers_userinfo_url_length,CHECK,null,null
+column,auth,flow_state,auth_code,text,YES,null
+column,auth,flow_state,auth_code_issued_at,timestamp with time zone,YES,null
+column,auth,flow_state,authentication_method,text,NO,null
+column,auth,flow_state,code_challenge,text,YES,null
+column,auth,flow_state,code_challenge_method,USER-DEFINED,YES,null
+column,auth,flow_state,created_at,timestamp with time zone,YES,null
+column,auth,flow_state,email_optional,boolean,NO,false
+column,auth,flow_state,id,uuid,NO,null
+column,auth,flow_state,invite_token,text,YES,null
+column,auth,flow_state,linking_target_id,uuid,YES,null
+column,auth,flow_state,oauth_client_state_id,uuid,YES,null
+column,auth,flow_state,provider_access_token,text,YES,null
+column,auth,flow_state,provider_refresh_token,text,YES,null
+column,auth,flow_state,provider_type,text,NO,null
+column,auth,flow_state,referrer,text,YES,null
+column,auth,flow_state,updated_at,timestamp with time zone,YES,null
+column,auth,flow_state,user_id,uuid,YES,null
+constraint,auth,flow_state,16498_16889_11_not_null,CHECK,null,null
+constraint,auth,flow_state,16498_16889_17_not_null,CHECK,null,null
+constraint,auth,flow_state,16498_16889_1_not_null,CHECK,null,null
+constraint,auth,flow_state,16498_16889_6_not_null,CHECK,null,null
+constraint,auth,flow_state,flow_state_pkey,PRIMARY KEY,null,null
+column,auth,identities,created_at,timestamp with time zone,YES,null
+column,auth,identities,email,text,YES,null
+column,auth,identities,id,uuid,NO,gen_random_uuid()
+column,auth,identities,identity_data,jsonb,NO,null
+column,auth,identities,last_sign_in_at,timestamp with time zone,YES,null
+column,auth,identities,provider,text,NO,null
+column,auth,identities,provider_id,text,NO,null
+column,auth,identities,updated_at,timestamp with time zone,YES,null
+column,auth,identities,user_id,uuid,NO,null
+constraint,auth,identities,16498_16687_1_not_null,CHECK,null,null
+constraint,auth,identities,16498_16687_2_not_null,CHECK,null,null
+constraint,auth,identities,16498_16687_3_not_null,CHECK,null,null
+constraint,auth,identities,16498_16687_4_not_null,CHECK,null,null
+constraint,auth,identities,16498_16687_9_not_null,CHECK,null,null
+constraint,auth,identities,identities_pkey,PRIMARY KEY,null,null
+constraint,auth,identities,identities_provider_id_provider_unique,UNIQUE,null,null
+constraint,auth,identities,identities_user_id_fkey,FOREIGN KEY,null,null
+column,auth,instances,created_at,timestamp with time zone,YES,null
+column,auth,instances,id,uuid,NO,null
+column,auth,instances,raw_base_config,text,YES,null
+column,auth,instances,updated_at,timestamp with time zone,YES,null
+column,auth,instances,uuid,uuid,YES,null
+constraint,auth,instances,16498_16522_1_not_null,CHECK,null,null
+constraint,auth,instances,instances_pkey,PRIMARY KEY,null,null
+column,auth,mfa_amr_claims,authentication_method,text,NO,null
+column,auth,mfa_amr_claims,created_at,timestamp with time zone,NO,null
+column,auth,mfa_amr_claims,id,uuid,NO,null
+column,auth,mfa_amr_claims,session_id,uuid,NO,null
+column,auth,mfa_amr_claims,updated_at,timestamp with time zone,NO,null
+constraint,auth,mfa_amr_claims,16498_16776_1_not_null,CHECK,null,null
+constraint,auth,mfa_amr_claims,16498_16776_2_not_null,CHECK,null,null
+constraint,auth,mfa_amr_claims,16498_16776_3_not_null,CHECK,null,null
+constraint,auth,mfa_amr_claims,16498_16776_4_not_null,CHECK,null,null
+constraint,auth,mfa_amr_claims,16498_16776_5_not_null,CHECK,null,null
+constraint,auth,mfa_amr_claims,amr_id_pk,PRIMARY KEY,null,null
+constraint,auth,mfa_amr_claims,mfa_amr_claims_session_id_authentication_method_pkey,UNIQUE,null,null
+constraint,auth,mfa_amr_claims,mfa_amr_claims_session_id_fkey,FOREIGN KEY,null,null
+column,auth,mfa_challenges,created_at,timestamp with time zone,NO,null
+column,auth,mfa_challenges,factor_id,uuid,NO,null
+column,auth,mfa_challenges,id,uuid,NO,null
+column,auth,mfa_challenges,ip_address,inet,NO,null
+column,auth,mfa_challenges,otp_code,text,YES,null
+column,auth,mfa_challenges,verified_at,timestamp with time zone,YES,null
+column,auth,mfa_challenges,web_authn_session_data,jsonb,YES,null
+constraint,auth,mfa_challenges,16498_16764_1_not_null,CHECK,null,null
+constraint,auth,mfa_challenges,16498_16764_2_not_null,CHECK,null,null
+constraint,auth,mfa_challenges,16498_16764_3_not_null,CHECK,null,null
+constraint,auth,mfa_challenges,16498_16764_5_not_null,CHECK,null,null
+constraint,auth,mfa_challenges,mfa_challenges_auth_factor_id_fkey,FOREIGN KEY,null,null
+constraint,auth,mfa_challenges,mfa_challenges_pkey,PRIMARY KEY,null,null
+column,auth,mfa_factors,created_at,timestamp with time zone,NO,null
+column,auth,mfa_factors,factor_type,USER-DEFINED,NO,null
+column,auth,mfa_factors,friendly_name,text,YES,null
+column,auth,mfa_factors,id,uuid,NO,null
+column,auth,mfa_factors,last_challenged_at,timestamp with time zone,YES,null
+column,auth,mfa_factors,last_webauthn_challenge_data,jsonb,YES,null
+column,auth,mfa_factors,phone,text,YES,null
+column,auth,mfa_factors,secret,text,YES,null
+column,auth,mfa_factors,status,USER-DEFINED,NO,null
+column,auth,mfa_factors,updated_at,timestamp with time zone,NO,null
+column,auth,mfa_factors,user_id,uuid,NO,null
+column,auth,mfa_factors,web_authn_aaguid,uuid,YES,null
+column,auth,mfa_factors,web_authn_credential,jsonb,YES,null
+constraint,auth,mfa_factors,16498_16751_1_not_null,CHECK,null,null
+constraint,auth,mfa_factors,16498_16751_2_not_null,CHECK,null,null
+constraint,auth,mfa_factors,16498_16751_4_not_null,CHECK,null,null
+constraint,auth,mfa_factors,16498_16751_5_not_null,CHECK,null,null
+constraint,auth,mfa_factors,16498_16751_6_not_null,CHECK,null,null
+constraint,auth,mfa_factors,16498_16751_7_not_null,CHECK,null,null
+constraint,auth,mfa_factors,mfa_factors_last_challenged_at_key,UNIQUE,null,null
+constraint,auth,mfa_factors,mfa_factors_pkey,PRIMARY KEY,null,null
+constraint,auth,mfa_factors,mfa_factors_user_id_fkey,FOREIGN KEY,null,null
+column,auth,oauth_authorizations,approved_at,timestamp with time zone,YES,null
+column,auth,oauth_authorizations,authorization_code,text,YES,null
+column,auth,oauth_authorizations,authorization_id,text,NO,null
+column,auth,oauth_authorizations,client_id,uuid,NO,null
+column,auth,oauth_authorizations,code_challenge,text,YES,null
+column,auth,oauth_authorizations,code_challenge_method,USER-DEFINED,YES,null
+column,auth,oauth_authorizations,created_at,timestamp with time zone,NO,now()
+column,auth,oauth_authorizations,expires_at,timestamp with time zone,NO,(now() + '00:03:00'::interval)
+column,auth,oauth_authorizations,id,uuid,NO,null
+column,auth,oauth_authorizations,nonce,text,YES,null
+column,auth,oauth_authorizations,redirect_uri,text,NO,null
+column,auth,oauth_authorizations,resource,text,YES,null
+column,auth,oauth_authorizations,response_type,USER-DEFINED,NO,'code'::auth.oauth_response_type
+column,auth,oauth_authorizations,scope,text,NO,null
+column,auth,oauth_authorizations,state,text,YES,null
+column,auth,oauth_authorizations,status,USER-DEFINED,NO,'pending'::auth.oauth_authorization_status
+column,auth,oauth_authorizations,user_id,uuid,YES,null
+constraint,auth,oauth_authorizations,16498_17001_11_not_null,CHECK,null,null
+constraint,auth,oauth_authorizations,16498_17001_12_not_null,CHECK,null,null
+constraint,auth,oauth_authorizations,16498_17001_14_not_null,CHECK,null,null
+constraint,auth,oauth_authorizations,16498_17001_15_not_null,CHECK,null,null
+constraint,auth,oauth_authorizations,16498_17001_1_not_null,CHECK,null,null
+constraint,auth,oauth_authorizations,16498_17001_2_not_null,CHECK,null,null
+constraint,auth,oauth_authorizations,16498_17001_3_not_null,CHECK,null,null
+constraint,auth,oauth_authorizations,16498_17001_5_not_null,CHECK,null,null
+constraint,auth,oauth_authorizations,16498_17001_6_not_null,CHECK,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_authorization_code_key,UNIQUE,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_authorization_code_length,CHECK,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_authorization_id_key,UNIQUE,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_client_id_fkey,FOREIGN KEY,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_code_challenge_length,CHECK,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_expires_at_future,CHECK,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_nonce_length,CHECK,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_pkey,PRIMARY KEY,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_redirect_uri_length,CHECK,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_resource_length,CHECK,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_scope_length,CHECK,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_state_length,CHECK,null,null
+constraint,auth,oauth_authorizations,oauth_authorizations_user_id_fkey,FOREIGN KEY,null,null
+column,auth,oauth_client_states,code_verifier,text,YES,null
+column,auth,oauth_client_states,created_at,timestamp with time zone,NO,null
+column,auth,oauth_client_states,id,uuid,NO,null
+column,auth,oauth_client_states,provider_type,text,NO,null
+constraint,auth,oauth_client_states,16498_17074_1_not_null,CHECK,null,null
+constraint,auth,oauth_client_states,16498_17074_2_not_null,CHECK,null,null
+constraint,auth,oauth_client_states,16498_17074_4_not_null,CHECK,null,null
+constraint,auth,oauth_client_states,oauth_client_states_pkey,PRIMARY KEY,null,null
+column,auth,oauth_clients,client_name,text,YES,null
+column,auth,oauth_clients,client_secret_hash,text,YES,null
+column,auth,oauth_clients,client_type,USER-DEFINED,NO,'confidential'::auth.oauth_client_type
+column,auth,oauth_clients,client_uri,text,YES,null
+column,auth,oauth_clients,created_at,timestamp with time zone,NO,now()
+column,auth,oauth_clients,deleted_at,timestamp with time zone,YES,null
+column,auth,oauth_clients,grant_types,text,NO,null
+column,auth,oauth_clients,id,uuid,NO,null
+column,auth,oauth_clients,logo_uri,text,YES,null
+column,auth,oauth_clients,redirect_uris,text,NO,null
+column,auth,oauth_clients,registration_type,USER-DEFINED,NO,null
+column,auth,oauth_clients,token_endpoint_auth_method,text,NO,null
+column,auth,oauth_clients,updated_at,timestamp with time zone,NO,now()
+constraint,auth,oauth_clients,16498_16971_10_not_null,CHECK,null,null
+constraint,auth,oauth_clients,16498_16971_11_not_null,CHECK,null,null
+constraint,auth,oauth_clients,16498_16971_13_not_null,CHECK,null,null
+constraint,auth,oauth_clients,16498_16971_14_not_null,CHECK,null,null
+constraint,auth,oauth_clients,16498_16971_1_not_null,CHECK,null,null
+constraint,auth,oauth_clients,16498_16971_4_not_null,CHECK,null,null
+constraint,auth,oauth_clients,16498_16971_5_not_null,CHECK,null,null
+constraint,auth,oauth_clients,16498_16971_6_not_null,CHECK,null,null
+constraint,auth,oauth_clients,oauth_clients_client_name_length,CHECK,null,null
+constraint,auth,oauth_clients,oauth_clients_client_uri_length,CHECK,null,null
+constraint,auth,oauth_clients,oauth_clients_logo_uri_length,CHECK,null,null
+constraint,auth,oauth_clients,oauth_clients_pkey,PRIMARY KEY,null,null
+constraint,auth,oauth_clients,oauth_clients_token_endpoint_auth_method_check,CHECK,null,null
+column,auth,oauth_consents,client_id,uuid,NO,null
+column,auth,oauth_consents,granted_at,timestamp with time zone,NO,now()
+column,auth,oauth_consents,id,uuid,NO,null
+column,auth,oauth_consents,revoked_at,timestamp with time zone,YES,null
+column,auth,oauth_consents,scopes,text,NO,null
+column,auth,oauth_consents,user_id,uuid,NO,null
+constraint,auth,oauth_consents,16498_17034_1_not_null,CHECK,null,null
+constraint,auth,oauth_consents,16498_17034_2_not_null,CHECK,null,null
+constraint,auth,oauth_consents,16498_17034_3_not_null,CHECK,null,null
+constraint,auth,oauth_consents,16498_17034_4_not_null,CHECK,null,null
+constraint,auth,oauth_consents,16498_17034_5_not_null,CHECK,null,null
+constraint,auth,oauth_consents,oauth_consents_client_id_fkey,FOREIGN KEY,null,null
+constraint,auth,oauth_consents,oauth_consents_pkey,PRIMARY KEY,null,null
+constraint,auth,oauth_consents,oauth_consents_revoked_after_granted,CHECK,null,null
+constraint,auth,oauth_consents,oauth_consents_scopes_length,CHECK,null,null
+constraint,auth,oauth_consents,oauth_consents_scopes_not_empty,CHECK,null,null
+constraint,auth,oauth_consents,oauth_consents_user_client_unique,UNIQUE,null,null
+constraint,auth,oauth_consents,oauth_consents_user_id_fkey,FOREIGN KEY,null,null
+column,auth,one_time_tokens,created_at,timestamp without time zone,NO,now()
+column,auth,one_time_tokens,id,uuid,NO,null
+column,auth,one_time_tokens,relates_to,text,NO,null
+column,auth,one_time_tokens,token_hash,text,NO,null
+column,auth,one_time_tokens,token_type,USER-DEFINED,NO,null
+column,auth,one_time_tokens,updated_at,timestamp without time zone,NO,now()
+column,auth,one_time_tokens,user_id,uuid,NO,null
+constraint,auth,one_time_tokens,16498_16939_1_not_null,CHECK,null,null
+constraint,auth,one_time_tokens,16498_16939_2_not_null,CHECK,null,null
+constraint,auth,one_time_tokens,16498_16939_3_not_null,CHECK,null,null
+constraint,auth,one_time_tokens,16498_16939_4_not_null,CHECK,null,null
+constraint,auth,one_time_tokens,16498_16939_5_not_null,CHECK,null,null
+constraint,auth,one_time_tokens,16498_16939_6_not_null,CHECK,null,null
+constraint,auth,one_time_tokens,16498_16939_7_not_null,CHECK,null,null
+constraint,auth,one_time_tokens,one_time_tokens_pkey,PRIMARY KEY,null,null
+constraint,auth,one_time_tokens,one_time_tokens_token_hash_check,CHECK,null,null
+constraint,auth,one_time_tokens,one_time_tokens_user_id_fkey,FOREIGN KEY,null,null
+column,auth,refresh_tokens,created_at,timestamp with time zone,YES,null
+column,auth,refresh_tokens,id,bigint,NO,nextval('auth.refresh_tokens_id_seq'::regclass)
+column,auth,refresh_tokens,instance_id,uuid,YES,null
+column,auth,refresh_tokens,parent,character varying,YES,null
+column,auth,refresh_tokens,revoked,boolean,YES,null
+column,auth,refresh_tokens,session_id,uuid,YES,null
+column,auth,refresh_tokens,token,character varying,YES,null
+column,auth,refresh_tokens,updated_at,timestamp with time zone,YES,null
+column,auth,refresh_tokens,user_id,character varying,YES,null
+constraint,auth,refresh_tokens,16498_16511_2_not_null,CHECK,null,null
+constraint,auth,refresh_tokens,refresh_tokens_pkey,PRIMARY KEY,null,null
+constraint,auth,refresh_tokens,refresh_tokens_session_id_fkey,FOREIGN KEY,null,null
+constraint,auth,refresh_tokens,refresh_tokens_token_unique,UNIQUE,null,null
+column,auth,saml_providers,attribute_mapping,jsonb,YES,null
+column,auth,saml_providers,created_at,timestamp with time zone,YES,null
+column,auth,saml_providers,entity_id,text,NO,null
+column,auth,saml_providers,id,uuid,NO,null
+column,auth,saml_providers,metadata_url,text,YES,null
+column,auth,saml_providers,metadata_xml,text,NO,null
+column,auth,saml_providers,name_id_format,text,YES,null
+column,auth,saml_providers,sso_provider_id,uuid,NO,null
+column,auth,saml_providers,updated_at,timestamp with time zone,YES,null
+constraint,auth,saml_providers,16498_16818_1_not_null,CHECK,null,null
+constraint,auth,saml_providers,16498_16818_2_not_null,CHECK,null,null
+constraint,auth,saml_providers,16498_16818_3_not_null,CHECK,null,null
+constraint,auth,saml_providers,16498_16818_4_not_null,CHECK,null,null
+constraint,auth,saml_providers,entity_id not empty,CHECK,null,null
+constraint,auth,saml_providers,metadata_url not empty,CHECK,null,null
+constraint,auth,saml_providers,metadata_xml not empty,CHECK,null,null
+constraint,auth,saml_providers,saml_providers_entity_id_key,UNIQUE,null,null
+constraint,auth,saml_providers,saml_providers_pkey,PRIMARY KEY,null,null
+constraint,auth,saml_providers,saml_providers_sso_provider_id_fkey,FOREIGN KEY,null,null
+column,auth,saml_relay_states,created_at,timestamp with time zone,YES,null
+column,auth,saml_relay_states,flow_state_id,uuid,YES,null
+column,auth,saml_relay_states,for_email,text,YES,null
+column,auth,saml_relay_states,id,uuid,NO,null
+column,auth,saml_relay_states,redirect_to,text,YES,null
+column,auth,saml_relay_states,request_id,text,NO,null
+column,auth,saml_relay_states,sso_provider_id,uuid,NO,null
+column,auth,saml_relay_states,updated_at,timestamp with time zone,YES,null
+constraint,auth,saml_relay_states,16498_16836_1_not_null,CHECK,null,null
+constraint,auth,saml_relay_states,16498_16836_2_not_null,CHECK,null,null
+constraint,auth,saml_relay_states,16498_16836_3_not_null,CHECK,null,null
+constraint,auth,saml_relay_states,request_id not empty,CHECK,null,null
+constraint,auth,saml_relay_states,saml_relay_states_flow_state_id_fkey,FOREIGN KEY,null,null
+constraint,auth,saml_relay_states,saml_relay_states_pkey,PRIMARY KEY,null,null
+constraint,auth,saml_relay_states,saml_relay_states_sso_provider_id_fkey,FOREIGN KEY,null,null
+column,auth,schema_migrations,version,character varying,NO,null
+column,auth,sessions,aal,USER-DEFINED,YES,null
+column,auth,sessions,created_at,timestamp with time zone,YES,null
+column,auth,sessions,factor_id,uuid,YES,null
+column,auth,sessions,id,uuid,NO,null
+column,auth,sessions,ip,inet,YES,null
+column,auth,sessions,not_after,timestamp with time zone,YES,null
+column,auth,sessions,oauth_client_id,uuid,YES,null
+column,auth,sessions,refresh_token_counter,bigint,YES,null
+column,auth,sessions,refresh_token_hmac_key,text,YES,null
+column,auth,sessions,refreshed_at,timestamp without time zone,YES,null
+column,auth,sessions,scopes,text,YES,null
+column,auth,sessions,tag,text,YES,null
+column,auth,sessions,updated_at,timestamp with time zone,YES,null
+column,auth,sessions,user_agent,text,YES,null
+column,auth,sessions,user_id,uuid,NO,null
+constraint,auth,sessions,16498_16717_1_not_null,CHECK,null,null
+constraint,auth,sessions,16498_16717_2_not_null,CHECK,null,null
+constraint,auth,sessions,sessions_oauth_client_id_fkey,FOREIGN KEY,null,null
+constraint,auth,sessions,sessions_pkey,PRIMARY KEY,null,null
+constraint,auth,sessions,sessions_scopes_length,CHECK,null,null
+constraint,auth,sessions,sessions_user_id_fkey,FOREIGN KEY,null,null
+column,auth,sso_domains,created_at,timestamp with time zone,YES,null
+column,auth,sso_domains,domain,text,NO,null
+column,auth,sso_domains,id,uuid,NO,null
+column,auth,sso_domains,sso_provider_id,uuid,NO,null
+column,auth,sso_domains,updated_at,timestamp with time zone,YES,null
+constraint,auth,sso_domains,16498_16803_1_not_null,CHECK,null,null
+constraint,auth,sso_domains,16498_16803_2_not_null,CHECK,null,null
+constraint,auth,sso_domains,16498_16803_3_not_null,CHECK,null,null
+constraint,auth,sso_domains,domain not empty,CHECK,null,null
+constraint,auth,sso_domains,sso_domains_pkey,PRIMARY KEY,null,null
+constraint,auth,sso_domains,sso_domains_sso_provider_id_fkey,FOREIGN KEY,null,null
+column,auth,sso_providers,created_at,timestamp with time zone,YES,null
+column,auth,sso_providers,disabled,boolean,YES,null
+column,auth,sso_providers,id,uuid,NO,null
+column,auth,sso_providers,resource_id,text,YES,null
+column,auth,sso_providers,updated_at,timestamp with time zone,YES,null
+constraint,auth,sso_providers,16498_16794_1_not_null,CHECK,null,null
+constraint,auth,sso_providers,resource_id not empty,CHECK,null,null
+constraint,auth,sso_providers,sso_providers_pkey,PRIMARY KEY,null,null
+column,auth,users,aud,character varying,YES,null
+column,auth,users,banned_until,timestamp with time zone,YES,null
+column,auth,users,confirmation_sent_at,timestamp with time zone,YES,null
+column,auth,users,confirmation_token,character varying,YES,null
+column,auth,users,confirmed_at,timestamp with time zone,YES,null
+column,auth,users,created_at,timestamp with time zone,YES,null
+column,auth,users,deleted_at,timestamp with time zone,YES,null
+column,auth,users,email,character varying,YES,null
+column,auth,users,email_change,character varying,YES,null
+column,auth,users,email_change_confirm_status,smallint,YES,0
+column,auth,users,email_change_sent_at,timestamp with time zone,YES,null
+column,auth,users,email_change_token_current,character varying,YES,''::character varying
+column,auth,users,email_change_token_new,character varying,YES,null
+column,auth,users,email_confirmed_at,timestamp with time zone,YES,null
+column,auth,users,encrypted_password,character varying,YES,null
+column,auth,users,id,uuid,NO,null
+column,auth,users,instance_id,uuid,YES,null
+column,auth,users,invited_at,timestamp with time zone,YES,null
+column,auth,users,is_anonymous,boolean,NO,false
+column,auth,users,is_sso_user,boolean,NO,false
+column,auth,users,is_super_admin,boolean,YES,null
+column,auth,users,last_sign_in_at,timestamp with time zone,YES,null
+column,auth,users,phone,text,YES,NULL::character varying
+column,auth,users,phone_change,text,YES,''::character varying
+column,auth,users,phone_change_sent_at,timestamp with time zone,YES,null
+column,auth,users,phone_change_token,character varying,YES,''::character varying
+column,auth,users,phone_confirmed_at,timestamp with time zone,YES,null
+column,auth,users,raw_app_meta_data,jsonb,YES,null
+column,auth,users,raw_user_meta_data,jsonb,YES,null
+column,auth,users,reauthentication_sent_at,timestamp with time zone,YES,null
+column,auth,users,reauthentication_token,character varying,YES,''::character varying
+column,auth,users,recovery_sent_at,timestamp with time zone,YES,null
+column,auth,users,recovery_token,character varying,YES,null
+column,auth,users,role,character varying,YES,null
+column,auth,users,updated_at,timestamp with time zone,YES,null
+constraint,auth,users,16498_16499_2_not_null,CHECK,null,null
+constraint,auth,users,16498_16499_33_not_null,CHECK,null,null
+constraint,auth,users,16498_16499_35_not_null,CHECK,null,null
+constraint,auth,users,users_email_change_confirm_status_check,CHECK,null,null
+constraint,auth,users,users_phone_key,UNIQUE,null,null
+constraint,auth,users,users_pkey,PRIMARY KEY,null,null
+column,auth,webauthn_challenges,challenge_type,text,NO,null
+column,auth,webauthn_challenges,created_at,timestamp with time zone,NO,now()
+column,auth,webauthn_challenges,expires_at,timestamp with time zone,NO,null
+column,auth,webauthn_challenges,id,uuid,NO,gen_random_uuid()
+column,auth,webauthn_challenges,session_data,jsonb,NO,null
+column,auth,webauthn_challenges,user_id,uuid,YES,null
+constraint,auth,webauthn_challenges,16498_17149_1_not_null,CHECK,null,null
+constraint,auth,webauthn_challenges,16498_17149_3_not_null,CHECK,null,null
+constraint,auth,webauthn_challenges,16498_17149_4_not_null,CHECK,null,null
+constraint,auth,webauthn_challenges,16498_17149_5_not_null,CHECK,null,null
+constraint,auth,webauthn_challenges,16498_17149_6_not_null,CHECK,null,null
+constraint,auth,webauthn_challenges,webauthn_challenges_challenge_type_check,CHECK,null,null
+constraint,auth,webauthn_challenges,webauthn_challenges_pkey,PRIMARY KEY,null,null
+constraint,auth,webauthn_challenges,webauthn_challenges_user_id_fkey,FOREIGN KEY,null,null
+column,auth,webauthn_credentials,aaguid,uuid,YES,null
+column,auth,webauthn_credentials,attestation_type,text,NO,''::text
+column,auth,webauthn_credentials,backed_up,boolean,NO,false
+column,auth,webauthn_credentials,backup_eligible,boolean,NO,false
+column,auth,webauthn_credentials,created_at,timestamp with time zone,NO,now()
+column,auth,webauthn_credentials,credential_id,bytea,NO,null
+column,auth,webauthn_credentials,friendly_name,text,NO,''::text
+column,auth,webauthn_credentials,id,uuid,NO,gen_random_uuid()
+column,auth,webauthn_credentials,last_used_at,timestamp with time zone,YES,null
+column,auth,webauthn_credentials,public_key,bytea,NO,null
+column,auth,webauthn_credentials,sign_count,bigint,NO,0
+column,auth,webauthn_credentials,transports,jsonb,NO,'[]'::jsonb
+column,auth,webauthn_credentials,updated_at,timestamp with time zone,NO,now()
+column,auth,webauthn_credentials,user_id,uuid,NO,null
+constraint,auth,webauthn_credentials,16498_17126_10_not_null,CHECK,null,null
+constraint,auth,webauthn_credentials,16498_17126_11_not_null,CHECK,null,null
+constraint,auth,webauthn_credentials,16498_17126_12_not_null,CHECK,null,null
+constraint,auth,webauthn_credentials,16498_17126_13_not_null,CHECK,null,null
+constraint,auth,webauthn_credentials,16498_17126_1_not_null,CHECK,null,null
+constraint,auth,webauthn_credentials,16498_17126_2_not_null,CHECK,null,null
+constraint,auth,webauthn_credentials,16498_17126_3_not_null,CHECK,null,null
+constraint,auth,webauthn_credentials,16498_17126_4_not_null,CHECK,null,null
+constraint,auth,webauthn_credentials,16498_17126_5_not_null,CHECK,null,null
+constraint,auth,webauthn_credentials,16498_17126_7_not_null,CHECK,null,null
+constraint,auth,webauthn_credentials,16498_17126_8_not_null,CHECK,null,null
+constraint,auth,webauthn_credentials,16498_17126_9_not_null,CHECK,null,null
+constraint,auth,webauthn_credentials,webauthn_credentials_pkey,PRIMARY KEY,null,null
+constraint,auth,webauthn_credentials,webauthn_credentials_user_id_fkey,FOREIGN KEY,null,null
+column,cron,job,active,boolean,NO,true
+column,cron,job,command,text,NO,null
+column,cron,job,database,text,NO,current_database()
+column,cron,job,jobid,bigint,NO,nextval('cron.jobid_seq'::regclass)
+column,cron,job,jobname,text,YES,null
+column,cron,job,nodename,text,NO,'localhost'::text
+column,cron,job,nodeport,integer,NO,inet_server_port()
+column,cron,job,schedule,text,NO,null
+column,cron,job,username,text,NO,CURRENT_USER
+column,cron,job_run_details,command,text,YES,null
+column,cron,job_run_details,database,text,YES,null
+column,cron,job_run_details,end_time,timestamp with time zone,YES,null
+column,cron,job_run_details,job_pid,integer,YES,null
+column,cron,job_run_details,jobid,bigint,YES,null
+column,cron,job_run_details,return_message,text,YES,null
+column,cron,job_run_details,runid,bigint,NO,nextval('cron.runid_seq'::regclass)
+column,cron,job_run_details,start_time,timestamp with time zone,YES,null
+column,cron,job_run_details,status,text,YES,null
+column,cron,job_run_details,username,text,YES,null
+constraint,cron,job_run_details,18415_18436_2_not_null,CHECK,null,null
+constraint,cron,job_run_details,job_run_details_pkey,PRIMARY KEY,null,null
+column,extensions,pg_stat_statements,calls,bigint,YES,null
+column,extensions,pg_stat_statements,dbid,oid,YES,null
+column,extensions,pg_stat_statements,jit_deform_count,bigint,YES,null
+column,extensions,pg_stat_statements,jit_deform_time,double precision,YES,null
+column,extensions,pg_stat_statements,jit_emission_count,bigint,YES,null
+column,extensions,pg_stat_statements,jit_emission_time,double precision,YES,null
+column,extensions,pg_stat_statements,jit_functions,bigint,YES,null
+column,extensions,pg_stat_statements,jit_generation_time,double precision,YES,null
+column,extensions,pg_stat_statements,jit_inlining_count,bigint,YES,null
+column,extensions,pg_stat_statements,jit_inlining_time,double precision,YES,null
+column,extensions,pg_stat_statements,jit_optimization_count,bigint,YES,null
+column,extensions,pg_stat_statements,jit_optimization_time,double precision,YES,null
+column,extensions,pg_stat_statements,local_blk_read_time,double precision,YES,null
+column,extensions,pg_stat_statements,local_blk_write_time,double precision,YES,null
+column,extensions,pg_stat_statements,local_blks_dirtied,bigint,YES,null
+column,extensions,pg_stat_statements,local_blks_hit,bigint,YES,null
+column,extensions,pg_stat_statements,local_blks_read,bigint,YES,null
+column,extensions,pg_stat_statements,local_blks_written,bigint,YES,null
+column,extensions,pg_stat_statements,max_exec_time,double precision,YES,null
+column,extensions,pg_stat_statements,max_plan_time,double precision,YES,null
+column,extensions,pg_stat_statements,mean_exec_time,double precision,YES,null
+column,extensions,pg_stat_statements,mean_plan_time,double precision,YES,null
+column,extensions,pg_stat_statements,min_exec_time,double precision,YES,null
+column,extensions,pg_stat_statements,min_plan_time,double precision,YES,null
+column,extensions,pg_stat_statements,minmax_stats_since,timestamp with time zone,YES,null
+column,extensions,pg_stat_statements,plans,bigint,YES,null
+column,extensions,pg_stat_statements,query,text,YES,null
+column,extensions,pg_stat_statements,queryid,bigint,YES,null
+column,extensions,pg_stat_statements,rows,bigint,YES,null
+column,extensions,pg_stat_statements,shared_blk_read_time,double precision,YES,null
+column,extensions,pg_stat_statements,shared_blk_write_time,double precision,YES,null
+column,extensions,pg_stat_statements,shared_blks_dirtied,bigint,YES,null
+column,extensions,pg_stat_statements,shared_blks_hit,bigint,YES,null
+column,extensions,pg_stat_statements,shared_blks_read,bigint,YES,null
+column,extensions,pg_stat_statements,shared_blks_written,bigint,YES,null
+column,extensions,pg_stat_statements,stats_since,timestamp with time zone,YES,null
+column,extensions,pg_stat_statements,stddev_exec_time,double precision,YES,null
+column,extensions,pg_stat_statements,stddev_plan_time,double precision,YES,null
+column,extensions,pg_stat_statements,temp_blk_read_time,double precision,YES,null
+column,extensions,pg_stat_statements,temp_blk_write_time,double precision,YES,null
+column,extensions,pg_stat_statements,temp_blks_read,bigint,YES,null
+column,extensions,pg_stat_statements,temp_blks_written,bigint,YES,null
+column,extensions,pg_stat_statements,toplevel,boolean,YES,null
+column,extensions,pg_stat_statements,total_exec_time,double precision,YES,null
+column,extensions,pg_stat_statements,total_plan_time,double precision,YES,null
+column,extensions,pg_stat_statements,userid,oid,YES,null
+column,extensions,pg_stat_statements,wal_bytes,numeric,YES,null
+column,extensions,pg_stat_statements,wal_fpi,bigint,YES,null
+column,extensions,pg_stat_statements,wal_records,bigint,YES,null
+column,extensions,pg_stat_statements_info,dealloc,bigint,YES,null
+column,extensions,pg_stat_statements_info,stats_reset,timestamp with time zone,YES,null
+column,public,announcements,body,text,NO,null
+column,public,announcements,created_at,timestamp with time zone,NO,now()
+column,public,announcements,created_by,uuid,YES,null
+column,public,announcements,expires_at,timestamp with time zone,YES,null
+column,public,announcements,icon,text,YES,null
+column,public,announcements,id,uuid,NO,uuid_generate_v4()
+column,public,announcements,is_pinned,boolean,NO,false
+column,public,announcements,is_published,boolean,NO,true
+column,public,announcements,publish_at,timestamp with time zone,NO,now()
+column,public,announcements,society_id,uuid,NO,null
+column,public,announcements,tag,USER-DEFINED,NO,'general'::announcement_tag
+column,public,announcements,title,text,NO,null
+column,public,announcements,updated_at,timestamp with time zone,NO,now()
+constraint,public,announcements,2200_18014_10_not_null,CHECK,null,null
+constraint,public,announcements,2200_18014_12_not_null,CHECK,null,null
+constraint,public,announcements,2200_18014_13_not_null,CHECK,null,null
+constraint,public,announcements,2200_18014_1_not_null,CHECK,null,null
+constraint,public,announcements,2200_18014_2_not_null,CHECK,null,null
+constraint,public,announcements,2200_18014_4_not_null,CHECK,null,null
+constraint,public,announcements,2200_18014_5_not_null,CHECK,null,null
+constraint,public,announcements,2200_18014_6_not_null,CHECK,null,null
+constraint,public,announcements,2200_18014_8_not_null,CHECK,null,null
+constraint,public,announcements,2200_18014_9_not_null,CHECK,null,null
+constraint,public,announcements,announcements_created_by_fkey,FOREIGN KEY,null,null
+constraint,public,announcements,announcements_pkey,PRIMARY KEY,null,null
+constraint,public,announcements,announcements_society_id_fkey,FOREIGN KEY,null,null
+column,public,apartments,area_sqft,numeric,YES,null
+column,public,apartments,block_id,uuid,NO,null
+column,public,apartments,created_at,timestamp with time zone,NO,now()
+column,public,apartments,floor,smallint,YES,null
+column,public,apartments,id,uuid,NO,uuid_generate_v4()
+column,public,apartments,is_occupied,boolean,NO,true
+column,public,apartments,society_id,uuid,NO,null
+column,public,apartments,unit_number,text,NO,null
+column,public,apartments,updated_at,timestamp with time zone,NO,now()
+constraint,public,apartments,2200_17673_1_not_null,CHECK,null,null
+constraint,public,apartments,2200_17673_2_not_null,CHECK,null,null
+constraint,public,apartments,2200_17673_3_not_null,CHECK,null,null
+constraint,public,apartments,2200_17673_4_not_null,CHECK,null,null
+constraint,public,apartments,2200_17673_7_not_null,CHECK,null,null
+constraint,public,apartments,2200_17673_8_not_null,CHECK,null,null
+constraint,public,apartments,2200_17673_9_not_null,CHECK,null,null
+constraint,public,apartments,apartments_block_id_fkey,FOREIGN KEY,null,null
+constraint,public,apartments,apartments_block_id_unit_number_key,UNIQUE,null,null
+constraint,public,apartments,apartments_pkey,PRIMARY KEY,null,null
+constraint,public,apartments,apartments_society_id_fkey,FOREIGN KEY,null,null
+column,public,billing_cycles,apartment_id,uuid,NO,null
+column,public,billing_cycles,base_amount,numeric,NO,0
+column,public,billing_cycles,billing_month,text,NO,null
+column,public,billing_cycles,billing_period,daterange,YES,null
+column,public,billing_cycles,billing_year,smallint,NO,null
+column,public,billing_cycles,created_at,timestamp with time zone,NO,now()
+column,public,billing_cycles,discount,numeric,NO,0
+column,public,billing_cycles,due_date,date,NO,null
+column,public,billing_cycles,electricity,numeric,NO,0
+column,public,billing_cycles,housekeeping,numeric,NO,0
+column,public,billing_cycles,id,uuid,NO,uuid_generate_v4()
+column,public,billing_cycles,late_fee,numeric,NO,0
+column,public,billing_cycles,miscellaneous,numeric,NO,0
+column,public,billing_cycles,paid_amount,numeric,YES,null
+column,public,billing_cycles,paid_at,timestamp with time zone,YES,null
+column,public,billing_cycles,repairs,numeric,NO,0
+column,public,billing_cycles,security,numeric,NO,0
+column,public,billing_cycles,society_id,uuid,NO,null
+column,public,billing_cycles,status,USER-DEFINED,NO,'pending'::billing_status
+column,public,billing_cycles,total_amount,numeric,NO,0
+column,public,billing_cycles,updated_at,timestamp with time zone,NO,now()
+column,public,billing_cycles,water,numeric,NO,0
+constraint,public,billing_cycles,2200_17941_10_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_11_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_12_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_13_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_14_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_15_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_16_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_19_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_1_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_20_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_21_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_22_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_2_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_3_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_4_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_5_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_7_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_8_not_null,CHECK,null,null
+constraint,public,billing_cycles,2200_17941_9_not_null,CHECK,null,null
+constraint,public,billing_cycles,billing_cycles_apartment_id_billing_year_billing_month_key,UNIQUE,null,null
+constraint,public,billing_cycles,billing_cycles_apartment_id_fkey,FOREIGN KEY,null,null
+constraint,public,billing_cycles,billing_cycles_pkey,PRIMARY KEY,null,null
+constraint,public,billing_cycles,billing_cycles_society_id_fkey,FOREIGN KEY,null,null
+column,public,blocks,created_at,timestamp with time zone,NO,now()
+column,public,blocks,id,uuid,NO,uuid_generate_v4()
+column,public,blocks,name,text,NO,null
+column,public,blocks,society_id,uuid,NO,null
+constraint,public,blocks,2200_17657_1_not_null,CHECK,null,null
+constraint,public,blocks,2200_17657_2_not_null,CHECK,null,null
+constraint,public,blocks,2200_17657_3_not_null,CHECK,null,null
+constraint,public,blocks,2200_17657_4_not_null,CHECK,null,null
+constraint,public,blocks,blocks_pkey,PRIMARY KEY,null,null
+constraint,public,blocks,blocks_society_id_fkey,FOREIGN KEY,null,null
+constraint,public,blocks,blocks_society_id_name_key,UNIQUE,null,null
+column,public,bookings,booking_date,date,NO,null
+column,public,bookings,booking_fee,numeric,NO,0
+column,public,bookings,cancel_reason,text,YES,null
+column,public,bookings,cancelled_at,timestamp with time zone,YES,null
+column,public,bookings,created_at,timestamp with time zone,NO,now()
+column,public,bookings,duration_hrs,numeric,YES,null
+column,public,bookings,end_time,time without time zone,NO,null
+column,public,bookings,facility_id,uuid,NO,null
+column,public,bookings,id,uuid,NO,uuid_generate_v4()
+column,public,bookings,notes,text,YES,null
+column,public,bookings,paid_at,timestamp with time zone,YES,null
+column,public,bookings,resident_id,uuid,NO,null
+column,public,bookings,slot_id,uuid,YES,null
+column,public,bookings,society_id,uuid,NO,null
+column,public,bookings,start_time,time without time zone,NO,null
+column,public,bookings,status,USER-DEFINED,NO,'pending'::booking_status
+column,public,bookings,updated_at,timestamp with time zone,NO,now()
+constraint,public,bookings,2200_17905_10_not_null,CHECK,null,null
+constraint,public,bookings,2200_17905_11_not_null,CHECK,null,null
+constraint,public,bookings,2200_17905_16_not_null,CHECK,null,null
+constraint,public,bookings,2200_17905_17_not_null,CHECK,null,null
+constraint,public,bookings,2200_17905_1_not_null,CHECK,null,null
+constraint,public,bookings,2200_17905_2_not_null,CHECK,null,null
+constraint,public,bookings,2200_17905_3_not_null,CHECK,null,null
+constraint,public,bookings,2200_17905_4_not_null,CHECK,null,null
+constraint,public,bookings,2200_17905_6_not_null,CHECK,null,null
+constraint,public,bookings,2200_17905_7_not_null,CHECK,null,null
+constraint,public,bookings,2200_17905_8_not_null,CHECK,null,null
+constraint,public,bookings,bookings_facility_id_fkey,FOREIGN KEY,null,null
+constraint,public,bookings,bookings_pkey,PRIMARY KEY,null,null
+constraint,public,bookings,bookings_resident_id_fkey,FOREIGN KEY,null,null
+constraint,public,bookings,bookings_society_id_fkey,FOREIGN KEY,null,null
+column,public,complaint_images,complaint_id,uuid,NO,null
+column,public,complaint_images,id,uuid,NO,uuid_generate_v4()
+column,public,complaint_images,storage_path,text,NO,null
+column,public,complaint_images,uploaded_at,timestamp with time zone,NO,now()
+column,public,complaint_images,uploaded_by,uuid,YES,null
+constraint,public,complaint_images,2200_17843_1_not_null,CHECK,null,null
+constraint,public,complaint_images,2200_17843_2_not_null,CHECK,null,null
+constraint,public,complaint_images,2200_17843_3_not_null,CHECK,null,null
+constraint,public,complaint_images,2200_17843_5_not_null,CHECK,null,null
+constraint,public,complaint_images,complaint_images_complaint_id_fkey,FOREIGN KEY,null,null
+constraint,public,complaint_images,complaint_images_pkey,PRIMARY KEY,null,null
+constraint,public,complaint_images,complaint_images_uploaded_by_fkey,FOREIGN KEY,null,null
+column,public,complaints,apartment_id,uuid,NO,null
+column,public,complaints,assigned_to,uuid,YES,null
+column,public,complaints,category,USER-DEFINED,NO,'other'::complaint_category
+column,public,complaints,created_at,timestamp with time zone,NO,now()
+column,public,complaints,description,text,NO,null
+column,public,complaints,id,uuid,NO,uuid_generate_v4()
+column,public,complaints,location_label,text,YES,null
+column,public,complaints,priority,USER-DEFINED,NO,'medium'::complaint_priority
+column,public,complaints,resident_id,uuid,NO,null
+column,public,complaints,resolution_note,text,YES,null
+column,public,complaints,resolved_at,timestamp with time zone,YES,null
+column,public,complaints,society_id,uuid,NO,null
+column,public,complaints,status,USER-DEFINED,NO,'open'::complaint_status
+column,public,complaints,title,text,NO,null
+column,public,complaints,updated_at,timestamp with time zone,NO,now()
+constraint,public,complaints,2200_17806_10_not_null,CHECK,null,null
+constraint,public,complaints,2200_17806_14_not_null,CHECK,null,null
+constraint,public,complaints,2200_17806_15_not_null,CHECK,null,null
+constraint,public,complaints,2200_17806_1_not_null,CHECK,null,null
+constraint,public,complaints,2200_17806_2_not_null,CHECK,null,null
+constraint,public,complaints,2200_17806_3_not_null,CHECK,null,null
+constraint,public,complaints,2200_17806_4_not_null,CHECK,null,null
+constraint,public,complaints,2200_17806_5_not_null,CHECK,null,null
+constraint,public,complaints,2200_17806_6_not_null,CHECK,null,null
+constraint,public,complaints,2200_17806_7_not_null,CHECK,null,null
+constraint,public,complaints,2200_17806_8_not_null,CHECK,null,null
+constraint,public,complaints,complaints_apartment_id_fkey,FOREIGN KEY,null,null
+constraint,public,complaints,complaints_assigned_to_fkey,FOREIGN KEY,null,null
+constraint,public,complaints,complaints_pkey,PRIMARY KEY,null,null
+constraint,public,complaints,complaints_resident_id_fkey,FOREIGN KEY,null,null
+constraint,public,complaints,complaints_society_id_fkey,FOREIGN KEY,null,null
+column,public,facilities,advance_days,smallint,NO,30
+column,public,facilities,booking_fee,numeric,NO,0
+column,public,facilities,capacity,smallint,NO,0
+column,public,facilities,created_at,timestamp with time zone,NO,now()
+column,public,facilities,description,text,YES,null
+column,public,facilities,icon,text,YES,null
+column,public,facilities,id,uuid,NO,uuid_generate_v4()
+column,public,facilities,is_active,boolean,NO,true
+column,public,facilities,name,text,NO,null
+column,public,facilities,operating_hours,text,NO,null
+column,public,facilities,rules,text,YES,null
+column,public,facilities,slot_duration,smallint,NO,120
+column,public,facilities,society_id,uuid,NO,null
+column,public,facilities,status,USER-DEFINED,NO,'available'::facility_status
+column,public,facilities,updated_at,timestamp with time zone,NO,now()
+constraint,public,facilities,2200_17862_10_not_null,CHECK,null,null
+constraint,public,facilities,2200_17862_11_not_null,CHECK,null,null
+constraint,public,facilities,2200_17862_12_not_null,CHECK,null,null
+constraint,public,facilities,2200_17862_14_not_null,CHECK,null,null
+constraint,public,facilities,2200_17862_15_not_null,CHECK,null,null
+constraint,public,facilities,2200_17862_1_not_null,CHECK,null,null
+constraint,public,facilities,2200_17862_2_not_null,CHECK,null,null
+constraint,public,facilities,2200_17862_3_not_null,CHECK,null,null
+constraint,public,facilities,2200_17862_6_not_null,CHECK,null,null
+constraint,public,facilities,2200_17862_7_not_null,CHECK,null,null
+constraint,public,facilities,2200_17862_8_not_null,CHECK,null,null
+constraint,public,facilities,2200_17862_9_not_null,CHECK,null,null
+constraint,public,facilities,facilities_pkey,PRIMARY KEY,null,null
+constraint,public,facilities,facilities_society_id_fkey,FOREIGN KEY,null,null
+column,public,family_members,age_group,character varying,NO,null
+column,public,family_members,created_at,timestamp with time zone,YES,now()
+column,public,family_members,gender,character varying,NO,null
+column,public,family_members,id,uuid,NO,gen_random_uuid()
+column,public,family_members,name,text,NO,null
+column,public,family_members,relation,character varying,NO,null
+column,public,family_members,resident_id,uuid,NO,null
+constraint,public,family_members,2200_18654_1_not_null,CHECK,null,null
+constraint,public,family_members,2200_18654_2_not_null,CHECK,null,null
+constraint,public,family_members,2200_18654_3_not_null,CHECK,null,null
+constraint,public,family_members,2200_18654_4_not_null,CHECK,null,null
+constraint,public,family_members,2200_18654_5_not_null,CHECK,null,null
+constraint,public,family_members,2200_18654_6_not_null,CHECK,null,null
+constraint,public,family_members,family_members_age_group_check,CHECK,null,null
+constraint,public,family_members,family_members_gender_check,CHECK,null,null
+constraint,public,family_members,family_members_pkey,PRIMARY KEY,null,null
+constraint,public,family_members,family_members_relation_check,CHECK,null,null
+constraint,public,family_members,family_members_resident_id_fkey,FOREIGN KEY,null,null
+column,public,holidays,created_at,timestamp with time zone,NO,"timezone('utc'::text, now())"
+column,public,holidays,date,date,NO,null
+column,public,holidays,id,uuid,NO,gen_random_uuid()
+column,public,holidays,name,text,NO,null
+column,public,holidays,society_id,uuid,NO,null
+constraint,public,holidays,2200_18772_1_not_null,CHECK,null,null
+constraint,public,holidays,2200_18772_2_not_null,CHECK,null,null
+constraint,public,holidays,2200_18772_3_not_null,CHECK,null,null
+constraint,public,holidays,2200_18772_4_not_null,CHECK,null,null
+constraint,public,holidays,2200_18772_5_not_null,CHECK,null,null
+constraint,public,holidays,holidays_pkey,PRIMARY KEY,null,null
+column,public,notifications,action_ref_id,uuid,YES,null
+column,public,notifications,action_type,text,YES,null
+column,public,notifications,body,text,NO,null
+column,public,notifications,created_at,timestamp with time zone,NO,now()
+column,public,notifications,icon,text,YES,null
+column,public,notifications,id,uuid,NO,uuid_generate_v4()
+column,public,notifications,is_read,boolean,NO,false
+column,public,notifications,read_at,timestamp with time zone,YES,null
+column,public,notifications,society_id,uuid,YES,null
+column,public,notifications,title,text,NO,null
+column,public,notifications,user_id,uuid,NO,null
+constraint,public,notifications,2200_18041_11_not_null,CHECK,null,null
+constraint,public,notifications,2200_18041_1_not_null,CHECK,null,null
+constraint,public,notifications,2200_18041_2_not_null,CHECK,null,null
+constraint,public,notifications,2200_18041_4_not_null,CHECK,null,null
+constraint,public,notifications,2200_18041_5_not_null,CHECK,null,null
+constraint,public,notifications,2200_18041_9_not_null,CHECK,null,null
+constraint,public,notifications,notifications_pkey,PRIMARY KEY,null,null
+constraint,public,notifications,notifications_society_id_fkey,FOREIGN KEY,null,null
+constraint,public,notifications,notifications_user_id_fkey,FOREIGN KEY,null,null
+column,public,poll_options,id,uuid,NO,uuid_generate_v4()
+column,public,poll_options,option_text,text,NO,null
+column,public,poll_options,poll_id,uuid,NO,null
+constraint,public,poll_options,2200_18916_1_not_null,CHECK,null,null
+constraint,public,poll_options,2200_18916_2_not_null,CHECK,null,null
+constraint,public,poll_options,2200_18916_3_not_null,CHECK,null,null
+constraint,public,poll_options,poll_options_pkey,PRIMARY KEY,null,null
+constraint,public,poll_options,poll_options_poll_id_fkey,FOREIGN KEY,null,null
+column,public,poll_votes,created_at,timestamp with time zone,NO,"timezone('utc'::text, now())"
+column,public,poll_votes,id,uuid,NO,uuid_generate_v4()
+column,public,poll_votes,option_id,uuid,NO,null
+column,public,poll_votes,poll_id,uuid,NO,null
+column,public,poll_votes,resident_id,uuid,NO,null
+constraint,public,poll_votes,2200_18929_1_not_null,CHECK,null,null
+constraint,public,poll_votes,2200_18929_2_not_null,CHECK,null,null
+constraint,public,poll_votes,2200_18929_3_not_null,CHECK,null,null
+constraint,public,poll_votes,2200_18929_4_not_null,CHECK,null,null
+constraint,public,poll_votes,2200_18929_5_not_null,CHECK,null,null
+constraint,public,poll_votes,poll_votes_option_id_fkey,FOREIGN KEY,null,null
+constraint,public,poll_votes,poll_votes_pkey,PRIMARY KEY,null,null
+constraint,public,poll_votes,poll_votes_poll_id_fkey,FOREIGN KEY,null,null
+constraint,public,poll_votes,poll_votes_poll_id_resident_id_key,UNIQUE,null,null
+constraint,public,poll_votes,poll_votes_resident_id_fkey,FOREIGN KEY,null,null
+column,public,polls,created_at,timestamp with time zone,NO,"timezone('utc'::text, now())"
+column,public,polls,created_by,uuid,YES,null
+column,public,polls,description,text,YES,null
+column,public,polls,expires_at,timestamp with time zone,YES,null
+column,public,polls,id,uuid,NO,uuid_generate_v4()
+column,public,polls,society_id,uuid,NO,null
+column,public,polls,title,text,NO,null
+constraint,public,polls,2200_18902_1_not_null,CHECK,null,null
+constraint,public,polls,2200_18902_2_not_null,CHECK,null,null
+constraint,public,polls,2200_18902_3_not_null,CHECK,null,null
+constraint,public,polls,2200_18902_6_not_null,CHECK,null,null
+constraint,public,polls,polls_created_by_fkey,FOREIGN KEY,null,null
+constraint,public,polls,polls_pkey,PRIMARY KEY,null,null
+column,public,profiles,avatar_url,text,YES,null
+column,public,profiles,created_at,timestamp with time zone,NO,now()
+column,public,profiles,date_of_birth,date,YES,null
+column,public,profiles,full_name,text,NO,null
+column,public,profiles,gender,text,YES,null
+column,public,profiles,id,uuid,NO,null
+column,public,profiles,phone,text,YES,null
+column,public,profiles,updated_at,timestamp with time zone,NO,now()
+constraint,public,profiles,2200_17696_1_not_null,CHECK,null,null
+constraint,public,profiles,2200_17696_2_not_null,CHECK,null,null
+constraint,public,profiles,2200_17696_7_not_null,CHECK,null,null
+constraint,public,profiles,2200_17696_8_not_null,CHECK,null,null
+constraint,public,profiles,profiles_gender_check,CHECK,null,null
+constraint,public,profiles,profiles_id_fkey,FOREIGN KEY,null,null
+constraint,public,profiles,profiles_pkey,PRIMARY KEY,null,null
+column,public,resident_profiles,age_group,text,NO,null
+column,public,resident_profiles,apartment,text,NO,null
+column,public,resident_profiles,avatar_index,integer,NO,0
+column,public,resident_profiles,block,text,NO,null
+column,public,resident_profiles,created_at,timestamp with time zone,NO,"timezone('utc'::text, now())"
+column,public,resident_profiles,email,text,NO,null
+column,public,resident_profiles,gender,text,NO,null
+column,public,resident_profiles,heritage,text,NO,null
+column,public,resident_profiles,id,uuid,NO,uuid_generate_v4()
+column,public,resident_profiles,name,text,NO,null
+column,public,resident_profiles,phone,text,NO,null
+column,public,resident_profiles,resident_type,text,NO,null
+column,public,resident_profiles,role,text,NO,null
+column,public,resident_profiles,society_name,text,NO,null
+constraint,public,resident_profiles,2200_18676_10_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_11_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_12_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_13_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_14_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_1_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_2_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_3_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_4_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_5_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_6_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_7_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_8_not_null,CHECK,null,null
+constraint,public,resident_profiles,2200_18676_9_not_null,CHECK,null,null
+constraint,public,resident_profiles,resident_profiles_pkey,PRIMARY KEY,null,null
+column,public,residents,apartment_id,uuid,NO,null
+column,public,residents,created_at,timestamp with time zone,NO,now()
+column,public,residents,id,uuid,NO,uuid_generate_v4()
+column,public,residents,is_active,boolean,NO,true
+column,public,residents,move_in_date,date,YES,null
+column,public,residents,move_out_date,date,YES,null
+column,public,residents,ownership,USER-DEFINED,NO,'owner'::ownership_type
+column,public,residents,role,USER-DEFINED,NO,'resident'::user_role
+column,public,residents,society_id,uuid,NO,null
+column,public,residents,updated_at,timestamp with time zone,NO,now()
+column,public,residents,user_id,uuid,NO,null
+constraint,public,residents,2200_17711_10_not_null,CHECK,null,null
+constraint,public,residents,2200_17711_11_not_null,CHECK,null,null
+constraint,public,residents,2200_17711_1_not_null,CHECK,null,null
+constraint,public,residents,2200_17711_2_not_null,CHECK,null,null
+constraint,public,residents,2200_17711_3_not_null,CHECK,null,null
+constraint,public,residents,2200_17711_4_not_null,CHECK,null,null
+constraint,public,residents,2200_17711_5_not_null,CHECK,null,null
+constraint,public,residents,2200_17711_6_not_null,CHECK,null,null
+constraint,public,residents,2200_17711_9_not_null,CHECK,null,null
+constraint,public,residents,residents_apartment_id_fkey,FOREIGN KEY,null,null
+constraint,public,residents,residents_pkey,PRIMARY KEY,null,null
+constraint,public,residents,residents_society_id_fkey,FOREIGN KEY,null,null
+constraint,public,residents,residents_user_id_apartment_id_key,UNIQUE,null,null
+constraint,public,residents,residents_user_id_fkey,FOREIGN KEY,null,null
+column,public,societies,address,text,YES,null
+column,public,societies,city,text,YES,null
+column,public,societies,created_at,timestamp with time zone,NO,now()
+column,public,societies,id,uuid,NO,uuid_generate_v4()
+column,public,societies,logo_url,text,YES,null
+column,public,societies,name,text,NO,null
+column,public,societies,pincode,character varying,YES,null
+column,public,societies,state,text,YES,null
+column,public,societies,updated_at,timestamp with time zone,NO,now()
+constraint,public,societies,2200_17647_1_not_null,CHECK,null,null
+constraint,public,societies,2200_17647_2_not_null,CHECK,null,null
+constraint,public,societies,2200_17647_8_not_null,CHECK,null,null
+constraint,public,societies,2200_17647_9_not_null,CHECK,null,null
+constraint,public,societies,societies_pkey,PRIMARY KEY,null,null
+column,public,sos_alerts,created_at,timestamp with time zone,NO,"timezone('utc'::text, now())"
+column,public,sos_alerts,id,uuid,NO,uuid_generate_v4()
+column,public,sos_alerts,resident_id,uuid,NO,null
+column,public,sos_alerts,resolved_at,timestamp with time zone,YES,null
+column,public,sos_alerts,resolved_by,uuid,YES,null
+column,public,sos_alerts,status,text,NO,'active'::text
+constraint,public,sos_alerts,2200_18956_1_not_null,CHECK,null,null
+constraint,public,sos_alerts,2200_18956_2_not_null,CHECK,null,null
+constraint,public,sos_alerts,2200_18956_3_not_null,CHECK,null,null
+constraint,public,sos_alerts,2200_18956_6_not_null,CHECK,null,null
+constraint,public,sos_alerts,sos_alerts_pkey,PRIMARY KEY,null,null
+constraint,public,sos_alerts,sos_alerts_resident_id_fkey,FOREIGN KEY,null,null
+constraint,public,sos_alerts,sos_alerts_resolved_by_fkey,FOREIGN KEY,null,null
+constraint,public,sos_alerts,sos_alerts_status_check,CHECK,null,null
+column,public,transactions,amount,numeric,NO,null
+column,public,transactions,billing_cycle_id,uuid,YES,null
+column,public,transactions,booking_id,uuid,YES,null
+column,public,transactions,completed_at,timestamp with time zone,YES,null
+column,public,transactions,created_at,timestamp with time zone,NO,now()
+column,public,transactions,failed_reason,text,YES,null
+column,public,transactions,gateway_txn_id,text,YES,null
+column,public,transactions,id,uuid,NO,uuid_generate_v4()
+column,public,transactions,initiated_at,timestamp with time zone,NO,now()
+column,public,transactions,method,USER-DEFINED,NO,'upi'::payment_method_type
+column,public,transactions,method_label,text,YES,null
+column,public,transactions,reference_no,text,NO,null
+column,public,transactions,resident_id,uuid,NO,null
+column,public,transactions,society_id,uuid,NO,null
+column,public,transactions,status,USER-DEFINED,NO,'pending'::transaction_status
+constraint,public,transactions,2200_17978_11_not_null,CHECK,null,null
+constraint,public,transactions,2200_17978_12_not_null,CHECK,null,null
+constraint,public,transactions,2200_17978_15_not_null,CHECK,null,null
+constraint,public,transactions,2200_17978_1_not_null,CHECK,null,null
+constraint,public,transactions,2200_17978_4_not_null,CHECK,null,null
+constraint,public,transactions,2200_17978_5_not_null,CHECK,null,null
+constraint,public,transactions,2200_17978_6_not_null,CHECK,null,null
+constraint,public,transactions,2200_17978_7_not_null,CHECK,null,null
+constraint,public,transactions,2200_17978_9_not_null,CHECK,null,null
+constraint,public,transactions,transactions_billing_cycle_id_fkey,FOREIGN KEY,null,null
+constraint,public,transactions,transactions_booking_id_fkey,FOREIGN KEY,null,null
+constraint,public,transactions,transactions_pkey,PRIMARY KEY,null,null
+constraint,public,transactions,transactions_resident_id_fkey,FOREIGN KEY,null,null
+constraint,public,transactions,transactions_society_id_fkey,FOREIGN KEY,null,null
+column,public,user_notification_settings,announcements_enabled,boolean,NO,true
+column,public,user_notification_settings,created_at,timestamp with time zone,YES,now()
+column,public,user_notification_settings,global_push_enabled,boolean,NO,true
+column,public,user_notification_settings,id,uuid,NO,gen_random_uuid()
+column,public,user_notification_settings,resident_id,uuid,NO,null
+column,public,user_notification_settings,updated_at,timestamp with time zone,YES,now()
+constraint,public,user_notification_settings,2200_18749_1_not_null,CHECK,null,null
+constraint,public,user_notification_settings,2200_18749_2_not_null,CHECK,null,null
+constraint,public,user_notification_settings,2200_18749_3_not_null,CHECK,null,null
+constraint,public,user_notification_settings,2200_18749_4_not_null,CHECK,null,null
+constraint,public,user_notification_settings,user_notification_settings_pkey,PRIMARY KEY,null,null
+constraint,public,user_notification_settings,user_notification_settings_resident_id_fkey,FOREIGN KEY,null,null
+constraint,public,user_notification_settings,user_notification_settings_resident_id_key,UNIQUE,null,null
+column,public,v_outstanding_dues,amount_due,numeric,YES,null
+column,public,v_outstanding_dues,apartment_id,uuid,YES,null
+column,public,v_outstanding_dues,billing_month,text,YES,null
+column,public,v_outstanding_dues,block_name,text,YES,null
+column,public,v_outstanding_dues,due_date,date,YES,null
+column,public,v_outstanding_dues,id,uuid,YES,null
+column,public,v_outstanding_dues,society_id,uuid,YES,null
+column,public,v_outstanding_dues,status,USER-DEFINED,YES,null
+column,public,v_outstanding_dues,total_amount,numeric,YES,null
+column,public,v_outstanding_dues,unit_number,text,YES,null
+column,public,v_resident_details,apartment_id,uuid,YES,null
+column,public,v_resident_details,avatar_url,text,YES,null
+column,public,v_resident_details,block_id,uuid,YES,null
+column,public,v_resident_details,block_name,text,YES,null
+column,public,v_resident_details,city,text,YES,null
+column,public,v_resident_details,floor,smallint,YES,null
+column,public,v_resident_details,full_name,text,YES,null
+column,public,v_resident_details,gender,text,YES,null
+column,public,v_resident_details,is_active,boolean,YES,null
+column,public,v_resident_details,ownership,USER-DEFINED,YES,null
+column,public,v_resident_details,phone,text,YES,null
+column,public,v_resident_details,resident_id,uuid,YES,null
+column,public,v_resident_details,role,USER-DEFINED,YES,null
+column,public,v_resident_details,society_id,uuid,YES,null
+column,public,v_resident_details,society_name,text,YES,null
+column,public,v_resident_details,unit_number,text,YES,null
+column,public,v_resident_details,user_id,uuid,YES,null
+column,public,vehicles,color,text,YES,null
+column,public,vehicles,created_at,timestamp with time zone,NO,now()
+column,public,vehicles,id,uuid,NO,uuid_generate_v4()
+column,public,vehicles,is_active,boolean,NO,true
+column,public,vehicles,make,text,YES,null
+column,public,vehicles,model,text,YES,null
+column,public,vehicles,registration_no,text,NO,null
+column,public,vehicles,resident_id,uuid,NO,null
+column,public,vehicles,vehicle_type,USER-DEFINED,NO,'car'::vehicle_type
+constraint,public,vehicles,2200_18729_1_not_null,CHECK,null,null
+constraint,public,vehicles,2200_18729_2_not_null,CHECK,null,null
+constraint,public,vehicles,2200_18729_3_not_null,CHECK,null,null
+constraint,public,vehicles,2200_18729_7_not_null,CHECK,null,null
+constraint,public,vehicles,2200_18729_8_not_null,CHECK,null,null
+constraint,public,vehicles,2200_18729_9_not_null,CHECK,null,null
+constraint,public,vehicles,vehicles_pkey,PRIMARY KEY,null,null
+constraint,public,vehicles,vehicles_resident_id_fkey,FOREIGN KEY,null,null
+constraint,public,vehicles,vehicles_resident_id_registration_no_key,UNIQUE,null,null
+column,public,visitors,apartment_id,uuid,NO,null
+column,public,visitors,arrived_at,timestamp with time zone,YES,null
+column,public,visitors,created_at,timestamp with time zone,NO,now()
+column,public,visitors,guest_name,text,NO,null
+column,public,visitors,guest_phone,text,YES,null
+column,public,visitors,id,uuid,NO,uuid_generate_v4()
+column,public,visitors,invite_code,text,NO,null
+column,public,visitors,invite_method,USER-DEFINED,NO,'qr'::invite_method
+column,public,visitors,left_at,timestamp with time zone,YES,null
+column,public,visitors,notes,text,YES,null
+column,public,visitors,otp_value,character varying,YES,null
+column,public,visitors,purpose,text,YES,null
+column,public,visitors,qr_payload,text,YES,null
+column,public,visitors,relation,USER-DEFINED,NO,'other'::guest_relation
+column,public,visitors,relation_label,text,YES,null
+column,public,visitors,resident_id,uuid,NO,null
+column,public,visitors,society_id,uuid,NO,null
+column,public,visitors,status,USER-DEFINED,NO,'pending'::visitor_status
+column,public,visitors,updated_at,timestamp with time zone,NO,now()
+column,public,visitors,valid_from,timestamp with time zone,NO,now()
+column,public,visitors,valid_hours,smallint,NO,6
+column,public,visitors,valid_until,timestamp with time zone,NO,null
+constraint,public,visitors,2200_17771_10_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_11_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_14_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_15_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_16_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_17_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_1_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_21_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_22_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_2_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_3_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_4_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_5_not_null,CHECK,null,null
+constraint,public,visitors,2200_17771_7_not_null,CHECK,null,null
+constraint,public,visitors,visitors_apartment_id_fkey,FOREIGN KEY,null,null
+constraint,public,visitors,visitors_pkey,PRIMARY KEY,null,null
+constraint,public,visitors,visitors_resident_id_fkey,FOREIGN KEY,null,null
+constraint,public,visitors,visitors_society_id_fkey,FOREIGN KEY,null,null
+column,realtime,messages,binary_payload,bytea,YES,null
+column,realtime,messages,event,text,YES,null
+column,realtime,messages,extension,text,NO,null
+column,realtime,messages,id,uuid,NO,gen_random_uuid()
+column,realtime,messages,inserted_at,timestamp without time zone,NO,now()
+column,realtime,messages,payload,jsonb,YES,null
+column,realtime,messages,private,boolean,YES,false
+column,realtime,messages,topic,text,NO,null
+column,realtime,messages,updated_at,timestamp without time zone,NO,now()
+constraint,realtime,messages,16559_17245_1_not_null,CHECK,null,null
+constraint,realtime,messages,16559_17245_2_not_null,CHECK,null,null
+constraint,realtime,messages,16559_17245_6_not_null,CHECK,null,null
+constraint,realtime,messages,16559_17245_7_not_null,CHECK,null,null
+constraint,realtime,messages,16559_17245_8_not_null,CHECK,null,null
+constraint,realtime,messages,messages_payload_exclusive,CHECK,null,null
+constraint,realtime,messages,messages_pkey,PRIMARY KEY,null,null
+column,realtime,messages_2026_08_12,binary_payload,bytea,YES,null
+column,realtime,messages_2026_08_12,event,text,YES,null
+column,realtime,messages_2026_08_12,extension,text,NO,null
+column,realtime,messages_2026_08_12,id,uuid,NO,gen_random_uuid()
+column,realtime,messages_2026_08_12,inserted_at,timestamp without time zone,NO,now()
+column,realtime,messages_2026_08_12,payload,jsonb,YES,null
+column,realtime,messages_2026_08_12,private,boolean,YES,false
+column,realtime,messages_2026_08_12,topic,text,NO,null
+column,realtime,messages_2026_08_12,updated_at,timestamp without time zone,NO,now()
+constraint,realtime,messages_2026_08_12,16559_18835_1_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_12,16559_18835_2_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_12,16559_18835_6_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_12,16559_18835_7_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_12,16559_18835_8_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_12,messages_2026_08_12_pkey,PRIMARY KEY,null,null
+constraint,realtime,messages_2026_08_12,messages_payload_exclusive,CHECK,null,null
+column,realtime,messages_2026_08_13,binary_payload,bytea,YES,null
+column,realtime,messages_2026_08_13,event,text,YES,null
+column,realtime,messages_2026_08_13,extension,text,NO,null
+column,realtime,messages_2026_08_13,id,uuid,NO,gen_random_uuid()
+column,realtime,messages_2026_08_13,inserted_at,timestamp without time zone,NO,now()
+column,realtime,messages_2026_08_13,payload,jsonb,YES,null
+column,realtime,messages_2026_08_13,private,boolean,YES,false
+column,realtime,messages_2026_08_13,topic,text,NO,null
+column,realtime,messages_2026_08_13,updated_at,timestamp without time zone,NO,now()
+constraint,realtime,messages_2026_08_13,16559_18848_1_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_13,16559_18848_2_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_13,16559_18848_6_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_13,16559_18848_7_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_13,16559_18848_8_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_13,messages_2026_08_13_pkey,PRIMARY KEY,null,null
+constraint,realtime,messages_2026_08_13,messages_payload_exclusive,CHECK,null,null
+column,realtime,messages_2026_08_14,binary_payload,bytea,YES,null
+column,realtime,messages_2026_08_14,event,text,YES,null
+column,realtime,messages_2026_08_14,extension,text,NO,null
+column,realtime,messages_2026_08_14,id,uuid,NO,gen_random_uuid()
+column,realtime,messages_2026_08_14,inserted_at,timestamp without time zone,NO,now()
+column,realtime,messages_2026_08_14,payload,jsonb,YES,null
+column,realtime,messages_2026_08_14,private,boolean,YES,false
+column,realtime,messages_2026_08_14,topic,text,NO,null
+column,realtime,messages_2026_08_14,updated_at,timestamp without time zone,NO,now()
+constraint,realtime,messages_2026_08_14,16559_18861_1_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_14,16559_18861_2_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_14,16559_18861_6_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_14,16559_18861_7_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_14,16559_18861_8_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_14,messages_2026_08_14_pkey,PRIMARY KEY,null,null
+constraint,realtime,messages_2026_08_14,messages_payload_exclusive,CHECK,null,null
+column,realtime,messages_2026_08_15,binary_payload,bytea,YES,null
+column,realtime,messages_2026_08_15,event,text,YES,null
+column,realtime,messages_2026_08_15,extension,text,NO,null
+column,realtime,messages_2026_08_15,id,uuid,NO,gen_random_uuid()
+column,realtime,messages_2026_08_15,inserted_at,timestamp without time zone,NO,now()
+column,realtime,messages_2026_08_15,payload,jsonb,YES,null
+column,realtime,messages_2026_08_15,private,boolean,YES,false
+column,realtime,messages_2026_08_15,topic,text,NO,null
+column,realtime,messages_2026_08_15,updated_at,timestamp without time zone,NO,now()
+constraint,realtime,messages_2026_08_15,16559_18874_1_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_15,16559_18874_2_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_15,16559_18874_6_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_15,16559_18874_7_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_15,16559_18874_8_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_15,messages_2026_08_15_pkey,PRIMARY KEY,null,null
+constraint,realtime,messages_2026_08_15,messages_payload_exclusive,CHECK,null,null
+column,realtime,messages_2026_08_16,binary_payload,bytea,YES,null
+column,realtime,messages_2026_08_16,event,text,YES,null
+column,realtime,messages_2026_08_16,extension,text,NO,null
+column,realtime,messages_2026_08_16,id,uuid,NO,gen_random_uuid()
+column,realtime,messages_2026_08_16,inserted_at,timestamp without time zone,NO,now()
+column,realtime,messages_2026_08_16,payload,jsonb,YES,null
+column,realtime,messages_2026_08_16,private,boolean,YES,false
+column,realtime,messages_2026_08_16,topic,text,NO,null
+column,realtime,messages_2026_08_16,updated_at,timestamp without time zone,NO,now()
+constraint,realtime,messages_2026_08_16,16559_18887_1_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_16,16559_18887_2_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_16,16559_18887_6_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_16,16559_18887_7_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_16,16559_18887_8_not_null,CHECK,null,null
+constraint,realtime,messages_2026_08_16,messages_2026_08_16_pkey,PRIMARY KEY,null,null
+constraint,realtime,messages_2026_08_16,messages_payload_exclusive,CHECK,null,null
+column,realtime,schema_migrations,inserted_at,timestamp without time zone,YES,now()
+column,realtime,schema_migrations,version,bigint,NO,null
+constraint,realtime,schema_migrations,16559_17252_1_not_null,CHECK,null,null
+constraint,realtime,schema_migrations,schema_migrations_pkey,PRIMARY KEY,null,null
+column,realtime,subscription,action_filter,text,YES,'*'::text
+column,realtime,subscription,claims,jsonb,NO,null
+column,realtime,subscription,claims_role,regrole,NO,null
+column,realtime,subscription,created_at,timestamp without time zone,NO,"timezone('utc'::text, now())"
+column,realtime,subscription,entity,regclass,NO,null
+column,realtime,subscription,filters,ARRAY,NO,'{}'::realtime.user_defined_filter[]
+column,realtime,subscription,id,bigint,NO,null
+column,realtime,subscription,selected_columns,ARRAY,YES,null
+column,realtime,subscription,subscription_id,uuid,NO,null
+constraint,realtime,subscription,16559_17255_1_not_null,CHECK,null,null
+constraint,realtime,subscription,16559_17255_2_not_null,CHECK,null,null
+constraint,realtime,subscription,16559_17255_3_not_null,CHECK,null,null
+constraint,realtime,subscription,16559_17255_4_not_null,CHECK,null,null
+constraint,realtime,subscription,16559_17255_5_not_null,CHECK,null,null
+constraint,realtime,subscription,16559_17255_6_not_null,CHECK,null,null
+constraint,realtime,subscription,16559_17255_7_not_null,CHECK,null,null
+constraint,realtime,subscription,pk_subscription,PRIMARY KEY,null,null
+constraint,realtime,subscription,subscription_action_filter_check,CHECK,null,null
+column,storage,buckets,allowed_mime_types,ARRAY,YES,null
+column,storage,buckets,avif_autodetection,boolean,YES,false
+column,storage,buckets,created_at,timestamp with time zone,YES,now()
+column,storage,buckets,file_size_limit,bigint,YES,null
+column,storage,buckets,id,text,NO,null
+column,storage,buckets,name,text,NO,null
+column,storage,buckets,owner,uuid,YES,null
+column,storage,buckets,owner_id,text,YES,null
+column,storage,buckets,public,boolean,YES,false
+column,storage,buckets,type,USER-DEFINED,NO,'STANDARD'::storage.buckettype
+column,storage,buckets,updated_at,timestamp with time zone,YES,now()
+constraint,storage,buckets,16546_17296_11_not_null,CHECK,null,null
+constraint,storage,buckets,16546_17296_1_not_null,CHECK,null,null
+constraint,storage,buckets,16546_17296_2_not_null,CHECK,null,null
+constraint,storage,buckets,buckets_pkey,PRIMARY KEY,null,null
+column,storage,buckets_analytics,created_at,timestamp with time zone,NO,now()
+column,storage,buckets_analytics,deleted_at,timestamp with time zone,YES,null
+column,storage,buckets_analytics,format,text,NO,'ICEBERG'::text
+column,storage,buckets_analytics,id,uuid,NO,gen_random_uuid()
+column,storage,buckets_analytics,name,text,NO,null
+column,storage,buckets_analytics,type,USER-DEFINED,NO,'ANALYTICS'::storage.buckettype
+column,storage,buckets_analytics,updated_at,timestamp with time zone,NO,now()
+constraint,storage,buckets_analytics,16546_17416_1_not_null,CHECK,null,null
+constraint,storage,buckets_analytics,16546_17416_2_not_null,CHECK,null,null
+constraint,storage,buckets_analytics,16546_17416_3_not_null,CHECK,null,null
+constraint,storage,buckets_analytics,16546_17416_4_not_null,CHECK,null,null
+constraint,storage,buckets_analytics,16546_17416_5_not_null,CHECK,null,null
+constraint,storage,buckets_analytics,16546_17416_6_not_null,CHECK,null,null
+constraint,storage,buckets_analytics,buckets_analytics_pkey,PRIMARY KEY,null,null
+column,storage,buckets_vectors,created_at,timestamp with time zone,NO,now()
+column,storage,buckets_vectors,id,text,NO,null
+column,storage,buckets_vectors,type,USER-DEFINED,NO,'VECTOR'::storage.buckettype
+column,storage,buckets_vectors,updated_at,timestamp with time zone,NO,now()
+column,storage,migrations,executed_at,timestamp without time zone,YES,CURRENT_TIMESTAMP
+column,storage,migrations,hash,character varying,NO,null
+column,storage,migrations,id,integer,NO,null
+column,storage,migrations,name,character varying,NO,null
+column,storage,objects,bucket_id,text,YES,null
+column,storage,objects,created_at,timestamp with time zone,YES,now()
+column,storage,objects,id,uuid,NO,gen_random_uuid()
+column,storage,objects,last_accessed_at,timestamp with time zone,YES,now()
+column,storage,objects,metadata,jsonb,YES,null
+column,storage,objects,name,text,YES,null
+column,storage,objects,owner,uuid,YES,null
+column,storage,objects,owner_id,text,YES,null
+column,storage,objects,path_tokens,ARRAY,YES,null
+column,storage,objects,updated_at,timestamp with time zone,YES,now()
+column,storage,objects,user_metadata,jsonb,YES,null
+column,storage,objects,version,text,YES,null
+constraint,storage,objects,16546_17306_1_not_null,CHECK,null,null
+constraint,storage,objects,objects_bucketId_fkey,FOREIGN KEY,null,null
+constraint,storage,objects,objects_pkey,PRIMARY KEY,null,null
+column,storage,s3_multipart_uploads,bucket_id,text,NO,null
+column,storage,s3_multipart_uploads,created_at,timestamp with time zone,NO,now()
+column,storage,s3_multipart_uploads,id,text,NO,null
+column,storage,s3_multipart_uploads,in_progress_size,bigint,NO,0
+column,storage,s3_multipart_uploads,key,text,NO,null
+column,storage,s3_multipart_uploads,metadata,jsonb,YES,null
+column,storage,s3_multipart_uploads,owner_id,text,YES,null
+column,storage,s3_multipart_uploads,upload_signature,text,NO,null
+column,storage,s3_multipart_uploads,user_metadata,jsonb,YES,null
+column,storage,s3_multipart_uploads,version,text,NO,null
+constraint,storage,s3_multipart_uploads,16546_17355_1_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads,16546_17355_2_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads,16546_17355_3_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads,16546_17355_4_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads,16546_17355_5_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads,16546_17355_6_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads,16546_17355_8_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads,s3_multipart_uploads_bucket_id_fkey,FOREIGN KEY,null,null
+constraint,storage,s3_multipart_uploads,s3_multipart_uploads_pkey,PRIMARY KEY,null,null
+column,storage,s3_multipart_uploads_parts,bucket_id,text,NO,null
+column,storage,s3_multipart_uploads_parts,created_at,timestamp with time zone,NO,now()
+column,storage,s3_multipart_uploads_parts,etag,text,NO,null
+column,storage,s3_multipart_uploads_parts,id,uuid,NO,gen_random_uuid()
+column,storage,s3_multipart_uploads_parts,key,text,NO,null
+column,storage,s3_multipart_uploads_parts,owner_id,text,YES,null
+column,storage,s3_multipart_uploads_parts,part_number,integer,NO,null
+column,storage,s3_multipart_uploads_parts,size,bigint,NO,0
+column,storage,s3_multipart_uploads_parts,upload_id,text,NO,null
+column,storage,s3_multipart_uploads_parts,version,text,NO,null
+constraint,storage,s3_multipart_uploads_parts,16546_17369_10_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads_parts,16546_17369_1_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads_parts,16546_17369_2_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads_parts,16546_17369_3_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads_parts,16546_17369_4_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads_parts,16546_17369_5_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads_parts,16546_17369_6_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads_parts,16546_17369_7_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads_parts,16546_17369_9_not_null,CHECK,null,null
+constraint,storage,s3_multipart_uploads_parts,s3_multipart_uploads_parts_bucket_id_fkey,FOREIGN KEY,null,null
+constraint,storage,s3_multipart_uploads_parts,s3_multipart_uploads_parts_pkey,PRIMARY KEY,null,null
+constraint,storage,s3_multipart_uploads_parts,s3_multipart_uploads_parts_upload_id_fkey,FOREIGN KEY,null,null
+column,storage,vector_indexes,bucket_id,text,NO,null
+column,storage,vector_indexes,created_at,timestamp with time zone,NO,now()
+column,storage,vector_indexes,data_type,text,NO,null
+column,storage,vector_indexes,dimension,integer,NO,null
+column,storage,vector_indexes,distance_metric,text,NO,null
+column,storage,vector_indexes,id,text,NO,gen_random_uuid()
+column,storage,vector_indexes,metadata_configuration,jsonb,YES,null
+column,storage,vector_indexes,name,text,NO,null
+column,storage,vector_indexes,updated_at,timestamp with time zone,NO,now()
+column,vault,decrypted_secrets,created_at,timestamp with time zone,YES,null
+column,vault,decrypted_secrets,decrypted_secret,text,YES,null
+column,vault,decrypted_secrets,description,text,YES,null
+column,vault,decrypted_secrets,id,uuid,YES,null
+column,vault,decrypted_secrets,key_id,uuid,YES,null
+column,vault,decrypted_secrets,name,text,YES,null
+column,vault,decrypted_secrets,nonce,bytea,YES,null
+column,vault,decrypted_secrets,secret,text,YES,null
+column,vault,decrypted_secrets,updated_at,timestamp with time zone,YES,null
+column,vault,secrets,created_at,timestamp with time zone,NO,CURRENT_TIMESTAMP
+column,vault,secrets,description,text,NO,''::text
+column,vault,secrets,id,uuid,NO,gen_random_uuid()
+column,vault,secrets,key_id,uuid,YES,null
+column,vault,secrets,name,text,YES,null
+column,vault,secrets,nonce,bytea,YES,vault._crypto_aead_det_noncegen()
+column,vault,secrets,secret,text,NO,null
+column,vault,secrets,updated_at,timestamp with time zone,NO,CURRENT_TIMESTAMP
+constraint,vault,secrets,16607_16612_1_not_null,CHECK,null,null
+constraint,vault,secrets,16607_16612_3_not_null,CHECK,null,null
+constraint,vault,secrets,16607_16612_4_not_null,CHECK,null,null
+constraint,vault,secrets,16607_16612_7_not_null,CHECK,null,null
+constraint,vault,secrets,16607_16612_8_not_null,CHECK,null,null
+constraint,vault,secrets,secrets_pkey,PRIMARY KEY,null,null

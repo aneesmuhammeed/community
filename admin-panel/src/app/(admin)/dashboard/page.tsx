@@ -6,13 +6,13 @@ import { Users, AlertCircle, UserCheck, CreditCard, Calendar } from 'lucide-reac
 import { supabase } from '@/lib/supabase';
 import { approveVisitor, denyVisitor } from './actions';
 import DashboardCharts from './DashboardCharts';
-
-const SOCIETY_ID = '11111111-1111-1111-1111-111111111111';
+import { getSocietyId } from '@/utils/supabase/auth';
 
 // Revalidate page data every minute or make it dynamic
 export const revalidate = 0;
 
 export default async function DashboardPage() {
+  const SOCIETY_ID = await getSocietyId();
   // Fetch stats
   const [
     { count: residentsCount },

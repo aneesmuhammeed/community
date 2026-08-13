@@ -2,10 +2,12 @@
 
 import { supabase } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
+import { getSocietyId } from '@/utils/supabase/auth';
 
-const SOCIETY_ID = process.env.NEXT_PUBLIC_SOCIETY_ID;
+
 
 export async function verifyScannedCode(code: string) {
+  const SOCIETY_ID = await getSocietyId();
   if (!SOCIETY_ID) return { error: 'Society ID not configured' };
   if (!code) return { error: 'No code provided.' };
 

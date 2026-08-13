@@ -19,8 +19,8 @@ export async function login(formData: FormData) {
   }
 
   // RBAC routing on login
-  const email = authData.user?.email || '';
-  if (email.startsWith('guard')) {
+  const role = authData.user?.app_metadata?.role || 'SUPER_ADMIN';
+  if (role === 'SECURITY_GUARD') {
     redirect('/visitors')
   }
 
