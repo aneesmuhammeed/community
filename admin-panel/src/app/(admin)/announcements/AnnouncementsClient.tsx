@@ -74,6 +74,18 @@ export default function AnnouncementsClient({ initialData, initialPolls = [] }: 
     }
   };
 
+  const handleDeletePoll = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this poll?')) return;
+    setIsProcessingId(id);
+    try {
+      await deletePoll(id);
+    } catch (e) {
+      alert('Failed to delete poll');
+    } finally {
+      setIsProcessingId(null);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
